@@ -13,7 +13,7 @@ Route::get('/', function () {
 Route::get('dashboard', function () {
     $user = auth()->user();
     $role = $user->role ?? 'student';
-    
+
     // Redirect based on role
     return match($role) {
         'student' => redirect()->route('student.dashboard'),
@@ -29,15 +29,15 @@ Route::prefix('student')->middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('student/Dashboard');
     })->name('student.dashboard');
-    
+
     Route::get('vivas', function () {
         return Inertia::render('student/VivaSessions');
     })->name('student.vivas');
-    
+
     Route::get('vivas/{id}/attend', function ($id) {
         return Inertia::render('student/VivaAttend', ['vivaId' => $id]);
     })->name('student.vivas.attend');
-    
+
     Route::get('marks', function () {
         return Inertia::render('student/Marks');
     })->name('student.marks');
@@ -48,15 +48,15 @@ Route::prefix('lecturer')->middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('lecturer/Dashboard');
     })->name('lecturer.dashboard');
-    
+
     Route::get('vivas', function () {
         return Inertia::render('lecturer/Dashboard'); // You can create a list page later
     })->name('lecturer.vivas');
-    
+
     Route::get('vivas/create', function () {
         return Inertia::render('lecturer/CreateViva');
     })->name('lecturer.vivas.create');
-    
+
     Route::get('vivas/{id}', function ($id) {
         return Inertia::render('lecturer/Dashboard'); // You can create a detail page later
     })->name('lecturer.vivas.show');
@@ -67,22 +67,30 @@ Route::prefix('institution')->middleware(['auth', 'verified'])->group(function (
     Route::get('dashboard', function () {
         return Inertia::render('institution/Dashboard');
     })->name('institution.dashboard');
-    
+
     Route::get('lecturers', function () {
-        return Inertia::render('institution/Dashboard'); // You can create a list page later
+        return Inertia::render('institution/Lecturers');
     })->name('institution.lecturers');
-    
+
     Route::get('lecturers/add', function () {
         return Inertia::render('institution/AddLecturer');
     })->name('institution.lecturers.add');
-    
+
+    Route::get('lecturers/{id}/edit', function ($id) {
+        return Inertia::render('institution/EditLecturer', ['lecturerId' => $id]);
+    })->name('institution.lecturers.edit');
+
     Route::get('students', function () {
-        return Inertia::render('institution/Dashboard'); // You can create a list page later
+        return Inertia::render('institution/Students');
     })->name('institution.students');
-    
+
     Route::get('students/add', function () {
         return Inertia::render('institution/AddStudent');
     })->name('institution.students.add');
+
+    Route::get('students/{id}/edit', function ($id) {
+        return Inertia::render('institution/EditStudent', ['studentId' => $id]);
+    })->name('institution.students.edit');
 });
 
 // Admin Routes
