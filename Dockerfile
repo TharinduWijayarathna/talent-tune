@@ -31,7 +31,13 @@ RUN npm ci --only=production=false
 COPY . .
 
 # Install PHP dependencies for wayfinder generation
-RUN composer install --no-dev --no-interaction --prefer-dist --no-scripts --quiet || true
+# Using --ignore-platform-reqs to handle potential platform mismatches in Alpine
+# If lock file is incompatible, update dependencies (acceptable in build stage)
+RUN set -e; \
+    if ! composer install --no-interaction --prefer-dist --no-scripts --ignore-platform-reqs; then \
+        echo "Lock file incompatible, updating dependencies for build stage..."; \
+        composer update --no-interaction --prefer-dist --no-scripts --ignore-platform-reqs; \
+    fi
 
 # Build frontend assets
 RUN npm run build
