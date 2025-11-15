@@ -13,6 +13,7 @@ RUN apk add --no-cache \
     php82-phar \
     php82-mbstring \
     php82-xml \
+    php82-dom \
     php82-tokenizer \
     php82-json \
     php82-pdo \
@@ -39,23 +40,9 @@ RUN set -e; \
         composer update --no-interaction --prefer-dist --no-scripts --ignore-platform-reqs; \
     fi
 
-# Set up Laravel environment
-RUN if [ ! -f .env ]; then \
-        echo "APP_NAME=Laravel" > .env && \
-        echo "APP_ENV=local" >> .env && \
-        echo "APP_KEY=" >> .env && \
-        echo "APP_DEBUG=true" >> .env && \
-        echo "APP_URL=http://localhost" >> .env && \
-        echo "LOG_CHANNEL=stack" >> .env && \
-        echo "LOG_LEVEL=debug" >> .env && \
-        echo "DB_CONNECTION=sqlite" >> .env && \
-        echo "DB_DATABASE=/tmp/database.sqlite" >> .env && \
-        echo "CACHE_STORE=file" >> .env && \
-        echo "SESSION_DRIVER=file" >> .env && \
-        echo "QUEUE_CONNECTION=sync" >> .env && \
-        echo "BROADCAST_CONNECTION=log" >> .env && \
-        echo "FILESYSTEM_DISK=local" >> .env && \
-        echo "MAIL_MAILER=log" >> .env; \
+# Set up Laravel environment (copy from .env.example if .env doesn't exist)
+RUN if [ ! -f .env ] && [ -f .env.example ]; then \
+        cp .env.example .env; \
     fi
 
 # Create required directories
@@ -66,11 +53,6 @@ RUN mkdir -p bootstrap/cache \
     /tmp \
     && touch /tmp/database.sqlite \
     && chmod -R 775 bootstrap/cache storage /tmp
-
-# Generate APP_KEY and bootstrap Laravel
-RUN php artisan key:generate --ansi 2>&1 || \
-    php -r "file_put_contents('.env', preg_replace('/^APP_KEY=.*/m', 'APP_KEY=base64:' . base64_encode(random_bytes(32)), file_get_contents('.env')));" && \
-    php artisan key:generate --ansi
 
 # Discover packages and optimize
 RUN php artisan package:discover --ansi && \
