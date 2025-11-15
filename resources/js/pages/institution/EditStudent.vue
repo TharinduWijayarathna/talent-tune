@@ -8,46 +8,52 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Form } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+
+const page = usePage();
+const studentId = (page.url.match(/\/(\d+)\/edit/) || [])[1] || '1';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/institution/dashboard' },
-    { title: 'Add Student', href: '/institution/students/add' },
+    { title: 'Students', href: '/institution/students' },
+    { title: 'Edit Student', href: '#' },
 ];
 
+// Mock data - in real app, this would come from props
 const form = ref({
-    name: '',
-    email: '',
+    name: 'Alice Johnson',
+    email: 'student1@talenttune.com',
+    studentId: 'STU001',
+    batch: 'CS-2024',
+    department: 'Computer Science',
     password: '',
     password_confirmation: '',
-    studentId: '',
-    batch: '',
-    department: '',
 });
 
 const submitForm = () => {
     // In a real app, this would submit to the backend
-    console.log('Submitting student form:', form.value);
-    // After successful submission, redirect to students list
+    console.log('Updating student:', form.value);
+    // After successful update, redirect to students list
     window.location.href = '/institution/students';
 };
 </script>
 
 <template>
-    <Head title="Add Student" />
+    <Head title="Edit Student" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-2xl font-bold">Add Student</h1>
-                    <p class="text-muted-foreground">Register a new student to the system</p>
+                    <h1 class="text-2xl font-bold">Edit Student</h1>
+                    <p class="text-muted-foreground">Update student information</p>
                 </div>
             </div>
 
             <Card class="max-w-2xl">
                 <CardHeader>
                     <CardTitle>Student Information</CardTitle>
-                    <CardDescription>Enter the details of the new student</CardDescription>
+                    <CardDescription>Update the details of the student</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Form @submit.prevent="submitForm" class="space-y-4">
@@ -104,33 +110,36 @@ const submitForm = () => {
                             />
                         </div>
 
-                        <div class="grid gap-4 md:grid-cols-2">
-                            <div class="space-y-2">
-                                <Label for="password">Password *</Label>
-                                <Input
-                                    id="password"
-                                    v-model="form.password"
-                                    type="password"
-                                    required
-                                />
-                            </div>
-                            <div class="space-y-2">
-                                <Label for="password_confirmation">Confirm Password *</Label>
-                                <Input
-                                    id="password_confirmation"
-                                    v-model="form.password_confirmation"
-                                    type="password"
-                                    required
-                                />
+                        <div class="border-t pt-4">
+                            <h3 class="text-sm font-medium mb-4">Change Password (Optional)</h3>
+                            <div class="grid gap-4 md:grid-cols-2">
+                                <div class="space-y-2">
+                                    <Label for="password">New Password</Label>
+                                    <Input
+                                        id="password"
+                                        v-model="form.password"
+                                        type="password"
+                                        placeholder="Leave blank to keep current password"
+                                    />
+                                </div>
+                                <div class="space-y-2">
+                                    <Label for="password_confirmation">Confirm Password</Label>
+                                    <Input
+                                        id="password_confirmation"
+                                        v-model="form.password_confirmation"
+                                        type="password"
+                                        placeholder="Confirm new password"
+                                    />
+                                </div>
                             </div>
                         </div>
 
                         <div class="flex justify-end gap-4 pt-4">
-                            <Button type="button" variant="outline">
-                                Cancel
+                            <Button type="button" variant="outline" as-child>
+                                <a href="/institution/students">Cancel</a>
                             </Button>
                             <Button type="submit">
-                                Add Student
+                                Update Student
                             </Button>
                         </div>
                     </Form>

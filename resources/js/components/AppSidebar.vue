@@ -22,9 +22,7 @@ import {
     FileText, 
     Plus,
     Users,
-    UserPlus,
-    Shield,
-    Building2
+    Shield
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
@@ -86,16 +84,6 @@ const mainNavItems = computed<NavItem[]>(() => {
                 title: 'Dashboard',
                 href: '/institution/dashboard',
                 icon: LayoutGrid,
-            },
-            {
-                title: 'Add Lecturer',
-                href: '/institution/lecturers/add',
-                icon: UserPlus,
-            },
-            {
-                title: 'Add Student',
-                href: '/institution/students/add',
-                icon: UserPlus,
             },
             {
                 title: 'Lecturers',
