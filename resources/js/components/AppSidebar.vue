@@ -13,24 +13,129 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-vue-next';
+import { Link, usePage } from '@inertiajs/vue3';
+import { 
+    LayoutGrid, 
+    BookOpen, 
+    Award, 
+    GraduationCap, 
+    FileText, 
+    Plus,
+    Users,
+    UserPlus,
+    Shield,
+    Building2
+} from 'lucide-vue-next';
+import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-];
+const page = usePage();
+
+// Determine role based on user's role from auth data
+const currentRole = computed(() => {
+    const user = page.props.auth?.user as any;
+    return user?.role || null;
+});
+
+const mainNavItems = computed<NavItem[]>(() => {
+    const role = currentRole.value;
+    
+    if (role === 'student') {
+        return [
+            {
+                title: 'Dashboard',
+                href: '/student/dashboard',
+                icon: LayoutGrid,
+            },
+            {
+                title: 'Viva Sessions',
+                href: '/student/vivas',
+                icon: BookOpen,
+            },
+            {
+                title: 'Marks',
+                href: '/student/marks',
+                icon: Award,
+            },
+        ];
+    }
+    
+    if (role === 'lecturer') {
+        return [
+            {
+                title: 'Dashboard',
+                href: '/lecturer/dashboard',
+                icon: LayoutGrid,
+            },
+            {
+                title: 'Create Viva',
+                href: '/lecturer/vivas/create',
+                icon: Plus,
+            },
+            {
+                title: 'My Sessions',
+                href: '/lecturer/vivas',
+                icon: FileText,
+            },
+        ];
+    }
+    
+    if (role === 'institution') {
+        return [
+            {
+                title: 'Dashboard',
+                href: '/institution/dashboard',
+                icon: LayoutGrid,
+            },
+            {
+                title: 'Add Lecturer',
+                href: '/institution/lecturers/add',
+                icon: UserPlus,
+            },
+            {
+                title: 'Add Student',
+                href: '/institution/students/add',
+                icon: UserPlus,
+            },
+            {
+                title: 'Lecturers',
+                href: '/institution/lecturers',
+                icon: Users,
+            },
+            {
+                title: 'Students',
+                href: '/institution/students',
+                icon: GraduationCap,
+            },
+        ];
+    }
+    
+    if (role === 'admin') {
+        return [
+            {
+                title: 'Dashboard',
+                href: '/admin/dashboard',
+                icon: LayoutGrid,
+            },
+            {
+                title: 'Monitor',
+                href: '/admin/dashboard',
+                icon: Shield,
+            },
+        ];
+    }
+    
+    // Default navigation
+    return [
+        {
+            title: 'Dashboard',
+            href: dashboard(),
+            icon: LayoutGrid,
+        },
+    ];
+});
 
 const footerNavItems: NavItem[] = [
-    {
-        title: 'Github Repo',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: Folder,
-    },
     {
         title: 'Documentation',
         href: 'https://laravel.com/docs/starter-kits#vue',
@@ -45,7 +150,7 @@ const footerNavItems: NavItem[] = [
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
-                        <Link :href="dashboard()">
+                        <Link :href="mainNavItems[0]?.href || dashboard()">
                             <AppLogo />
                         </Link>
                     </SidebarMenuButton>

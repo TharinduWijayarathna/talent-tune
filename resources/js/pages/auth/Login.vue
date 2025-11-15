@@ -11,12 +11,24 @@ import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 import { Form, Head } from '@inertiajs/vue3';
+import { ref } from 'vue';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { GraduationCap, User, Building2, Shield } from 'lucide-vue-next';
 
 defineProps<{
     status?: string;
     canResetPassword: boolean;
     canRegister: boolean;
 }>();
+
+const selectedRole = ref<'student' | 'lecturer' | 'institution' | 'admin' | null>(null);
+
+const roles = [
+    { value: 'student', label: 'Student', icon: GraduationCap, description: 'Access viva sessions and view marks' },
+    { value: 'lecturer', label: 'Lecturer', icon: User, description: 'Create viva sessions and manage materials' },
+    { value: 'institution', label: 'Institution', icon: Building2, description: 'Manage lecturers and students' },
+    { value: 'admin', label: 'Admin', icon: Shield, description: 'Monitor all activities' },
+];
 </script>
 
 <template>
@@ -33,12 +45,55 @@ defineProps<{
             {{ status }}
         </div>
 
+        <div v-if="!selectedRole" class="space-y-4">
+            <div class="text-center text-sm text-muted-foreground mb-6">
+                Select your role to continue
+            </div>
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <Card
+                    v-for="role in roles"
+                    :key="role.value"
+                    class="cursor-pointer transition-all hover:border-primary hover:shadow-md"
+                    :class="{ 'border-primary ring-2 ring-primary': selectedRole === role.value }"
+                    @click="selectedRole = role.value as any"
+                >
+                    <CardHeader class="pb-3">
+                        <div class="flex items-center gap-3">
+                            <component :is="role.icon" class="h-5 w-5 text-primary" />
+                            <CardTitle class="text-base">{{ role.label }}</CardTitle>
+                        </div>
+                        <CardDescription class="text-xs mt-2">
+                            {{ role.description }}
+                        </CardDescription>
+                    </CardHeader>
+                </Card>
+            </div>
+        </div>
+
         <Form
+            v-else
             v-bind="store.form()"
             :reset-on-success="['password']"
             v-slot="{ errors, processing }"
             class="flex flex-col gap-6"
         >
+            <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                    <component :is="roles.find(r => r.value === selectedRole)?.icon" class="h-4 w-4" />
+                    <span class="text-sm font-medium">{{ roles.find(r => r.value === selectedRole)?.label }}</span>
+                </div>
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    @click="selectedRole = null"
+                >
+                    Change Role
+                </Button>
+            </div>
+
+            <input type="hidden" name="role" :value="selectedRole" />
+
             <div class="grid gap-6">
                 <div class="grid gap-2">
                     <Label for="email">Email address</Label>
