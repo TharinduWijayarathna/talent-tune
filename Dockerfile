@@ -16,6 +16,9 @@ RUN apk add --no-cache \
     php82-xml \
     php82-tokenizer \
     php82-json \
+    php82-pdo \
+    php82-pdo_sqlite \
+    sqlite \
     && ln -s /usr/bin/php82 /usr/bin/php
 
 # Install Composer
@@ -39,8 +42,66 @@ RUN set -e; \
         composer update --no-interaction --prefer-dist --no-scripts --ignore-platform-reqs; \
     fi
 
-# Build frontend assets
-RUN npm run build
+# Set up minimal Laravel environment for wayfinder
+# Create .env file with minimal required configuration
+RUN if [ ! -f .env ]; then \
+        echo "APP_NAME=Laravel" > .env && \
+        echo "APP_ENV=local" >> .env && \
+        echo "APP_KEY=" >> .env && \
+        echo "APP_DEBUG=true" >> .env && \
+        echo "APP_URL=http://localhost" >> .env && \
+        echo "LOG_CHANNEL=stack" >> .env && \
+        echo "LOG_LEVEL=debug" >> .env && \
+        echo "DB_CONNECTION=sqlite" >> .env && \
+        echo "DB_DATABASE=/tmp/database.sqlite" >> .env && \
+        echo "CACHE_STORE=file" >> .env && \
+        echo "SESSION_DRIVER=file" >> .env && \
+        echo "QUEUE_CONNECTION=sync" >> .env && \
+        echo "BROADCAST_CONNECTION=log" >> .env && \
+        echo "FILESYSTEM_DISK=local" >> .env && \
+        echo "MAIL_MAILER=log" >> .env; \
+    fi
+
+# Ensure bootstrap/cache and storage directories exist and are writable
+RUN mkdir -p bootstrap/cache \
+    storage/framework/cache/data \
+    storage/framework/sessions \
+    storage/framework/views \
+    storage/logs \
+    /tmp \
+    && chmod -R 775 bootstrap/cache storage /tmp
+
+# Create temporary SQLite database for Laravel bootstrap
+RUN touch /tmp/database.sqlite && chmod 666 /tmp/database.sqlite
+
+# Run composer scripts to set up Laravel (package discovery, etc.)
+RUN composer dump-autoload --optimize --classmap-authoritative || true
+
+# Generate APP_KEY using PHP (more reliable in Alpine)
+RUN php -r "\$env = file_get_contents('.env'); \$key = 'base64:' . base64_encode(random_bytes(32)); \$env = preg_replace('/^APP_KEY=.*/m', 'APP_KEY=' . \$key, \$env); file_put_contents('.env', \$env);" 2>&1 || true
+RUN php artisan key:generate --ansi 2>&1 || true
+
+# Clear any cached config to ensure fresh bootstrap
+RUN php artisan config:clear 2>&1 || true
+
+# Discover packages (needed for wayfinder to work)
+RUN php artisan package:discover --ansi 2>&1 || true
+
+# Create wayfinder output directories
+RUN mkdir -p resources/js/wayfinder resources/js/routes resources/js/actions
+
+# Pre-generate wayfinder types to ensure it works before vite build
+# This helps identify issues early and ensures the command works during vite build
+RUN echo "=== Pre-generating wayfinder types ===" && \
+    php artisan wayfinder:generate --with-form 2>&1 && \
+    echo "=== Wayfinder generation completed successfully ===" || \
+    (echo "=== ERROR: wayfinder:generate failed ===" && \
+     php artisan wayfinder:generate --with-form 2>&1 && \
+     exit 1)
+
+# Build frontend assets (wayfinder plugin will regenerate, but should work now)
+RUN echo "=== Starting Vite build ===" && \
+    npm run build 2>&1
 
 # Stage 2: PHP production image with Nginx and PHP-FPM
 FROM php:8.2-fpm
