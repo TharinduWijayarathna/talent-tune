@@ -5,14 +5,33 @@ FROM node:22-alpine AS node-builder
 
 WORKDIR /app
 
+# Install PHP and required extensions for wayfinder plugin
+RUN apk add --no-cache \
+    php82 \
+    php82-common \
+    php82-cli \
+    php82-openssl \
+    php82-phar \
+    php82-mbstring \
+    php82-xml \
+    php82-tokenizer \
+    php82-json \
+    && ln -s /usr/bin/php82 /usr/bin/php
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
 # Copy package files
 COPY package*.json ./
 
 # Install Node.js dependencies
 RUN npm ci --only=production=false
 
-# Copy application files needed for build
+# Copy all application files (needed for wayfinder plugin)
 COPY . .
+
+# Install PHP dependencies for wayfinder generation
+RUN composer install --no-dev --no-interaction --prefer-dist --no-scripts --quiet || true
 
 # Build frontend assets
 RUN npm run build
@@ -46,7 +65,7 @@ RUN a2enmod rewrite
 RUN sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
 
 # Set Apache document root to public directory
-ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
