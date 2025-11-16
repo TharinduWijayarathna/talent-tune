@@ -34,35 +34,83 @@ const timeElapsed = ref(0);
 const isSpeaking = ref(false);
 const speechRecognition: any = ref(null);
 const recognitionActive = ref(false);
+const isLoadingQuestions = ref(false);
+const questionIndex = ref(0);
+const answers = ref<Array<{question: string, answer: string, evaluation?: any}>>([]);
+const currentEvaluation = ref<any>(null);
+const showEvaluation = ref(false);
 
 const page = usePage();
 const csrfToken = computed(() => (page.props as any).csrfToken || '');
 
-// Mock questions - in real app, these would come from the backend
-const mockQuestions = [
-    'What is a database?',
-    'Explain the difference between SQL and NoSQL databases.',
-    'What is normalization in database design?',
-    'Describe the ACID properties of database transactions.',
-    'What are indexes and why are they important?',
-];
-
 let timerInterval: ReturnType<typeof setInterval> | null = null;
 let currentAudio: HTMLAudioElement | null = null;
 
-const startSession = () => {
+const generateQuestions = async () => {
+    isLoadingQuestions.value = true;
+
+    try {
+        const response = await fetch('/api/viva/questions/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken.value,
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                topic: vivaSession.title,
+                description: vivaSession.title + ' viva session',
+                numQuestions: 5,
+                difficulty: 'intermediate',
+            }),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: 'Failed to generate questions' }));
+            throw new Error(errorData.error || 'Failed to generate questions');
+        }
+
+        const data = await response.json();
+        questions.value = data.questions || [];
+
+        if (questions.value.length === 0) {
+            throw new Error('No questions generated');
+        }
+
+        questionIndex.value = 0;
+        currentQuestion.value = questions.value[0];
+        answers.value = [];
+
+        return true;
+    } catch (error: any) {
+        alert(`Error generating questions: ${error.message}\n\nPlease try again or contact support.`);
+        return false;
+    } finally {
+        isLoadingQuestions.value = false;
+    }
+};
+
+const startSession = async () => {
+    // Generate questions using Gemini AI
+    const questionsGenerated = await generateQuestions();
+
+    if (!questionsGenerated) {
+        return;
+    }
+
     sessionActive.value = true;
     timeElapsed.value = 0;
-    questions.value = [...mockQuestions];
-    currentQuestion.value = questions.value[0];
+    showEvaluation.value = false;
+    currentEvaluation.value = null;
 
     // Start timer
     timerInterval = setInterval(() => {
         timeElapsed.value++;
     }, 1000);
 
-    // Simulate voice agent speaking
-    speakQuestion(currentQuestion.value);
+    // Start with first question
+    speakQuestion(currentQuestion.value!);
 };
 
 const stopSession = () => {
@@ -302,62 +350,88 @@ const stopRecording = () => {
     recognitionActive.value = false;
 };
 
-// Send answer to backend (prepared for backend integration)
-const sendAnswerToBackend = async (question: string, answerText: string) => {
-    // This will be implemented when backend is ready
-    const payload = {
-        vivaId: vivaSession.id,
-        question: question,
-        answer: answerText,
-        timestamp: new Date().toISOString(),
-    };
+// Evaluate answer using Gemini AI
+const evaluateAnswer = async (question: string, answerText: string) => {
+    try {
+        const response = await fetch('/api/viva/answer/evaluate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken.value,
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                question: question,
+                answer: answerText,
+                topic: vivaSession.title,
+            }),
+        });
 
-    // TODO: Uncomment when backend is ready
-    // try {
-    //     const response = await fetch('/api/viva/answer', {
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/json',
-    //             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-    //         },
-    //         body: JSON.stringify(payload),
-    //     });
-    //
-    //     if (!response.ok) {
-    //         throw new Error('Failed to submit answer');
-    //     }
-    //
-    //     return await response.json();
-    // } catch (error) {
-    //     throw error;
-    // }
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: 'Failed to evaluate answer' }));
+            throw new Error(errorData.error || 'Failed to evaluate answer');
+        }
+
+        const evaluation = await response.json();
+        return evaluation;
+    } catch (error: any) {
+        // Return a default evaluation if API fails
+        return {
+            score: 0,
+            feedback: 'Could not evaluate answer automatically. Please review manually.',
+            correctPoints: [],
+            improvements: [],
+        };
+    }
 };
 
 const submitAnswer = async () => {
-    if (!answer.value.trim()) return;
+    if (!answer.value.trim() || !currentQuestion.value) return;
 
     // Stop recording if active
     stopRecording();
 
-    // Send answer to backend
-    try {
-        await sendAnswerToBackend(currentQuestion.value!, answer.value);
-    } catch (error) {
-        // Continue even if backend fails (for now)
-    }
+    // Show loading state
+    const loadingMessage = showEvaluation.value ? 'Evaluating answer...' : '';
 
-    // Move to next question
-    const currentIndex = questions.value.indexOf(currentQuestion.value!);
-    if (currentIndex < questions.value.length - 1) {
-        currentQuestion.value = questions.value[currentIndex + 1];
-        answer.value = '';
-        // Speak the next question
-        speakQuestion(currentQuestion.value);
-    } else {
-        // All questions answered
-        stopSession();
-        alert('Viva session completed! Your answers have been submitted.');
-    }
+    // Evaluate answer using Gemini AI
+    const evaluation = await evaluateAnswer(currentQuestion.value, answer.value);
+
+    // Store answer and evaluation
+    answers.value.push({
+        question: currentQuestion.value,
+        answer: answer.value,
+        evaluation: evaluation,
+    });
+
+    // Show evaluation
+    currentEvaluation.value = evaluation;
+    showEvaluation.value = true;
+
+    // Move to next question after a delay
+    setTimeout(() => {
+        questionIndex.value++;
+
+        if (questionIndex.value < questions.value.length) {
+            currentQuestion.value = questions.value[questionIndex.value];
+            answer.value = '';
+            showEvaluation.value = false;
+            currentEvaluation.value = null;
+            // Speak the next question
+            speakQuestion(currentQuestion.value);
+        } else {
+            // All questions answered
+            stopSession();
+            showEvaluation.value = false;
+
+            // Calculate total score
+            const totalScore = answers.value.reduce((sum, item) => sum + (item.evaluation?.score || 0), 0);
+            const averageScore = Math.round(totalScore / answers.value.length);
+
+            alert(`Viva session completed!\n\nAverage Score: ${averageScore}/100\n\nYour answers have been evaluated and saved.`);
+        }
+    }, 3000); // Show evaluation for 3 seconds before moving to next question
 };
 
 const formatTime = (seconds: number) => {
@@ -444,6 +518,31 @@ onUnmounted(() => {
                             </div>
                         </div>
 
+                        <!-- Evaluation Result -->
+                        <div v-if="showEvaluation && currentEvaluation" class="rounded-lg border-2 border-primary bg-primary/5 p-4 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <div class="text-sm font-medium">Answer Evaluation</div>
+                                <Badge :variant="currentEvaluation.score >= 70 ? 'default' : currentEvaluation.score >= 50 ? 'secondary' : 'destructive'">
+                                    Score: {{ currentEvaluation.score }}/100
+                                </Badge>
+                            </div>
+                            <div class="text-sm text-muted-foreground">
+                                {{ currentEvaluation.feedback }}
+                            </div>
+                            <div v-if="currentEvaluation.correctPoints && currentEvaluation.correctPoints.length > 0" class="space-y-1">
+                                <div class="text-xs font-medium text-green-600">✓ Correct Points:</div>
+                                <ul class="text-xs text-muted-foreground list-disc list-inside space-y-0.5">
+                                    <li v-for="(point, idx) in currentEvaluation.correctPoints" :key="idx">{{ point }}</li>
+                                </ul>
+                            </div>
+                            <div v-if="currentEvaluation.improvements && currentEvaluation.improvements.length > 0" class="space-y-1">
+                                <div class="text-xs font-medium text-orange-600">⚠ Areas for Improvement:</div>
+                                <ul class="text-xs text-muted-foreground list-disc list-inside space-y-0.5">
+                                    <li v-for="(improvement, idx) in currentEvaluation.improvements" :key="idx">{{ improvement }}</li>
+                                </ul>
+                            </div>
+                        </div>
+
                         <!-- Current Question -->
                         <div v-if="currentQuestion" class="space-y-4">
                             <div class="rounded-lg bg-muted p-4">
@@ -475,12 +574,17 @@ onUnmounted(() => {
                             <div class="flex gap-2">
                                 <Button
                                     @click="submitAnswer"
-                                    :disabled="!answer.trim() || !sessionActive"
+                                    :disabled="!answer.trim() || !sessionActive || showEvaluation"
                                     class="flex-1"
                                 >
-                                    Submit Answer
+                                    <span v-if="showEvaluation">Evaluating...</span>
+                                    <span v-else>Submit Answer</span>
                                 </Button>
                             </div>
+                        </div>
+
+                        <div v-else-if="isLoadingQuestions" class="text-center text-muted-foreground py-8">
+                            <p>Generating questions using AI...</p>
                         </div>
 
                         <div v-else class="text-center text-muted-foreground py-8">
@@ -493,9 +597,11 @@ onUnmounted(() => {
                                 v-if="!sessionActive"
                                 @click="startSession"
                                 size="lg"
+                                :disabled="isLoadingQuestions"
                             >
                                 <Play class="h-4 w-4 mr-2" />
-                                Start Session
+                                <span v-if="isLoadingQuestions">Generating Questions...</span>
+                                <span v-else>Start Session</span>
                             </Button>
                             <Button
                                 v-else
@@ -524,7 +630,7 @@ onUnmounted(() => {
                         <div>
                             <div class="text-sm font-medium mb-1">Questions</div>
                             <div class="text-2xl font-bold">
-                                {{ questions.length - (questions.length - (questions.indexOf(currentQuestion || '') + 1)) }}/{{ questions.length }}
+                                {{ questionIndex + 1 }}/{{ questions.length }}
                             </div>
                         </div>
 
@@ -536,9 +642,9 @@ onUnmounted(() => {
                                     :key="index"
                                     class="text-xs p-2 rounded border"
                                     :class="{
-                                        'bg-primary/10 border-primary': question === currentQuestion,
-                                        'bg-muted': questions.indexOf(currentQuestion || '') > index,
-                                        'opacity-50': questions.indexOf(currentQuestion || '') < index,
+                                        'bg-primary/10 border-primary': index === questionIndex,
+                                        'bg-muted': questionIndex > index,
+                                        'opacity-50': questionIndex < index,
                                     }"
                                 >
                                     Q{{ index + 1 }}: {{ question.substring(0, 40) }}...

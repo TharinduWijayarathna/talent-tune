@@ -105,4 +105,13 @@ Route::post('api/viva/tts', [App\Http\Controllers\Viva\TTSController::class, 'ge
     ->middleware(['auth'])
     ->name('viva.tts');
 
+// Viva Gemini AI API Routes
+Route::prefix('api/viva')->middleware(['auth'])->group(function () {
+    Route::post('questions/generate', [App\Http\Controllers\Viva\GeminiController::class, 'generateQuestions'])
+        ->name('viva.questions.generate');
+    
+    Route::post('answer/evaluate', [App\Http\Controllers\Viva\GeminiController::class, 'evaluateAnswer'])
+        ->name('viva.answer.evaluate');
+});
+
 require __DIR__.'/settings.php';
