@@ -428,14 +428,12 @@ onUnmounted(() => {
                                     class="flex items-center justify-center"
                                 >
                                     <Volume2 class="h-12 w-12 text-primary animate-pulse" />
-                                    <span class="ml-2 text-sm text-muted-foreground">Speaking...</span>
                                 </div>
                                 <div
                                     v-else-if="isRecording"
                                     class="flex items-center justify-center"
                                 >
                                     <Mic class="h-12 w-12 text-green-500 animate-pulse" />
-                                    <span class="ml-2 text-sm text-muted-foreground">Listening...</span>
                                 </div>
                                 <div
                                     v-else
