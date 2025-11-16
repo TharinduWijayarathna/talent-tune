@@ -6,7 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Mic, MicOff, Volume2, Pause, Play, Square } from 'lucide-vue-next';
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/student/dashboard' },
@@ -30,6 +31,12 @@ const answer = ref('');
 const questions = ref<string[]>([]);
 const sessionActive = ref(false);
 const timeElapsed = ref(0);
+const isSpeaking = ref(false);
+const speechRecognition: any = ref(null);
+const recognitionActive = ref(false);
+
+const page = usePage();
+const csrfToken = computed(() => (page.props as any).csrfToken || '');
 
 // Mock questions - in real app, these would come from the backend
 const mockQuestions = [
@@ -41,13 +48,14 @@ const mockQuestions = [
 ];
 
 let timerInterval: ReturnType<typeof setInterval> | null = null;
+let currentAudio: HTMLAudioElement | null = null;
 
 const startSession = () => {
     sessionActive.value = true;
     timeElapsed.value = 0;
     questions.value = [...mockQuestions];
     currentQuestion.value = questions.value[0];
-    
+
     // Start timer
     timerInterval = setInterval(() => {
         timeElapsed.value++;
@@ -59,32 +67,291 @@ const startSession = () => {
 
 const stopSession = () => {
     sessionActive.value = false;
-    isRecording.value = false;
+    stopRecording();
     isListening.value = false;
+    isSpeaking.value = false;
+
+    // Stop any ongoing Google TTS audio
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+    }
+
     if (timerInterval) {
         clearInterval(timerInterval);
         timerInterval = null;
     }
 };
 
-const speakQuestion = (question: string) => {
+// Google Cloud Text-to-Speech API Integration
+const speakQuestion = async (question: string) => {
     isListening.value = true;
-    // In a real app, this would use Web Speech API or a backend service
-    // For now, we'll just show the question
-    setTimeout(() => {
+    isSpeaking.value = true;
+
+    try {
+        // Call backend endpoint that uses Google Cloud TTS API
+        // The backend will handle the Google TTS API call and return audio
+        const response = await fetch('/api/viva/tts', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken.value,
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'audio/wav',
+            },
+            credentials: 'same-origin', // Important: include cookies for CSRF
+            body: JSON.stringify({
+                text: question,
+                languageCode: 'en-us',
+                voiceName: 'Achernar',
+                modelName: 'gemini-2.5-flash-lite-preview-tts',
+                prompt: 'Read aloud in a warm, welcoming tone.',
+                audioEncoding: 'LINEAR16',
+                speakingRate: 1,
+                pitch: 0,
+            }),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+
+            // Extract user-friendly error message
+            const errorMessage = errorData.error || `Failed to generate speech: ${response.status} ${response.statusText}`;
+            const errorCode = errorData.code || response.status;
+
+            throw new Error(errorMessage);
+        }
+
+        // Check if response is actually audio
+        const contentType = response.headers.get('content-type');
+
+        if (!contentType || !contentType.includes('audio')) {
+            const errorText = await response.text();
+            throw new Error('Server did not return audio content');
+        }
+
+        // Get audio blob from response
+        const audioBlob = await response.blob();
+
+        if (audioBlob.size === 0) {
+            throw new Error('Received empty audio file');
+        }
+
+        const audioUrl = URL.createObjectURL(audioBlob);
+
+        // Stop any currently playing audio
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio = null;
+        }
+
+        // Create audio element and play
+        const audio = new Audio(audioUrl);
+        currentAudio = audio;
+
+        audio.onplay = () => {
+            isListening.value = true;
+            isSpeaking.value = true;
+        };
+
+        audio.onended = () => {
+            isListening.value = false;
+            isSpeaking.value = false;
+            // Clean up the object URL
+            URL.revokeObjectURL(audioUrl);
+            currentAudio = null;
+            // Start recording after question is spoken
+            startRecording();
+        };
+
+        audio.onerror = () => {
+            isListening.value = false;
+            isSpeaking.value = false;
+            URL.revokeObjectURL(audioUrl);
+            currentAudio = null;
+            alert('Error playing audio. Please try again.');
+            startRecording(); // Allow manual input
+        };
+
+        // Play the audio
+        await audio.play();
+
+    } catch (error: any) {
         isListening.value = false;
-        isRecording.value = true;
-    }, 2000);
+        isSpeaking.value = false;
+
+        // Show detailed error to user
+        const errorMsg = error.message || 'Unknown error';
+        const is403Error = errorMsg.includes('403') || errorMsg.includes('access denied') || errorMsg.includes('blocked');
+        const isVertexAIError = errorMsg.includes('Vertex AI') || errorMsg.includes('aiplatform');
+
+        if (is403Error && isVertexAIError) {
+            // Extract activation URL from error if available
+            const urlMatch = errorMsg.match(/https:\/\/[^\s]+/);
+            const activationUrl = urlMatch ? urlMatch[0] : null;
+
+            let message = `Vertex AI API Required\n\n${errorMsg}\n\nTo fix this:\n1. Go to Google Cloud Console\n2. Enable "Vertex AI API" (required for Gemini TTS model)\n3. Also enable "Cloud Text-to-Speech API"\n4. Wait a few minutes for changes to propagate\n5. Ensure billing is enabled`;
+
+            if (activationUrl) {
+                message += `\n\nOr click here to enable directly:\n${activationUrl}`;
+            }
+
+            message += `\n\nYou can still read the question and type your answer.`;
+
+            alert(message);
+        } else if (is403Error) {
+            alert(`Google TTS API Access Denied\n\n${errorMsg}\n\nTo fix this:\n1. Go to Google Cloud Console\n2. Enable "Cloud Text-to-Speech API"\n3. Enable "Vertex AI API" (required for Gemini models)\n4. Ensure your API key has the correct permissions\n5. Check that billing is enabled for your project\n\nYou can still read the question and type your answer.`);
+        } else {
+            alert(`Error generating speech: ${errorMsg}\n\nPlease check:\n1. Google TTS API key is configured in .env\n2. API key has proper permissions\n3. Check browser console for details\n\nYou can still read the question and type your answer.`);
+        }
+
+        // Don't use fallback - just allow manual input
+        // User can still type their answer
+        startRecording();
+    }
 };
 
-const submitAnswer = () => {
+// Removed fallback to browser TTS - we only use Google TTS API
+// If Google TTS fails, user can still read the question and type their answer
+
+// Initialize Web Speech Recognition API
+const initializeSpeechRecognition = () => {
+    // Check if browser supports speech recognition
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+        return null;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    recognition.onstart = () => {
+        recognitionActive.value = true;
+        isRecording.value = true;
+    };
+
+    recognition.onresult = (event: any) => {
+        let interimTranscript = '';
+        let finalTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+                finalTranscript += transcript + ' ';
+            } else {
+                interimTranscript += transcript;
+            }
+        }
+
+        // Update answer with both interim and final transcripts
+        if (finalTranscript) {
+            answer.value = (answer.value + ' ' + finalTranscript).trim();
+        } else if (interimTranscript) {
+            // Show interim results (optional - you can remove this if you only want final)
+            // answer.value = interimTranscript;
+        }
+    };
+
+    recognition.onerror = () => {
+        isRecording.value = false;
+        recognitionActive.value = false;
+    };
+
+    recognition.onend = () => {
+        recognitionActive.value = false;
+        isRecording.value = false;
+    };
+
+    return recognition;
+};
+
+// Start recording student's speech
+const startRecording = () => {
+    if (!speechRecognition.value) {
+        speechRecognition.value = initializeSpeechRecognition();
+    }
+
+    if (speechRecognition.value) {
+        try {
+            speechRecognition.value.start();
+            isRecording.value = true;
+        } catch (error) {
+            // If recognition is already running, stop and restart
+            if (recognitionActive.value) {
+                speechRecognition.value.stop();
+                setTimeout(() => {
+                    speechRecognition.value?.start();
+                }, 100);
+            }
+        }
+    } else {
+        // Fallback: manual text input only
+        isRecording.value = true;
+    }
+};
+
+// Stop recording
+const stopRecording = () => {
+    if (speechRecognition.value && recognitionActive.value) {
+        speechRecognition.value.stop();
+    }
+    isRecording.value = false;
+    recognitionActive.value = false;
+};
+
+// Send answer to backend (prepared for backend integration)
+const sendAnswerToBackend = async (question: string, answerText: string) => {
+    // This will be implemented when backend is ready
+    const payload = {
+        vivaId: vivaSession.id,
+        question: question,
+        answer: answerText,
+        timestamp: new Date().toISOString(),
+    };
+
+    // TODO: Uncomment when backend is ready
+    // try {
+    //     const response = await fetch('/api/viva/answer', {
+    //         method: 'POST',
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+    //         },
+    //         body: JSON.stringify(payload),
+    //     });
+    //
+    //     if (!response.ok) {
+    //         throw new Error('Failed to submit answer');
+    //     }
+    //
+    //     return await response.json();
+    // } catch (error) {
+    //     throw error;
+    // }
+};
+
+const submitAnswer = async () => {
     if (!answer.value.trim()) return;
-    
+
+    // Stop recording if active
+    stopRecording();
+
+    // Send answer to backend
+    try {
+        await sendAnswerToBackend(currentQuestion.value!, answer.value);
+    } catch (error) {
+        // Continue even if backend fails (for now)
+    }
+
     // Move to next question
     const currentIndex = questions.value.indexOf(currentQuestion.value!);
     if (currentIndex < questions.value.length - 1) {
         currentQuestion.value = questions.value[currentIndex + 1];
         answer.value = '';
+        // Speak the next question
         speakQuestion(currentQuestion.value);
     } else {
         // All questions answered
@@ -99,9 +366,26 @@ const formatTime = (seconds: number) => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 };
 
+onMounted(() => {
+    // Initialize speech recognition on component mount
+    speechRecognition.value = initializeSpeechRecognition();
+});
+
 onUnmounted(() => {
+    // Cleanup
     if (timerInterval) {
         clearInterval(timerInterval);
+    }
+
+    // Stop any playing audio
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+    }
+
+    // Stop speech recognition
+    if (speechRecognition.value && recognitionActive.value) {
+        speechRecognition.value.stop();
     }
 });
 </script>
@@ -134,22 +418,24 @@ onUnmounted(() => {
                             <div
                                 class="relative flex h-32 w-32 items-center justify-center rounded-full border-4 transition-all"
                                 :class="{
-                                    'border-primary bg-primary/10 animate-pulse': isListening,
-                                    'border-muted': !isListening && !isRecording,
-                                    'border-green-500 bg-green-500/10': isRecording && !isListening,
+                                    'border-primary bg-primary/10 animate-pulse': isListening || isSpeaking,
+                                    'border-muted': !isListening && !isRecording && !isSpeaking,
+                                    'border-green-500 bg-green-500/10': isRecording && !isListening && !isSpeaking,
                                 }"
                             >
                                 <div
-                                    v-if="isListening"
+                                    v-if="isListening || isSpeaking"
                                     class="flex items-center justify-center"
                                 >
                                     <Volume2 class="h-12 w-12 text-primary animate-pulse" />
+                                    <span class="ml-2 text-sm text-muted-foreground">Speaking...</span>
                                 </div>
                                 <div
                                     v-else-if="isRecording"
                                     class="flex items-center justify-center"
                                 >
                                     <Mic class="h-12 w-12 text-green-500 animate-pulse" />
+                                    <span class="ml-2 text-sm text-muted-foreground">Listening...</span>
                                 </div>
                                 <div
                                     v-else
@@ -168,12 +454,24 @@ onUnmounted(() => {
                             </div>
 
                             <div class="space-y-2">
-                                <label class="text-sm font-medium">Your Answer:</label>
+                                <div class="flex items-center justify-between">
+                                    <label class="text-sm font-medium">Your Answer:</label>
+                                    <div v-if="isRecording" class="flex items-center gap-2 text-xs text-green-600">
+                                        <div class="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
+                                        Recording...
+                                    </div>
+                                </div>
                                 <textarea
                                     v-model="answer"
                                     class="w-full min-h-[120px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                                    placeholder="Type or speak your answer here..."
+                                    placeholder="Type or speak your answer here... (Speech recognition will automatically transcribe your voice)"
+                                    :disabled="isSpeaking"
                                 />
+                                <p class="text-xs text-muted-foreground">
+                                    <span v-if="isSpeaking">Please wait while the question is being spoken...</span>
+                                    <span v-else-if="isRecording">Speak your answer now. It will be transcribed automatically.</span>
+                                    <span v-else>You can type your answer or click to start voice recording.</span>
+                                </p>
                             </div>
 
                             <div class="flex gap-2">

@@ -100,4 +100,9 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
     })->name('admin.dashboard');
 });
 
+// Viva TTS API Route
+Route::post('api/viva/tts', [App\Http\Controllers\Viva\TTSController::class, 'generate'])
+    ->middleware(['auth'])
+    ->name('viva.tts');
+
 require __DIR__.'/settings.php';
