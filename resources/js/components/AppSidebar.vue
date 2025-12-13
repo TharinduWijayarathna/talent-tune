@@ -14,12 +14,12 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { 
-    LayoutGrid, 
-    BookOpen, 
-    Award, 
-    GraduationCap, 
-    FileText, 
+import {
+    LayoutGrid,
+    BookOpen,
+    Award,
+    GraduationCap,
+    FileText,
     Plus,
     Users,
     Shield
@@ -37,7 +37,7 @@ const currentRole = computed(() => {
 
 const mainNavItems = computed<NavItem[]>(() => {
     const role = currentRole.value;
-    
+
     if (role === 'student') {
         return [
             {
@@ -57,7 +57,7 @@ const mainNavItems = computed<NavItem[]>(() => {
             },
         ];
     }
-    
+
     if (role === 'lecturer') {
         return [
             {
@@ -77,7 +77,7 @@ const mainNavItems = computed<NavItem[]>(() => {
             },
         ];
     }
-    
+
     if (role === 'institution') {
         return [
             {
@@ -97,7 +97,7 @@ const mainNavItems = computed<NavItem[]>(() => {
             },
         ];
     }
-    
+
     if (role === 'admin') {
         return [
             {
@@ -112,7 +112,7 @@ const mainNavItems = computed<NavItem[]>(() => {
             },
         ];
     }
-    
+
     // Default navigation
     return [
         {
@@ -122,14 +122,6 @@ const mainNavItems = computed<NavItem[]>(() => {
         },
     ];
 });
-
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
-        icon: BookOpen,
-    },
-];
 </script>
 
 <template>
@@ -151,7 +143,6 @@ const footerNavItems: NavItem[] = [
         </SidebarContent>
 
         <SidebarFooter>
-            <NavFooter :items="footerNavItems" />
             <NavUser />
         </SidebarFooter>
     </Sidebar>
