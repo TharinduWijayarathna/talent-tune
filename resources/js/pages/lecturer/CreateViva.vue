@@ -8,9 +8,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Upload, X, FileText, Plus } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { TimePicker } from '@/components/ui/time-picker';
+import { Upload, X, FileText, Plus, Calendar as CalendarIcon, Clock } from 'lucide-vue-next';
+import { ref, computed } from 'vue';
 import { Form } from '@inertiajs/vue3';
+import { format } from 'date-fns';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/lecturer/dashboard' },
@@ -21,10 +25,23 @@ const form = ref({
     title: '',
     description: '',
     batch: '',
-    date: '',
+    date: undefined as Date | undefined,
     time: '',
     instructions: '',
     materials: [] as File[],
+});
+
+const dateOpen = ref(false);
+const timeOpen = ref(false);
+
+const formattedTime = computed(() => {
+    if (!form.value.time) return 'Pick a time';
+    const [hours, minutes] = form.value.time.split(':');
+    const h = parseInt(hours);
+    const m = parseInt(minutes);
+    const period = h >= 12 ? 'PM' : 'AM';
+    const displayHour = h === 0 ? 12 : h > 12 ? h - 12 : h;
+    return `${displayHour}:${String(m).padStart(2, '0')} ${period}`;
 });
 
 const uploadedFiles = ref<Array<{ name: string; size: number }>>([]);
@@ -118,21 +135,48 @@ const submitForm = () => {
                             <div class="grid gap-4 md:grid-cols-2">
                                 <div class="space-y-2">
                                     <Label for="date">Date *</Label>
-                                    <Input
-                                        id="date"
-                                        v-model="form.date"
-                                        type="date"
-                                        required
-                                    />
+                                    <Popover v-model:open="dateOpen">
+                                        <PopoverTrigger as-child>
+                                            <Button
+                                                id="date"
+                                                type="button"
+                                                variant="outline"
+                                                :class="!form.date && 'text-muted-foreground'"
+                                                class="w-full justify-start text-left font-normal"
+                                            >
+                                                <CalendarIcon class="mr-2 h-4 w-4" />
+                                                <span>{{ form.date ? format(form.date, 'PPP') : 'Pick a date' }}</span>
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent class="w-auto p-0" align="start">
+                                            <Calendar
+                                                v-model:model-value="form.date"
+                                                @update:model-value="dateOpen = false"
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
                                 </div>
                                 <div class="space-y-2">
                                     <Label for="time">Time *</Label>
-                                    <Input
-                                        id="time"
-                                        v-model="form.time"
-                                        type="time"
-                                        required
-                                    />
+                                    <Popover v-model:open="timeOpen">
+                                        <PopoverTrigger as-child>
+                                            <Button
+                                                id="time"
+                                                type="button"
+                                                variant="outline"
+                                                :class="!form.time && 'text-muted-foreground'"
+                                                class="w-full justify-start text-left font-normal"
+                                            >
+                                                <Clock class="mr-2 h-4 w-4" />
+                                                <span>{{ formattedTime }}</span>
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent class="w-auto p-0" align="start">
+                                            <TimePicker
+                                                v-model:model-value="form.time"
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
                                 </div>
                             </div>
                         </CardContent>
