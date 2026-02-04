@@ -1,8 +1,19 @@
 <?php
 
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
+
+// Custom Authentication Routes (override Fortify's default)
+Route::middleware('guest')->group(function () {
+    Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('login');
+    Route::post('login', [AuthenticatedSessionController::class, 'store']);
+});
+
+Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
+    ->middleware('auth')
+    ->name('logout');
 
 Route::get('/', function () {
     $institution = request()->attributes->get('institution');
@@ -30,17 +41,26 @@ Route::prefix('register-institution')->group(function () {
 
 Route::get('dashboard', function () {
     $user = auth()->user();
+    
+    if (!$user) {
+        return redirect()->route('login');
+    }
+    
     $role = $user->role ?? 'student';
 
-    // Redirect based on role
+    // Admin users go directly to admin dashboard (no institution context needed)
+    if ($role === 'admin') {
+        return redirect()->route('admin.dashboard');
+    }
+
+    // Other users need institution context, so redirect based on role
     return match($role) {
         'student' => redirect()->route('student.dashboard'),
         'lecturer' => redirect()->route('lecturer.dashboard'),
         'institution' => redirect()->route('institution.dashboard'),
-        'admin' => redirect()->route('admin.dashboard'),
         default => redirect()->route('student.dashboard'),
     };
-})->middleware(['auth', 'verified', \App\Http\Middleware\EnsureInstitutionAccess::class])->name('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
 // Student Routes
 Route::prefix('student')->middleware(['auth', 'verified', \App\Http\Middleware\EnsureInstitutionAccess::class])->group(function () {

@@ -22,7 +22,8 @@ import {
     FileText,
     Plus,
     Users,
-    Shield
+    Shield,
+    Building2,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';

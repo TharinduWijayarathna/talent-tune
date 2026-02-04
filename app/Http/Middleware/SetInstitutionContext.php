@@ -10,26 +10,84 @@ use Symfony\Component\HttpFoundation\Response;
 class SetInstitutionContext
 {
     /**
+     * Routes that should skip institution context checks entirely.
+     */
+    protected array $skipRoutes = [
+        'login',
+        'logout',
+        'register',
+        'password.request',
+        'password.email',
+        'password.reset',
+        'password.update',
+        'verification.notice',
+        'verification.verify',
+        'verification.send',
+        'two-factor.login',
+        'two-factor.challenge',
+    ];
+
+    /**
+     * Path prefixes that should skip institution context checks.
+     */
+    protected array $skipPathPrefixes = [
+        'admin/',
+        'login',
+        'logout',
+        'register',
+        'forgot-password',
+        'reset-password',
+        'email/verify',
+        'two-factor-challenge',
+        'register-institution',
+    ];
+
+    /**
      * Handle an incoming request.
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
+        $path = $request->path();
+        $isLoginRoute = $path === 'login' || str_starts_with($path, 'login');
+        
+        // Detect institution even for login routes (needed for role selection)
         $institution = $this->detectInstitution($request);
-
-        if (!$institution) {
-            // If no institution detected and not on public routes, redirect to institution selection
-            if (!$this->isPublicRoute($request)) {
-                return redirect()->route('home');
-            }
-        } else {
-            // Set institution in request
+        
+        // Always set institution if detected (even for login routes)
+        if ($institution) {
             $request->merge(['institution' => $institution]);
             $request->attributes->set('institution', $institution);
-            
-            // Share with view
             view()->share('institution', $institution);
+        }
+        
+        // Skip enforcement for authentication-related paths (but still detect institution above)
+        foreach ($this->skipPathPrefixes as $prefix) {
+            if (str_starts_with($path, $prefix) || $path === $prefix || $path === rtrim($prefix, '/')) {
+                return $next($request);
+            }
+        }
+
+        // Skip for admin routes by route name
+        if ($request->routeIs('admin.*')) {
+            return $next($request);
+        }
+
+        // Skip for routes that don't need institution context
+        if ($request->routeIs($this->skipRoutes)) {
+            return $next($request);
+        }
+
+        // Skip institution context for admin users on any route
+        $user = $request->user();
+        if ($user && $user->role === 'admin') {
+            return $next($request);
+        }
+
+        // If no institution detected and not on public routes, redirect to home
+        if (!$institution && !$this->isPublicRoute($request)) {
+            return redirect()->route('home');
         }
 
         return $next($request);
@@ -44,7 +102,7 @@ class SetInstitutionContext
         $host = $request->getHost();
         $subdomain = $this->extractSubdomain($host);
         
-        if ($subdomain && $subdomain !== 'www' && $subdomain !== 'app') {
+        if ($subdomain && $subdomain !== 'www' && $subdomain !== 'app' && $subdomain !== 'talenttune') {
             $institution = Institution::where('slug', $subdomain)
                 ->active()
                 ->first();
@@ -75,9 +133,10 @@ class SetInstitutionContext
             }
         }
 
-        // Method 4: Check session (for logged-in users)
-        if ($request->user() && $request->user()->institution_id) {
-            $institution = Institution::find($request->user()->institution_id);
+        // Method 4: Check for logged-in user's institution
+        $user = $request->user();
+        if ($user && $user->institution_id) {
+            $institution = Institution::find($user->institution_id);
             if ($institution && $institution->is_active) {
                 return $institution;
             }
@@ -112,6 +171,20 @@ class SetInstitutionContext
      */
     protected function isPublicRoute(Request $request): bool
     {
+        $path = $request->path();
+        
+        // Check path prefixes for public routes
+        foreach ($this->skipPathPrefixes as $prefix) {
+            if (str_starts_with($path, $prefix) || $path === rtrim($prefix, '/')) {
+                return true;
+            }
+        }
+        
+        // Root path is public
+        if ($path === '/' || $path === '') {
+            return true;
+        }
+        
         $publicRoutes = [
             'home',
             'login',
@@ -121,6 +194,7 @@ class SetInstitutionContext
             'register-institution',
             'register-institution.store',
             'register-institution.success',
+            'admin.*',
         ];
 
         return $request->routeIs($publicRoutes);

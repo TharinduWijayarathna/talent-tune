@@ -22,10 +22,18 @@ class LoginResponse implements LoginResponseContract
         
         // For admin users, redirect directly (no institution context needed)
         if ($user->role === 'admin') {
-            $redirectPath = '/admin/dashboard';
-            return $request->wantsJson()
-                ? response()->json(['two_factor' => false, 'redirect' => $redirectPath])
-                : redirect()->intended($redirectPath);
+            // Clear any intended URL to prevent conflicts
+            $request->session()->forget('url.intended');
+            
+            // Redirect to admin dashboard
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'two_factor' => false,
+                    'redirect' => '/admin/dashboard'
+                ]);
+            }
+            
+            return redirect('/admin/dashboard');
         }
         
         // For other users, check if they have an institution
