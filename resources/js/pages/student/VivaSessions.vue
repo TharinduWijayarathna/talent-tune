@@ -7,70 +7,29 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, User, FileText, Link as LinkIcon } from 'lucide-vue-next';
 import { Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
+
+const props = defineProps<{
+    vivaSessions?: Array<{
+        id: number;
+        title: string;
+        description?: string;
+        date: string;
+        time: string;
+        lecturer: string;
+        status: string;
+        batch?: string;
+        materials?: string[];
+        marks?: number;
+    }>;
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/student/dashboard' },
     { title: 'Viva Sessions', href: '/student/vivas' },
 ];
 
-// Mock data
-const vivaSessions = [
-    {
-        id: 1,
-        title: 'Database Systems Viva',
-        description: 'Comprehensive viva on database concepts, SQL, and normalization',
-        date: '2024-01-20',
-        time: '10:00 AM',
-        lecturer: 'Dr. Smith',
-        status: 'upcoming',
-        batch: 'CS-2024',
-        materials: ['Database Fundamentals.pdf', 'SQL Guide.pdf'],
-    },
-    {
-        id: 2,
-        title: 'Software Engineering Viva',
-        description: 'Viva covering software development lifecycle and methodologies',
-        date: '2024-01-22',
-        time: '2:00 PM',
-        lecturer: 'Dr. Johnson',
-        status: 'upcoming',
-        batch: 'CS-2024',
-        materials: ['SE Principles.pdf'],
-    },
-    {
-        id: 3,
-        title: 'Web Development Viva',
-        description: 'Frontend and backend web development concepts',
-        date: '2024-01-25',
-        time: '11:00 AM',
-        lecturer: 'Dr. Williams',
-        status: 'upcoming',
-        batch: 'CS-2024',
-        materials: ['Web Dev Guide.pdf', 'API Documentation.pdf'],
-    },
-    {
-        id: 4,
-        title: 'Data Structures Viva',
-        description: 'Viva on algorithms and data structures',
-        date: '2024-01-15',
-        time: '9:00 AM',
-        lecturer: 'Dr. Brown',
-        status: 'completed',
-        batch: 'CS-2024',
-        marks: 88,
-    },
-    {
-        id: 5,
-        title: 'Operating Systems Viva',
-        description: 'OS concepts, processes, and memory management',
-        date: '2024-01-10',
-        time: '3:00 PM',
-        lecturer: 'Dr. Davis',
-        status: 'completed',
-        batch: 'CS-2024',
-        marks: 92,
-    },
-];
+const vivaSessions = computed(() => props.vivaSessions || []);
 
 const getStatusBadge = (status: string) => {
     return status === 'upcoming' ? 'default' : 'secondary';
@@ -89,7 +48,10 @@ const getStatusBadge = (status: string) => {
                 </div>
             </div>
 
-            <div class="grid gap-4">
+            <div v-if="vivaSessions.length === 0" class="text-center py-12 text-muted-foreground">
+                No viva sessions available
+            </div>
+            <div v-else class="grid gap-4">
                 <Card
                     v-for="viva in vivaSessions"
                     :key="viva.id"

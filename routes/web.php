@@ -62,42 +62,21 @@ Route::get('dashboard', function () {
     };
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// Student Routes
+// Student Routes (all data scoped to current institution)
 Route::prefix('student')->middleware(['auth', 'verified', \App\Http\Middleware\EnsureInstitutionAccess::class])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('student/Dashboard');
-    })->name('student.dashboard');
-
-    Route::get('vivas', function () {
-        return Inertia::render('student/VivaSessions');
-    })->name('student.vivas');
-
-    Route::get('vivas/{id}/attend', function ($id) {
-        return Inertia::render('student/VivaAttend', ['vivaId' => $id]);
-    })->name('student.vivas.attend');
-
-    Route::get('marks', function () {
-        return Inertia::render('student/Marks');
-    })->name('student.marks');
+    Route::get('dashboard', [App\Http\Controllers\StudentController::class, 'dashboard'])->name('student.dashboard');
+    Route::get('vivas', [App\Http\Controllers\StudentController::class, 'vivas'])->name('student.vivas');
+    Route::get('vivas/{id}/attend', [App\Http\Controllers\StudentController::class, 'attendViva'])->name('student.vivas.attend');
+    Route::get('marks', [App\Http\Controllers\StudentController::class, 'marks'])->name('student.marks');
 });
 
-// Lecturer Routes
+// Lecturer Routes (all data scoped to current institution)
 Route::prefix('lecturer')->middleware(['auth', 'verified', \App\Http\Middleware\EnsureInstitutionAccess::class])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('lecturer/Dashboard');
-    })->name('lecturer.dashboard');
-
-    Route::get('vivas', function () {
-        return Inertia::render('lecturer/Dashboard'); // You can create a list page later
-    })->name('lecturer.vivas');
-
-    Route::get('vivas/create', function () {
-        return Inertia::render('lecturer/CreateViva');
-    })->name('lecturer.vivas.create');
-
-    Route::get('vivas/{id}', function ($id) {
-        return Inertia::render('lecturer/Dashboard'); // You can create a detail page later
-    })->name('lecturer.vivas.show');
+    Route::get('dashboard', [App\Http\Controllers\LecturerController::class, 'dashboard'])->name('lecturer.dashboard');
+    Route::get('vivas', [App\Http\Controllers\LecturerController::class, 'vivas'])->name('lecturer.vivas');
+    Route::get('vivas/create', [App\Http\Controllers\LecturerController::class, 'createViva'])->name('lecturer.vivas.create');
+    Route::post('vivas', [App\Http\Controllers\LecturerController::class, 'storeViva'])->name('lecturer.vivas.store');
+    Route::get('vivas/{id}', [App\Http\Controllers\LecturerController::class, 'showViva'])->name('lecturer.vivas.show');
 });
 
 // Institution Routes (all data scoped to current institution)

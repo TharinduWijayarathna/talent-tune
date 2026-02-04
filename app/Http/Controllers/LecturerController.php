@@ -1,0 +1,197 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Institution;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+
+class LecturerController extends Controller
+{
+    /**
+     * Get the current institution from request (set by SetInstitutionContext middleware).
+     */
+    protected function institution(Request $request): Institution
+    {
+        $institution = $request->attributes->get('institution');
+        if (!$institution) {
+            abort(403, 'Institution context required.');
+        }
+        return $institution;
+    }
+
+    /**
+     * Ensure the user is a lecturer in the current institution.
+     */
+    protected function authorizeLecturer(Request $request): void
+    {
+        $user = $request->user();
+        $institution = $this->institution($request);
+
+        if (!$user) {
+            abort(403);
+        }
+
+        // Admin can access any institution's data
+        if ($user->role === 'admin') {
+            return;
+        }
+
+        // Lecturer must belong to the current institution
+        if ($user->role !== 'lecturer' || $user->institution_id !== $institution->id) {
+            abort(403, 'You do not have access to this institution.');
+        }
+    }
+
+    /**
+     * Lecturer dashboard - shows stats and sessions for the lecturer's institution.
+     */
+    public function dashboard(Request $request)
+    {
+        $institution = $this->institution($request);
+        $this->authorizeLecturer($request);
+        $user = $request->user();
+
+        // TODO: When Viva model exists, query vivas scoped to institution
+        $stats = [
+            'totalSessions' => 0,
+            'activeSessions' => 0,
+            'totalStudents' => User::forInstitution($institution->id)
+                ->where('role', 'student')
+                ->count(),
+            'completedSessions' => 0,
+        ];
+
+        // TODO: When Viva model exists:
+        // $stats['totalSessions'] = Viva::where('institution_id', $institution->id)
+        //     ->where('lecturer_id', $user->id)
+        //     ->count();
+        // $stats['activeSessions'] = Viva::where('institution_id', $institution->id)
+        //     ->where('lecturer_id', $user->id)
+        //     ->where('status', 'upcoming')
+        //     ->count();
+        // $stats['completedSessions'] = Viva::where('institution_id', $institution->id)
+        //     ->where('lecturer_id', $user->id)
+        //     ->where('status', 'completed')
+        //     ->count();
+
+        $recentSessions = [];
+        // TODO: When Viva model exists:
+        // $recentSessions = Viva::where('institution_id', $institution->id)
+        //     ->where('lecturer_id', $user->id)
+        //     ->orderBy('scheduled_at', 'desc')
+        //     ->limit(5)
+        //     ->get()
+        //     ->map(fn ($viva) => [
+        //         'id' => $viva->id,
+        //         'title' => $viva->title,
+        //         'batch' => $viva->batch,
+        //         'date' => $viva->scheduled_at->format('Y-m-d'),
+        //         'students' => $viva->students->count(),
+        //         'status' => $viva->status,
+        //     ]);
+
+        return Inertia::render('lecturer/Dashboard', [
+            'stats' => $stats,
+            'recentSessions' => $recentSessions,
+        ]);
+    }
+
+    /**
+     * List all viva sessions created by the lecturer (in their institution).
+     */
+    public function vivas(Request $request)
+    {
+        $institution = $this->institution($request);
+        $this->authorizeLecturer($request);
+        $user = $request->user();
+
+        // TODO: When Viva model exists:
+        // $vivas = Viva::where('institution_id', $institution->id)
+        //     ->where('lecturer_id', $user->id)
+        //     ->orderBy('scheduled_at', 'desc')
+        //     ->get();
+
+        return Inertia::render('lecturer/Dashboard', [
+            'vivas' => [],
+        ]);
+    }
+
+    /**
+     * Show create viva form.
+     */
+    public function createViva(Request $request)
+    {
+        $institution = $this->institution($request);
+        $this->authorizeLecturer($request);
+
+        // Get batches from students in this institution
+        $batches = User::forInstitution($institution->id)
+            ->where('role', 'student')
+            ->whereNotNull('batch')
+            ->distinct()
+            ->pluck('batch')
+            ->filter()
+            ->values()
+            ->toArray();
+
+        return Inertia::render('lecturer/CreateViva', [
+            'batches' => $batches,
+            'institutionId' => $institution->id,
+        ]);
+    }
+
+    /**
+     * Store a new viva session (automatically scoped to lecturer's institution).
+     */
+    public function storeViva(Request $request)
+    {
+        $institution = $this->institution($request);
+        $this->authorizeLecturer($request);
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'batch' => ['required', 'string'],
+            'date' => ['required', 'date'],
+            'time' => ['required', 'string'],
+            'instructions' => ['nullable', 'string'],
+        ]);
+
+        // TODO: When Viva model exists:
+        // $viva = Viva::create([
+        //     'title' => $validated['title'],
+        //     'description' => $validated['description'],
+        //     'batch' => $validated['batch'],
+        //     'scheduled_at' => Carbon::parse($validated['date'] . ' ' . $validated['time']),
+        //     'instructions' => $validated['instructions'],
+        //     'institution_id' => $institution->id, // Automatically scoped
+        //     'lecturer_id' => $user->id,
+        //     'status' => 'upcoming',
+        // ]);
+
+        // For now, just redirect
+        return redirect()->route('lecturer.dashboard')->with('status', 'Viva session created successfully.');
+    }
+
+    /**
+     * Show viva details (only for vivas created by lecturer in their institution).
+     */
+    public function showViva(Request $request, int $id)
+    {
+        $institution = $this->institution($request);
+        $this->authorizeLecturer($request);
+        $user = $request->user();
+
+        // TODO: When Viva model exists:
+        // $viva = Viva::where('institution_id', $institution->id)
+        //     ->where('lecturer_id', $user->id)
+        //     ->findOrFail($id);
+
+        return Inertia::render('lecturer/Dashboard', [
+            'viva' => null, // When model exists, pass $viva
+        ]);
+    }
+}

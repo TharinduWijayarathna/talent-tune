@@ -13,55 +13,44 @@ import { Calendar } from '@/components/ui/calendar';
 import { TimePicker } from '@/components/ui/time-picker';
 import { Upload, X, FileText, Plus, Calendar as CalendarIcon, Clock } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
-import { Form } from '@inertiajs/vue3';
+import { useForm, Link } from '@inertiajs/vue3';
 import { format } from 'date-fns';
+import InputError from '@/components/InputError.vue';
+
+const props = defineProps<{
+    batches?: string[];
+    institutionId?: number;
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/lecturer/dashboard' },
     { title: 'Create Viva Session', href: '/lecturer/vivas/create' },
 ];
 
-const form = ref({
+const form = useForm({
     title: '',
     description: '',
     batch: '',
-    date: undefined as Date | undefined,
+    date: '',
     time: '',
     instructions: '',
-    materials: [] as File[],
 });
 
-const dateOpen = ref(false);
-const timeOpen = ref(false);
+const availableBatches = computed(() => props.batches || []);
 
-const formattedTime = computed(() => {
-    if (!form.value.time) return 'Pick a time';
-    const [hours, minutes] = form.value.time.split(':');
-    const h = parseInt(hours);
-    const m = parseInt(minutes);
-    const period = h >= 12 ? 'PM' : 'AM';
-    const displayHour = h === 0 ? 12 : h > 12 ? h - 12 : h;
-    return `${displayHour}:${String(m).padStart(2, '0')} ${period}`;
-});
-
-const uploadedFiles = ref<Array<{ name: string; size: number }>>([]);
 const fileInputRef = ref<HTMLInputElement | null>(null);
+const uploadedFiles = ref<Array<{ name: string; size: number }>>([]);
 
 const handleFileUpload = (event: Event) => {
     const target = event.target as HTMLInputElement;
     if (target.files) {
         Array.from(target.files).forEach((file) => {
-            form.value.materials.push(file);
-            uploadedFiles.value.push({
-                name: file.name,
-                size: file.size,
-            });
+            uploadedFiles.value.push({ name: file.name, size: file.size });
         });
     }
 };
 
 const removeFile = (index: number) => {
-    form.value.materials.splice(index, 1);
     uploadedFiles.value.splice(index, 1);
 };
 
@@ -74,9 +63,7 @@ const formatFileSize = (bytes: number) => {
 };
 
 const submitForm = () => {
-    // In a real app, this would submit to the backend
-    console.log('Submitting form:', form.value);
-    alert('Viva session created successfully!');
+    form.post('/lecturer/vivas');
 };
 </script>
 
@@ -92,7 +79,7 @@ const submitForm = () => {
                 </div>
             </div>
 
-            <Form @submit.prevent="submitForm" class="space-y-6">
+            <form @submit.prevent="submitForm" class="space-y-6">
                 <div class="grid gap-6 md:grid-cols-2">
                     <!-- Basic Information -->
                     <Card class="md:col-span-2">
@@ -110,15 +97,22 @@ const submitForm = () => {
                                         placeholder="e.g., Database Systems Viva"
                                         required
                                     />
+                                    <InputError :message="form.errors.title" />
                                 </div>
                                 <div class="space-y-2">
                                     <Label for="batch">Batch *</Label>
-                                    <Input
+                                    <select
                                         id="batch"
                                         v-model="form.batch"
-                                        placeholder="e.g., CS-2024"
+                                        class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                         required
-                                    />
+                                    >
+                                        <option value="">Select a batch</option>
+                                        <option v-for="batch in availableBatches" :key="batch" :value="batch">
+                                            {{ batch }}
+                                        </option>
+                                    </select>
+                                    <InputError :message="form.errors.batch" />
                                 </div>
                             </div>
 
@@ -130,53 +124,29 @@ const submitForm = () => {
                                     placeholder="Brief description of the viva session..."
                                     rows="3"
                                 />
+                                <InputError :message="form.errors.description" />
                             </div>
 
                             <div class="grid gap-4 md:grid-cols-2">
                                 <div class="space-y-2">
                                     <Label for="date">Date *</Label>
-                                    <Popover v-model:open="dateOpen">
-                                        <PopoverTrigger as-child>
-                                            <Button
-                                                id="date"
-                                                type="button"
-                                                variant="outline"
-                                                :class="!form.date && 'text-muted-foreground'"
-                                                class="w-full justify-start text-left font-normal"
-                                            >
-                                                <CalendarIcon class="mr-2 h-4 w-4" />
-                                                <span>{{ form.date ? format(form.date, 'PPP') : 'Pick a date' }}</span>
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent class="w-auto p-0" align="start">
-                                            <Calendar
-                                                v-model:model-value="form.date"
-                                                @update:model-value="dateOpen = false"
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
+                                    <Input
+                                        id="date"
+                                        v-model="form.date"
+                                        type="date"
+                                        required
+                                    />
+                                    <InputError :message="form.errors.date" />
                                 </div>
                                 <div class="space-y-2">
                                     <Label for="time">Time *</Label>
-                                    <Popover v-model:open="timeOpen">
-                                        <PopoverTrigger as-child>
-                                            <Button
-                                                id="time"
-                                                type="button"
-                                                variant="outline"
-                                                :class="!form.time && 'text-muted-foreground'"
-                                                class="w-full justify-start text-left font-normal"
-                                            >
-                                                <Clock class="mr-2 h-4 w-4" />
-                                                <span>{{ formattedTime }}</span>
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent class="w-auto p-0" align="start">
-                                            <TimePicker
-                                                v-model:model-value="form.time"
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
+                                    <Input
+                                        id="time"
+                                        v-model="form.time"
+                                        type="time"
+                                        required
+                                    />
+                                    <InputError :message="form.errors.time" />
                                 </div>
                             </div>
                         </CardContent>
@@ -267,14 +237,14 @@ const submitForm = () => {
 
                 <!-- Submit Button -->
                 <div class="flex justify-end gap-4">
-                    <Button type="button" variant="outline">
-                        Cancel
+                    <Button type="button" variant="outline" as-child>
+                        <Link href="/lecturer/dashboard">Cancel</Link>
                     </Button>
-                    <Button type="submit">
+                    <Button type="submit" :disabled="form.processing">
                         Create Viva Session
                     </Button>
                 </div>
-            </Form>
+            </form>
         </div>
     </AppLayout>
 </template>
