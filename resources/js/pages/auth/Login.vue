@@ -109,7 +109,7 @@ const submit = () => {
         </div>
 
         <!-- Role Selection (only shown on institution subdomain) -->
-        <div v-if="showRoleSelection && !selectedRole" class="mb-6 space-y-4">
+        <div v-if="showRoleSelection && !selectedRole" class="mb-6 w-full space-y-4">
             <div class="text-center text-sm text-muted-foreground">
                 Select your role to continue
             </div>
@@ -121,12 +121,12 @@ const submit = () => {
                     :class="{ 'border-primary ring-2 ring-primary': selectedRole === role.value }"
                     @click="selectedRole = role.value as any"
                 >
-                    <CardHeader class="pb-3">
-                        <div class="flex items-center gap-3">
-                            <component :is="role.icon" class="h-5 w-5 text-primary" />
+                    <CardHeader class="pb-3 text-center">
+                        <div class="flex flex-col items-center gap-3">
+                            <component :is="role.icon" class="h-6 w-6 text-primary" />
                             <CardTitle class="text-base">{{ role.label }}</CardTitle>
                         </div>
-                        <CardDescription class="text-xs mt-2">
+                        <CardDescription class="text-xs mt-2 text-center">
                             {{ role.description }}
                         </CardDescription>
                     </CardHeader>
@@ -134,9 +134,9 @@ const submit = () => {
             </div>
         </div>
 
-        <form @submit.prevent="submit" class="flex flex-col gap-6" v-if="!showRoleSelection || selectedRole">
+        <form @submit.prevent="submit" class="w-full flex flex-col gap-6" v-if="!showRoleSelection || selectedRole">
             <!-- Role Indicator (when role is selected) -->
-            <div v-if="showRoleSelection && selectedRole" class="flex items-center justify-between mb-2">
+            <div v-if="showRoleSelection && selectedRole" class="flex items-center justify-between w-full px-1 mb-2">
                 <div class="flex items-center gap-2">
                     <component :is="roles.find(r => r.value === selectedRole)?.icon" class="h-4 w-4" />
                     <span class="text-sm font-medium">{{ roles.find(r => r.value === selectedRole)?.label }}</span>
@@ -153,7 +153,7 @@ const submit = () => {
 
             <input type="hidden" name="role" :value="selectedRole" />
 
-            <div class="grid gap-6">
+            <div class="grid gap-6 w-full">
                 <div class="grid gap-2">
                     <Label for="email">Email address</Label>
                     <Input
@@ -195,20 +195,20 @@ const submit = () => {
                     <InputError :message="form.errors.password || allErrors.password" />
                 </div>
 
-                <div class="flex items-center justify-between">
-                    <Label for="remember" class="flex items-center space-x-3">
+                <div class="flex items-center justify-between w-full">
+                    <Label for="remember" class="flex items-center gap-2 cursor-pointer">
                         <Checkbox 
                             id="remember" 
                             v-model:checked="form.remember" 
                             :tabindex="3" 
                         />
-                        <span>Remember me</span>
+                        <span class="text-sm">Remember me</span>
                     </Label>
                 </div>
 
                 <Button
                     type="submit"
-                    class="mt-4 w-full"
+                    class="w-full"
                     :tabindex="4"
                     :disabled="form.processing || (showRoleSelection && !selectedRole)"
                     data-test="login-button"
@@ -219,7 +219,7 @@ const submit = () => {
             </div>
 
             <div
-                class="text-center text-sm text-muted-foreground"
+                class="text-center text-sm text-muted-foreground w-full"
                 v-if="canRegister"
             >
                 Don't have an account?
