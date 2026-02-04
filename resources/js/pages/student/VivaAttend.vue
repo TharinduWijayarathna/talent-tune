@@ -156,7 +156,7 @@ const speakQuestion = async (question: string) => {
     if (speechRecognition.value && recognitionActive.value) {
         speechRecognition.value.stop();
     }
-    
+
     isListening.value = true;
     isSpeaking.value = true;
 
@@ -336,21 +336,23 @@ const initializeSpeechRecognition = () => {
             answer.value = finalAnswer;
         }
 
-        // Reset silence timer when speech is detected
+        // Reset silence timer whenever speech is detected (both interim and final)
+        // This ensures the timer resets if student continues speaking after a pause
         if (silenceTimer) {
             clearTimeout(silenceTimer);
+            silenceTimer = null;
         }
 
-        // If we have final results, wait for silence before processing
-        // Only process if AI is not speaking (to avoid processing AI's voice)
-        if (finalTranscript.trim() && !isSpeaking.value) {
+        // Only set timer if we have some content and AI is not speaking
+        // Wait 5 seconds of silence before processing the answer
+        if ((interimTranscript.trim() || finalTranscript.trim()) && !isSpeaking.value && sessionActive.value) {
             silenceTimer = setTimeout(() => {
-                // Student stopped speaking - process the answer
-                // Double-check AI is not speaking before processing
+                // Student stopped speaking for 5 seconds - process the answer
+                // Double-check conditions before processing
                 if (finalAnswer.trim() && !isProcessingAnswer.value && !isSpeaking.value && sessionActive.value) {
                     processAnswer();
                 }
-            }, 2000); // Wait 2 seconds of silence before processing
+            }, 5000); // Wait 5 seconds of silence before processing
         }
     };
 
@@ -569,10 +571,10 @@ const generateConversationalResponse = async (question: string, studentAnswer: s
         const isValid = studentAnswer.trim().length >= 10 && !isSkip;
 
         return {
-            response: isSkip 
-                ? 'Thank you. Let\'s move on to the next question.' 
-                : (isValid 
-                    ? 'Thank you for your answer. Let\'s move to the next question.' 
+            response: isSkip
+                ? 'Thank you. Let\'s move on to the next question.'
+                : (isValid
+                    ? 'Thank you for your answer. Let\'s move to the next question.'
                     : 'Could you please elaborate on that? I need a bit more detail.'),
             shouldContinue: !isSkip && !isValid,
             isSkipped: isSkip,
@@ -628,7 +630,7 @@ const processAnswer = async () => {
             examiner: conversationResult.response,
             student: '',
         });
-        
+
         // Restart recording for next answer
         isProcessingAnswer.value = false;
         finalAnswer = '';
