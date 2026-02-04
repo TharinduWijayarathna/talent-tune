@@ -112,6 +112,9 @@ Route::prefix('api/viva')->middleware(['auth'])->group(function () {
     
     Route::post('answer/evaluate', [App\Http\Controllers\Viva\GeminiController::class, 'evaluateAnswer'])
         ->name('viva.answer.evaluate');
+    
+    Route::post('conversation/response', [App\Http\Controllers\Viva\GeminiController::class, 'generateConversationalResponse'])
+        ->name('viva.conversation.response');
 });
 
 require __DIR__.'/settings.php';
