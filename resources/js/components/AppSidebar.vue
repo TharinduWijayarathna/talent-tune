@@ -106,6 +106,11 @@ const mainNavItems = computed<NavItem[]>(() => {
                 icon: LayoutGrid,
             },
             {
+                title: 'Institutions',
+                href: '/admin/institutions',
+                icon: Building2,
+            },
+            {
                 title: 'Monitor',
                 href: '/admin/dashboard',
                 icon: Shield,

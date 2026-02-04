@@ -5,10 +5,28 @@ use Inertia\Inertia;
 use Laravel\Fortify\Features;
 
 Route::get('/', function () {
-    return Inertia::render('home/HomePage', [
+    $institution = request()->attributes->get('institution');
+    
+    // If institution detected, show institution-specific homepage
+    if ($institution) {
+        return Inertia::render('home/HomePage', [
+            'canRegister' => Features::enabled(Features::registration()),
+            'institution' => $institution,
+        ]);
+    }
+    
+    // Otherwise, show public SaaS landing page
+    return Inertia::render('home/LandingPage', [
         'canRegister' => Features::enabled(Features::registration()),
     ]);
 })->name('home');
+
+// Institution Registration Routes (Public)
+Route::prefix('register-institution')->group(function () {
+    Route::get('/', [App\Http\Controllers\InstitutionController::class, 'create'])->name('register-institution');
+    Route::post('/', [App\Http\Controllers\InstitutionController::class, 'store'])->name('register-institution.store');
+    Route::get('/success/{id}', [App\Http\Controllers\InstitutionController::class, 'success'])->name('register-institution.success');
+});
 
 Route::get('dashboard', function () {
     $user = auth()->user();
@@ -22,10 +40,10 @@ Route::get('dashboard', function () {
         'admin' => redirect()->route('admin.dashboard'),
         default => redirect()->route('student.dashboard'),
     };
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth', 'verified', \App\Http\Middleware\EnsureInstitutionAccess::class])->name('dashboard');
 
 // Student Routes
-Route::prefix('student')->middleware(['auth', 'verified'])->group(function () {
+Route::prefix('student')->middleware(['auth', 'verified', \App\Http\Middleware\EnsureInstitutionAccess::class])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('student/Dashboard');
     })->name('student.dashboard');
@@ -44,7 +62,7 @@ Route::prefix('student')->middleware(['auth', 'verified'])->group(function () {
 });
 
 // Lecturer Routes
-Route::prefix('lecturer')->middleware(['auth', 'verified'])->group(function () {
+Route::prefix('lecturer')->middleware(['auth', 'verified', \App\Http\Middleware\EnsureInstitutionAccess::class])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('lecturer/Dashboard');
     })->name('lecturer.dashboard');
@@ -63,7 +81,7 @@ Route::prefix('lecturer')->middleware(['auth', 'verified'])->group(function () {
 });
 
 // Institution Routes
-Route::prefix('institution')->middleware(['auth', 'verified'])->group(function () {
+Route::prefix('institution')->middleware(['auth', 'verified', \App\Http\Middleware\EnsureInstitutionAccess::class])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('institution/Dashboard');
     })->name('institution.dashboard');
@@ -93,11 +111,16 @@ Route::prefix('institution')->middleware(['auth', 'verified'])->group(function (
     })->name('institution.students.edit');
 });
 
-// Admin Routes
+// Admin Routes (no institution context required)
 Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('admin/Dashboard');
     })->name('admin.dashboard');
+    
+    // Institution Management
+    Route::get('institutions', [App\Http\Controllers\InstitutionController::class, 'index'])->name('admin.institutions');
+    Route::patch('institutions/{institution}/status', [App\Http\Controllers\InstitutionController::class, 'updateStatus'])->name('admin.institutions.status');
+    Route::delete('institutions/{institution}', [App\Http\Controllers\InstitutionController::class, 'destroy'])->name('admin.institutions.destroy');
 });
 
 // Viva TTS API Route

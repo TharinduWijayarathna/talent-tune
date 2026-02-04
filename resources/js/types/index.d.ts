@@ -17,12 +17,21 @@ export interface NavItem {
     isActive?: boolean;
 }
 
+export interface Institution {
+    id: number;
+    name: string;
+    slug: string;
+    logo_url?: string | null;
+    primary_color?: string | null;
+}
+
 export type AppPageProps<
     T extends Record<string, unknown> = Record<string, unknown>,
 > = T & {
     name: string;
     quote: { message: string; author: string };
     auth: Auth;
+    institution: Institution | null;
     sidebarOpen: boolean;
 };
 

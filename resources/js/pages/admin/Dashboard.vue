@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Users, GraduationCap, Building2, Activity, TrendingUp, Shield } from 'lucide-vue-next';
-import { Link } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -174,9 +174,11 @@ const recentActivity = [
                         <CardDescription>Common administrative tasks</CardDescription>
                     </CardHeader>
                     <CardContent class="space-y-2">
-                        <Button variant="outline" class="w-full justify-start">
-                            View All Institutions
-                        </Button>
+                        <Link href="/admin/institutions">
+                            <Button variant="outline" class="w-full justify-start">
+                                View All Institutions
+                            </Button>
+                        </Link>
                         <Button variant="outline" class="w-full justify-start">
                             System Settings
                         </Button>

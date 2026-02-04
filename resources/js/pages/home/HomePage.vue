@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3'
+import { Head, Link, usePage } from '@inertiajs/vue3'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { 
@@ -17,19 +17,27 @@ import {
   Globe
 } from 'lucide-vue-next'
 import { dashboard, login, register } from '@/routes'
+import { computed } from 'vue'
+import type { Institution } from '@/types'
 
-withDefaults(
-  defineProps<{
+interface Props {
     canRegister: boolean
-  }>(),
-  {
+    institution?: Institution | null
+}
+
+const props = withDefaults(defineProps<Props>(), {
     canRegister: true,
-  },
-)
+    institution: null,
+})
+
+const page = usePage()
+const institution = computed(() => props.institution || page.props.institution)
+const institutionName = computed(() => institution.value?.name || 'TalentTune')
+const institutionLogo = computed(() => institution.value?.logo_url)
 </script>
 
 <template>
-  <Head title="TalentTune - AI-Powered Viva Management Platform" />
+  <Head :title="`${institutionName} - AI-Powered Viva Management Platform`" />
   
   <div class="min-h-screen bg-background">
     <!-- Navigation -->
@@ -37,8 +45,9 @@ withDefaults(
       <div class="container mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex h-16 items-center justify-between">
           <div class="flex items-center gap-2">
-            <GraduationCap class="h-6 w-6 text-primary" />
-            <span class="text-xl font-bold">TalentTune</span>
+            <img v-if="institutionLogo" :src="institutionLogo" :alt="institutionName" class="h-8 w-8 rounded" />
+            <GraduationCap v-else class="h-6 w-6 text-primary" />
+            <span class="text-xl font-bold">{{ institutionName }}</span>
           </div>
           <div class="flex items-center gap-4">
             <Link
@@ -77,9 +86,9 @@ withDefaults(
             <span>AI-Powered Viva Management</span>
           </div>
           <h1 class="mb-6 text-4xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
-            Transform Your Viva Sessions with
+            Welcome to
             <span class="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-              AI Excellence
+              {{ institutionName }}
             </span>
           </h1>
           <p class="mb-10 text-lg text-muted-foreground sm:text-xl lg:text-2xl">

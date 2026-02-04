@@ -38,6 +38,8 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
+        $institution = $request->attributes->get('institution');
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
@@ -45,6 +47,13 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'institution' => $institution ? [
+                'id' => $institution->id,
+                'name' => $institution->name,
+                'slug' => $institution->slug,
+                'logo_url' => $institution->logo_url,
+                'primary_color' => $institution->primary_color,
+            ] : null,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'csrfToken' => $request->session()->token(),
         ];

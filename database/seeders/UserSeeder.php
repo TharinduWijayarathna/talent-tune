@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Institution;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -13,46 +14,53 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Admin User
+        // Get institutions
+        $institution1 = Institution::where('slug', 'university-tech')->first();
+        $institution2 = Institution::where('slug', 'state-university')->first();
+
+        // Admin User (no institution)
         User::create([
             'name' => 'Admin User',
             'email' => 'admin@talenttune.com',
             'password' => Hash::make('password'),
             'role' => 'admin',
+            'institution_id' => null,
             'email_verified_at' => now(),
         ]);
 
         // Institution Users
-        $institutions = [
-            [
+        if ($institution1) {
+            User::create([
                 'name' => 'University of Technology',
                 'email' => 'institution1@talenttune.com',
                 'password' => Hash::make('password'),
                 'role' => 'institution',
+                'institution_id' => $institution1->id,
                 'department' => 'Administration',
                 'email_verified_at' => now(),
-            ],
-            [
+            ]);
+        }
+
+        if ($institution2) {
+            User::create([
                 'name' => 'State University',
                 'email' => 'institution2@talenttune.com',
                 'password' => Hash::make('password'),
                 'role' => 'institution',
+                'institution_id' => $institution2->id,
                 'department' => 'Administration',
                 'email_verified_at' => now(),
-            ],
-        ];
-
-        foreach ($institutions as $institution) {
-            User::create($institution);
+            ]);
         }
 
-        // Lecturer Users
+        // Lecturer Users (assign to institution1)
         $lecturers = [
             [
                 'name' => 'Dr. John Smith',
                 'email' => 'lecturer1@talenttune.com',
                 'password' => Hash::make('password'),
                 'role' => 'lecturer',
+                'institution_id' => $institution1?->id,
                 'employee_id' => 'EMP001',
                 'department' => 'Computer Science',
                 'email_verified_at' => now(),
@@ -62,6 +70,7 @@ class UserSeeder extends Seeder
                 'email' => 'lecturer2@talenttune.com',
                 'password' => Hash::make('password'),
                 'role' => 'lecturer',
+                'institution_id' => $institution1?->id,
                 'employee_id' => 'EMP002',
                 'department' => 'Software Engineering',
                 'email_verified_at' => now(),
@@ -71,6 +80,7 @@ class UserSeeder extends Seeder
                 'email' => 'lecturer3@talenttune.com',
                 'password' => Hash::make('password'),
                 'role' => 'lecturer',
+                'institution_id' => $institution1?->id,
                 'employee_id' => 'EMP003',
                 'department' => 'Web Development',
                 'email_verified_at' => now(),
@@ -80,6 +90,7 @@ class UserSeeder extends Seeder
                 'email' => 'lecturer4@talenttune.com',
                 'password' => Hash::make('password'),
                 'role' => 'lecturer',
+                'institution_id' => $institution2?->id,
                 'employee_id' => 'EMP004',
                 'department' => 'Data Structures',
                 'email_verified_at' => now(),
@@ -89,6 +100,7 @@ class UserSeeder extends Seeder
                 'email' => 'lecturer5@talenttune.com',
                 'password' => Hash::make('password'),
                 'role' => 'lecturer',
+                'institution_id' => $institution2?->id,
                 'employee_id' => 'EMP005',
                 'department' => 'Operating Systems',
                 'email_verified_at' => now(),
@@ -99,7 +111,7 @@ class UserSeeder extends Seeder
             User::create($lecturer);
         }
 
-        // Student Users - Batch CS-2024
+        // Student Users - Batch CS-2024 (assign to institution1)
         $studentsBatch1 = [
             ['name' => 'Alice Johnson', 'email' => 'student1@talenttune.com', 'student_id' => 'STU001'],
             ['name' => 'Bob Williams', 'email' => 'student2@talenttune.com', 'student_id' => 'STU002'],
@@ -119,6 +131,7 @@ class UserSeeder extends Seeder
                 'email' => $student['email'],
                 'password' => Hash::make('password'),
                 'role' => 'student',
+                'institution_id' => $institution1?->id,
                 'student_id' => $student['student_id'],
                 'batch' => 'CS-2024',
                 'department' => 'Computer Science',
@@ -126,7 +139,7 @@ class UserSeeder extends Seeder
             ]);
         }
 
-        // Student Users - Batch CS-2023
+        // Student Users - Batch CS-2023 (assign to institution1)
         $studentsBatch2 = [
             ['name' => 'Kevin White', 'email' => 'student11@talenttune.com', 'student_id' => 'STU011'],
             ['name' => 'Lily Harris', 'email' => 'student12@talenttune.com', 'student_id' => 'STU012'],
@@ -141,6 +154,7 @@ class UserSeeder extends Seeder
                 'email' => $student['email'],
                 'password' => Hash::make('password'),
                 'role' => 'student',
+                'institution_id' => $institution1?->id,
                 'student_id' => $student['student_id'],
                 'batch' => 'CS-2023',
                 'department' => 'Computer Science',
@@ -148,7 +162,7 @@ class UserSeeder extends Seeder
             ]);
         }
 
-        // Student Users - Batch SE-2024
+        // Student Users - Batch SE-2024 (assign to institution2)
         $studentsBatch3 = [
             ['name' => 'Penelope Hall', 'email' => 'student16@talenttune.com', 'student_id' => 'STU016'],
             ['name' => 'Quinn Allen', 'email' => 'student17@talenttune.com', 'student_id' => 'STU017'],
@@ -163,6 +177,7 @@ class UserSeeder extends Seeder
                 'email' => $student['email'],
                 'password' => Hash::make('password'),
                 'role' => 'student',
+                'institution_id' => $institution2?->id,
                 'student_id' => $student['student_id'],
                 'batch' => 'SE-2024',
                 'department' => 'Software Engineering',

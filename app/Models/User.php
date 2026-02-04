@@ -27,6 +27,7 @@ class User extends Authenticatable
         'employee_id',
         'batch',
         'department',
+        'institution_id',
     ];
 
     /**
@@ -53,5 +54,21 @@ class User extends Authenticatable
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Get the institution that owns the user.
+     */
+    public function institution()
+    {
+        return $this->belongsTo(Institution::class);
+    }
+
+    /**
+     * Scope a query to only include users for a specific institution.
+     */
+    public function scopeForInstitution($query, $institutionId)
+    {
+        return $query->where('institution_id', $institutionId);
     }
 }
