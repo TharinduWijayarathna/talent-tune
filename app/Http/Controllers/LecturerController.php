@@ -79,13 +79,21 @@ class LecturerController extends Controller
             ->orderBy('scheduled_at', 'desc')
             ->limit(5)
             ->get()
-            ->map(fn ($viva) => [
-                'id' => $viva->id,
-                'title' => $viva->title,
-                'batch' => $viva->batch,
-                'date' => $viva->scheduled_at->format('Y-m-d'),
-                'status' => $viva->status,
-            ]);
+            ->map(function ($viva) use ($institution) {
+                $studentsInBatch = User::forInstitution($institution->id)
+                    ->where('role', 'student')
+                    ->where('batch', $viva->batch)
+                    ->count();
+
+                return [
+                    'id' => $viva->id,
+                    'title' => $viva->title,
+                    'batch' => $viva->batch,
+                    'date' => $viva->scheduled_at->format('Y-m-d'),
+                    'status' => $viva->status,
+                    'students' => $studentsInBatch,
+                ];
+            });
 
         return Inertia::render('lecturer/Dashboard', [
             'stats' => $stats,
@@ -105,9 +113,25 @@ class LecturerController extends Controller
         $vivas = Viva::where('institution_id', $institution->id)
             ->where('lecturer_id', $user->id)
             ->orderBy('scheduled_at', 'desc')
-            ->get();
+            ->get()
+            ->map(function ($viva) use ($institution) {
+                $studentsInBatch = User::forInstitution($institution->id)
+                    ->where('role', 'student')
+                    ->where('batch', $viva->batch)
+                    ->count();
 
-        return Inertia::render('lecturer/Dashboard', [
+                return [
+                    'id' => $viva->id,
+                    'title' => $viva->title,
+                    'description' => $viva->description,
+                    'batch' => $viva->batch,
+                    'scheduled_at' => $viva->scheduled_at->format('Y-m-d H:i'),
+                    'status' => $viva->status,
+                    'students' => $studentsInBatch,
+                ];
+            });
+
+        return Inertia::render('lecturer/Vivas', [
             'vivas' => $vivas,
         ]);
     }
@@ -204,8 +228,16 @@ class LecturerController extends Controller
             ->where('lecturer_id', $user->id)
             ->findOrFail($id);
 
-        return Inertia::render('lecturer/Dashboard', [
-            'viva' => $viva,
+        return Inertia::render('lecturer/ShowViva', [
+            'viva' => [
+                'id' => $viva->id,
+                'title' => $viva->title,
+                'description' => $viva->description,
+                'batch' => $viva->batch,
+                'scheduled_at' => $viva->scheduled_at->format('Y-m-d H:i'),
+                'instructions' => $viva->instructions,
+                'status' => $viva->status,
+            ],
         ]);
     }
 }
