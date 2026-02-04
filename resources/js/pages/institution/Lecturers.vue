@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,90 +16,50 @@ import {
     Building2,
     User
 } from 'lucide-vue-next';
-import { Link } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
+
+interface Lecturer {
+    id: number;
+    name: string;
+    email: string;
+    employee_id: string;
+    department: string;
+    status: string;
+    totalSessions: number;
+    created_at: string;
+}
+
+const props = defineProps<{
+    lecturers: Lecturer[];
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/institution/dashboard' },
     { title: 'Lecturers', href: '/institution/lecturers' },
 ];
 
-// Mock data
-const lecturers = ref([
-    {
-        id: 1,
-        name: 'Dr. John Smith',
-        email: 'lecturer1@talenttune.com',
-        employee_id: 'EMP001',
-        department: 'Computer Science',
-        status: 'active',
-        totalSessions: 12,
-        createdAt: '2024-01-15',
-    },
-    {
-        id: 2,
-        name: 'Dr. Sarah Johnson',
-        email: 'lecturer2@talenttune.com',
-        employee_id: 'EMP002',
-        department: 'Software Engineering',
-        status: 'active',
-        totalSessions: 8,
-        createdAt: '2024-01-20',
-    },
-    {
-        id: 3,
-        name: 'Dr. Michael Williams',
-        email: 'lecturer3@talenttune.com',
-        employee_id: 'EMP003',
-        department: 'Web Development',
-        status: 'active',
-        totalSessions: 15,
-        createdAt: '2024-01-10',
-    },
-    {
-        id: 4,
-        name: 'Dr. Emily Brown',
-        email: 'lecturer4@talenttune.com',
-        employee_id: 'EMP004',
-        department: 'Data Structures',
-        status: 'active',
-        totalSessions: 10,
-        createdAt: '2024-01-18',
-    },
-    {
-        id: 5,
-        name: 'Dr. David Davis',
-        email: 'lecturer5@talenttune.com',
-        employee_id: 'EMP005',
-        department: 'Operating Systems',
-        status: 'active',
-        totalSessions: 9,
-        createdAt: '2024-01-22',
-    },
-]);
-
 const searchQuery = ref('');
 
 const filteredLecturers = computed(() => {
     if (!searchQuery.value) {
-        return lecturers.value;
+        return props.lecturers;
     }
-
     const query = searchQuery.value.toLowerCase();
-    return lecturers.value.filter(lecturer =>
+    return props.lecturers.filter(lecturer =>
         lecturer.name.toLowerCase().includes(query) ||
         lecturer.email.toLowerCase().includes(query) ||
-        lecturer.employee_id.toLowerCase().includes(query) ||
-        lecturer.department.toLowerCase().includes(query)
+        (lecturer.employee_id && lecturer.employee_id.toLowerCase().includes(query)) ||
+        (lecturer.department && lecturer.department.toLowerCase().includes(query))
     );
 });
 
 const handleDelete = (id: number) => {
     if (confirm('Are you sure you want to delete this lecturer?')) {
-        // In a real app, this would make an API call
-        lecturers.value = lecturers.value.filter(l => l.id !== id);
+        router.delete(`/institution/lecturers/${id}`);
     }
 };
+
+const formatDate = (iso: string) => iso ? new Date(iso).toLocaleDateString() : '';
 </script>
 
 <template>
@@ -171,11 +131,11 @@ const handleDelete = (id: number) => {
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-4 text-xs text-muted-foreground">
-                                        <span>Employee ID: {{ lecturer.employee_id }}</span>
-                                        <span>•</span>
+                                        <span v-if="lecturer.employee_id">Employee ID: {{ lecturer.employee_id }}</span>
+                                        <span v-if="lecturer.employee_id">•</span>
                                         <span>{{ lecturer.totalSessions }} sessions</span>
                                         <span>•</span>
-                                        <span>Joined: {{ lecturer.createdAt }}</span>
+                                        <span>Joined: {{ formatDate(lecturer.created_at) }}</span>
                                     </div>
                                 </div>
                             </div>

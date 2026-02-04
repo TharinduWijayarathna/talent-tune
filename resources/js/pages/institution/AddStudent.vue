@@ -1,34 +1,31 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Form } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import InputError from '@/components/InputError.vue';
+import { useForm } from '@inertiajs/vue3';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/institution/dashboard' },
     { title: 'Add Student', href: '/institution/students/add' },
 ];
 
-const form = ref({
+const form = useForm({
     name: '',
     email: '',
     password: '',
     password_confirmation: '',
-    studentId: '',
+    student_id: '',
     batch: '',
     department: '',
 });
 
 const submitForm = () => {
-    // In a real app, this would submit to the backend
-    console.log('Submitting student form:', form.value);
-    // After successful submission, redirect to students list
-    window.location.href = '/institution/students';
+    form.post('/institution/students');
 };
 </script>
 
@@ -50,7 +47,7 @@ const submitForm = () => {
                     <CardDescription>Enter the details of the new student</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <Form @submit.prevent="submitForm" class="space-y-4">
+                    <form @submit.prevent="submitForm" class="space-y-4">
                         <div class="grid gap-4 md:grid-cols-2">
                             <div class="space-y-2">
                                 <Label for="name">Full Name *</Label>
@@ -60,6 +57,7 @@ const submitForm = () => {
                                     placeholder="Jane Doe"
                                     required
                                 />
+                                <InputError :message="form.errors.name" />
                             </div>
                             <div class="space-y-2">
                                 <Label for="email">Email Address *</Label>
@@ -70,38 +68,39 @@ const submitForm = () => {
                                     placeholder="jane.doe@university.edu"
                                     required
                                 />
+                                <InputError :message="form.errors.email" />
                             </div>
                         </div>
 
                         <div class="grid gap-4 md:grid-cols-2">
                             <div class="space-y-2">
-                                <Label for="studentId">Student ID *</Label>
+                                <Label for="student_id">Student ID</Label>
                                 <Input
-                                    id="studentId"
-                                    v-model="form.studentId"
+                                    id="student_id"
+                                    v-model="form.student_id"
                                     placeholder="STU001"
-                                    required
                                 />
+                                <InputError :message="form.errors.student_id" />
                             </div>
                             <div class="space-y-2">
-                                <Label for="batch">Batch *</Label>
+                                <Label for="batch">Batch</Label>
                                 <Input
                                     id="batch"
                                     v-model="form.batch"
                                     placeholder="CS-2024"
-                                    required
                                 />
+                                <InputError :message="form.errors.batch" />
                             </div>
                         </div>
 
                         <div class="space-y-2">
-                            <Label for="department">Department *</Label>
+                            <Label for="department">Department</Label>
                             <Input
                                 id="department"
                                 v-model="form.department"
                                 placeholder="Computer Science"
-                                required
                             />
+                            <InputError :message="form.errors.department" />
                         </div>
 
                         <div class="grid gap-4 md:grid-cols-2">
@@ -113,6 +112,7 @@ const submitForm = () => {
                                     type="password"
                                     required
                                 />
+                                <InputError :message="form.errors.password" />
                             </div>
                             <div class="space-y-2">
                                 <Label for="password_confirmation">Confirm Password *</Label>
@@ -126,14 +126,14 @@ const submitForm = () => {
                         </div>
 
                         <div class="flex justify-end gap-4 pt-4">
-                            <Button type="button" variant="outline">
-                                Cancel
+                            <Button type="button" variant="outline" as-child>
+                                <Link href="/institution/students">Cancel</Link>
                             </Button>
-                            <Button type="submit">
+                            <Button type="submit" :disabled="form.processing">
                                 Add Student
                             </Button>
                         </div>
-                    </Form>
+                    </form>
                 </CardContent>
             </Card>
         </div>

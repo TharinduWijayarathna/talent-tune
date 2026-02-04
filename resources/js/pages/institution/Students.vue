@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,130 +17,53 @@ import {
     User,
     Users
 } from 'lucide-vue-next';
-import { Link } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
+
+interface Student {
+    id: number;
+    name: string;
+    email: string;
+    student_id: string;
+    batch: string;
+    department: string;
+    status: string;
+    completedVivas: number;
+    created_at: string;
+}
+
+const props = defineProps<{
+    students: Student[];
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/institution/dashboard' },
     { title: 'Students', href: '/institution/students' },
 ];
 
-// Mock data
-const students = ref([
-    {
-        id: 1,
-        name: 'Alice Johnson',
-        email: 'student1@talenttune.com',
-        student_id: 'STU001',
-        batch: 'CS-2024',
-        department: 'Computer Science',
-        status: 'active',
-        completedVivas: 5,
-        createdAt: '2024-01-15',
-    },
-    {
-        id: 2,
-        name: 'Bob Williams',
-        email: 'student2@talenttune.com',
-        student_id: 'STU002',
-        batch: 'CS-2024',
-        department: 'Computer Science',
-        status: 'active',
-        completedVivas: 3,
-        createdAt: '2024-01-15',
-    },
-    {
-        id: 3,
-        name: 'Charlie Brown',
-        email: 'student3@talenttune.com',
-        student_id: 'STU003',
-        batch: 'CS-2024',
-        department: 'Computer Science',
-        status: 'active',
-        completedVivas: 7,
-        createdAt: '2024-01-15',
-    },
-    {
-        id: 4,
-        name: 'Diana Martinez',
-        email: 'student4@talenttune.com',
-        student_id: 'STU004',
-        batch: 'CS-2024',
-        department: 'Computer Science',
-        status: 'active',
-        completedVivas: 4,
-        createdAt: '2024-01-15',
-    },
-    {
-        id: 5,
-        name: 'Ethan Davis',
-        email: 'student5@talenttune.com',
-        student_id: 'STU005',
-        batch: 'CS-2024',
-        department: 'Computer Science',
-        status: 'active',
-        completedVivas: 6,
-        createdAt: '2024-01-15',
-    },
-    {
-        id: 6,
-        name: 'Fiona Wilson',
-        email: 'student6@talenttune.com',
-        student_id: 'STU006',
-        batch: 'CS-2024',
-        department: 'Computer Science',
-        status: 'active',
-        completedVivas: 5,
-        createdAt: '2024-01-15',
-    },
-    {
-        id: 7,
-        name: 'Kevin White',
-        email: 'student11@talenttune.com',
-        student_id: 'STU011',
-        batch: 'CS-2023',
-        department: 'Computer Science',
-        status: 'active',
-        completedVivas: 8,
-        createdAt: '2023-09-01',
-    },
-    {
-        id: 8,
-        name: 'Penelope Hall',
-        email: 'student16@talenttune.com',
-        student_id: 'STU016',
-        batch: 'SE-2024',
-        department: 'Software Engineering',
-        status: 'active',
-        completedVivas: 4,
-        createdAt: '2024-01-15',
-    },
-]);
-
 const searchQuery = ref('');
 const selectedBatch = ref<string>('all');
 const selectedDepartment = ref<string>('all');
 
 const batches = computed(() => {
-    const uniqueBatches = new Set(students.value.map(s => s.batch));
+    const uniqueBatches = new Set(props.students.map(s => s.batch).filter(Boolean));
     return Array.from(uniqueBatches);
 });
 
 const departments = computed(() => {
-    const uniqueDepts = new Set(students.value.map(s => s.department));
+    const uniqueDepts = new Set(props.students.map(s => s.department).filter(Boolean));
     return Array.from(uniqueDepts);
 });
 
 const filteredStudents = computed(() => {
-    let filtered = students.value;
+    let filtered = props.students;
 
     if (searchQuery.value) {
         const query = searchQuery.value.toLowerCase();
         filtered = filtered.filter(student =>
             student.name.toLowerCase().includes(query) ||
             student.email.toLowerCase().includes(query) ||
-            student.student_id.toLowerCase().includes(query) ||
-            student.batch.toLowerCase().includes(query)
+            (student.student_id && student.student_id.toLowerCase().includes(query)) ||
+            (student.batch && student.batch.toLowerCase().includes(query))
         );
     }
 
@@ -157,10 +80,11 @@ const filteredStudents = computed(() => {
 
 const handleDelete = (id: number) => {
     if (confirm('Are you sure you want to delete this student?')) {
-        // In a real app, this would make an API call
-        students.value = students.value.filter(s => s.id !== id);
+        router.delete(`/institution/students/${id}`);
     }
 };
+
+const formatDate = (iso: string) => iso ? new Date(iso).toLocaleDateString() : '';
 </script>
 
 <template>
@@ -261,7 +185,7 @@ const handleDelete = (id: number) => {
                                         <span>•</span>
                                         <span>{{ student.completedVivas }} vivas completed</span>
                                         <span>•</span>
-                                        <span>Joined: {{ student.createdAt }}</span>
+                                        <span>Joined: {{ formatDate(student.created_at) }}</span>
                                     </div>
                                 </div>
                             </div>

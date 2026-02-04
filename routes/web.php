@@ -100,35 +100,25 @@ Route::prefix('lecturer')->middleware(['auth', 'verified', \App\Http\Middleware\
     })->name('lecturer.vivas.show');
 });
 
-// Institution Routes
+// Institution Routes (all data scoped to current institution)
 Route::prefix('institution')->middleware(['auth', 'verified', \App\Http\Middleware\EnsureInstitutionAccess::class])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('institution/Dashboard');
     })->name('institution.dashboard');
 
-    Route::get('lecturers', function () {
-        return Inertia::render('institution/Lecturers');
-    })->name('institution.lecturers');
+    Route::get('lecturers', [App\Http\Controllers\InstitutionUserController::class, 'lecturers'])->name('institution.lecturers');
+    Route::get('lecturers/add', [App\Http\Controllers\InstitutionUserController::class, 'createLecturer'])->name('institution.lecturers.add');
+    Route::post('lecturers', [App\Http\Controllers\InstitutionUserController::class, 'storeLecturer'])->name('institution.lecturers.store');
+    Route::get('lecturers/{id}/edit', [App\Http\Controllers\InstitutionUserController::class, 'editLecturer'])->name('institution.lecturers.edit');
+    Route::put('lecturers/{id}', [App\Http\Controllers\InstitutionUserController::class, 'updateLecturer'])->name('institution.lecturers.update');
+    Route::delete('lecturers/{id}', [App\Http\Controllers\InstitutionUserController::class, 'destroyLecturer'])->name('institution.lecturers.destroy');
 
-    Route::get('lecturers/add', function () {
-        return Inertia::render('institution/AddLecturer');
-    })->name('institution.lecturers.add');
-
-    Route::get('lecturers/{id}/edit', function ($id) {
-        return Inertia::render('institution/EditLecturer', ['lecturerId' => $id]);
-    })->name('institution.lecturers.edit');
-
-    Route::get('students', function () {
-        return Inertia::render('institution/Students');
-    })->name('institution.students');
-
-    Route::get('students/add', function () {
-        return Inertia::render('institution/AddStudent');
-    })->name('institution.students.add');
-
-    Route::get('students/{id}/edit', function ($id) {
-        return Inertia::render('institution/EditStudent', ['studentId' => $id]);
-    })->name('institution.students.edit');
+    Route::get('students', [App\Http\Controllers\InstitutionUserController::class, 'students'])->name('institution.students');
+    Route::get('students/add', [App\Http\Controllers\InstitutionUserController::class, 'createStudent'])->name('institution.students.add');
+    Route::post('students', [App\Http\Controllers\InstitutionUserController::class, 'storeStudent'])->name('institution.students.store');
+    Route::get('students/{id}/edit', [App\Http\Controllers\InstitutionUserController::class, 'editStudent'])->name('institution.students.edit');
+    Route::put('students/{id}', [App\Http\Controllers\InstitutionUserController::class, 'updateStudent'])->name('institution.students.update');
+    Route::delete('students/{id}', [App\Http\Controllers\InstitutionUserController::class, 'destroyStudent'])->name('institution.students.destroy');
 });
 
 // Admin Routes (no institution context required)
