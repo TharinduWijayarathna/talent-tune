@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Institution;
 use App\Models\User;
+use App\Models\Viva;
+use App\Models\VivaStudentSubmission;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class StudentController extends Controller
@@ -118,15 +121,84 @@ class StudentController extends Controller
         $this->authorizeStudent($request);
         $user = $request->user();
 
-        // TODO: When Viva model exists:
-        // $viva = Viva::where('institution_id', $institution->id)
-        //     ->where('id', $id)
-        //     ->where('student_id', $user->id) // or check if student is assigned
-        //     ->firstOrFail();
+        $viva = Viva::where('institution_id', $institution->id)
+            ->where('id', $id)
+            ->where('batch', $user->batch) // Student must be in the same batch
+            ->with('lecturer')
+            ->firstOrFail();
+
+        // Get or create student submission
+        $submission = VivaStudentSubmission::firstOrCreate(
+            [
+                'viva_id' => $viva->id,
+                'student_id' => $user->id,
+            ],
+            [
+                'status' => 'pending',
+            ]
+        );
 
         return Inertia::render('student/VivaAttend', [
-            'vivaId' => $id,
-            // 'viva' => $viva, // When model exists
+            'viva' => [
+                'id' => $viva->id,
+                'title' => $viva->title,
+                'description' => $viva->description,
+                'instructions' => $viva->instructions,
+                'scheduled_at' => $viva->scheduled_at->format('Y-m-d H:i'),
+                'lecturer' => $viva->lecturer->name,
+            ],
+            'submission' => [
+                'id' => $submission->id,
+                'document_path' => $submission->document_path,
+                'status' => $submission->status,
+            ],
+        ]);
+    }
+
+    /**
+     * Upload student document for viva
+     */
+    public function uploadVivaDocument(Request $request, int $id)
+    {
+        $institution = $this->institution($request);
+        $this->authorizeStudent($request);
+        $user = $request->user();
+
+        $viva = Viva::where('institution_id', $institution->id)
+            ->where('id', $id)
+            ->where('batch', $user->batch)
+            ->firstOrFail();
+
+        $validated = $request->validate([
+            'document' => ['required', 'file', 'mimes:pdf,doc,docx', 'max:10240'], // Max 10MB
+        ]);
+
+        // Get or create submission
+        $submission = VivaStudentSubmission::firstOrCreate(
+            [
+                'viva_id' => $viva->id,
+                'student_id' => $user->id,
+            ],
+            [
+                'status' => 'pending',
+            ]
+        );
+
+        // Delete old document if exists
+        if ($submission->document_path && Storage::exists($submission->document_path)) {
+            Storage::delete($submission->document_path);
+        }
+
+        // Store new document
+        $path = $validated['document']->store('vivas/student-documents', 'private');
+        $submission->document_path = $path;
+        $submission->status = 'in_progress';
+        $submission->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Document uploaded successfully',
+            'document_path' => $path,
         ]);
     }
 

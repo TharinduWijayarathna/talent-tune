@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Viva;
 
 use App\Http\Controllers\Controller;
+use App\Models\Viva;
+use App\Services\GeminiFileService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -17,16 +19,20 @@ class GeminiController extends Controller
     public function generateQuestions(Request $request)
     {
         $request->validate([
+            'vivaId' => 'nullable|integer|exists:vivas,id',
             'topic' => 'required|string|max:200',
             'description' => 'nullable|string|max:1000',
             'numQuestions' => 'nullable|integer|min:1|max:20',
             'difficulty' => 'nullable|string|in:beginner,intermediate,advanced',
+            'studentDocumentPath' => 'nullable|string',
         ]);
 
+        $vivaId = $request->input('vivaId');
         $topic = $request->input('topic');
         $description = $request->input('description', '');
         $numQuestions = $request->input('numQuestions', 5);
         $difficulty = $request->input('difficulty', 'intermediate');
+        $studentDocumentPath = $request->input('studentDocumentPath');
 
         $apiKey = config('services.google.gemini_api_key');
 
@@ -37,10 +43,37 @@ class GeminiController extends Controller
         }
 
         try {
-            $prompt = "Generate {$numQuestions} viva questions for the topic: {$topic}";
+            $prompt = '';
+            $geminiService = new GeminiFileService();
 
-            if ($description) {
-                $prompt .= "\n\nContext: {$description}";
+            // If vivaId is provided, use the viva's base prompt and enhance with student document
+            if ($vivaId) {
+                $viva = Viva::find($vivaId);
+                if ($viva && $viva->base_prompt) {
+                    $prompt = $viva->base_prompt;
+
+                    // Enhance prompt with student document if provided
+                    if ($studentDocumentPath && $viva->viva_background) {
+                        $prompt = $geminiService->enhancePromptWithStudentDocument(
+                            $studentDocumentPath,
+                            $viva->viva_background,
+                            $prompt,
+                            $viva->title
+                        );
+                    }
+                } else {
+                    // Fallback to basic prompt
+                    $prompt = "Generate {$numQuestions} viva questions for the topic: {$topic}";
+                    if ($description) {
+                        $prompt .= "\n\nContext: {$description}";
+                    }
+                }
+            } else {
+                // Legacy mode: generate basic prompt
+                $prompt = "Generate {$numQuestions} viva questions for the topic: {$topic}";
+                if ($description) {
+                    $prompt .= "\n\nContext: {$description}";
+                }
             }
 
             $prompt .= "\n\nDifficulty level: {$difficulty}";

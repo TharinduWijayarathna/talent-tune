@@ -5,9 +5,27 @@ import { Head } from '@inertiajs/vue3';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Mic, MicOff, Volume2, Pause, Play, Square } from 'lucide-vue-next';
+import { Mic, MicOff, Volume2, Pause, Play, Square, Upload, FileText, X } from 'lucide-vue-next';
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+
+const props = defineProps<{
+    viva?: {
+        id: number;
+        title: string;
+        description?: string;
+        instructions?: string;
+        scheduled_at: string;
+        lecturer: string;
+    };
+    submission?: {
+        id: number;
+        document_path?: string;
+        status: string;
+    };
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/student/dashboard' },
@@ -15,14 +33,27 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Attend Viva', href: '#' },
 ];
 
-// Mock viva session data
-const vivaSession = {
-    id: 1,
-    title: 'Database Systems Viva',
-    lecturer: 'Dr. Smith',
-    date: '2024-01-20',
-    time: '10:00 AM',
-};
+interface VivaSession {
+    id: number;
+    title: string;
+    description?: string;
+    instructions?: string;
+    scheduled_at: string;
+    lecturer: string;
+}
+
+const vivaSession = computed<VivaSession>(() => {
+    if (props.viva) {
+        return props.viva;
+    }
+    // Fallback for backward compatibility
+    return {
+        id: 0,
+        title: 'Viva Session',
+        lecturer: 'Lecturer',
+        scheduled_at: '',
+    };
+});
 
 const isRecording = ref(false);
 const isListening = ref(false);
@@ -46,12 +77,85 @@ const currentConversationResponse = ref<string | null>(null);
 const page = usePage();
 const csrfToken = computed(() => (page.props as any).csrfToken || '');
 
+// Document upload state
+const documentFile = ref<File | null>(null);
+const documentInputRef = ref<HTMLInputElement | null>(null);
+const isUploadingDocument = ref(false);
+const uploadedDocumentPath = ref<string | null>(props.submission?.document_path || null);
+const documentUploaded = ref(!!props.submission?.document_path);
+
 let timerInterval: ReturnType<typeof setInterval> | null = null;
 let currentAudio: HTMLAudioElement | null = null;
 let silenceTimer: ReturnType<typeof setTimeout> | null = null;
 let finalAnswer = '';
 
+const handleDocumentSelect = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    if (target.files && target.files[0]) {
+        const file = target.files[0];
+        // Check file size (max 10MB)
+        if (file.size > 10 * 1024 * 1024) {
+            alert('File is too large. Maximum size is 10MB.');
+            return;
+        }
+        // Check file type
+        const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+        if (!allowedTypes.includes(file.type)) {
+            alert('Invalid file type. Please upload PDF or Word document.');
+            return;
+        }
+        documentFile.value = file;
+    }
+};
+
+const uploadDocument = async () => {
+    if (!documentFile.value || !vivaSession.value.id) {
+        return;
+    }
+
+    isUploadingDocument.value = true;
+
+    try {
+        const formData = new FormData();
+        formData.append('document', documentFile.value);
+
+        const response = await fetch(`/student/vivas/${vivaSession.value.id}/upload-document`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken.value,
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            credentials: 'same-origin',
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: 'Failed to upload document' }));
+            throw new Error(errorData.error || 'Failed to upload document');
+        }
+
+        const data = await response.json();
+        uploadedDocumentPath.value = data.document_path;
+        documentUploaded.value = true;
+        documentFile.value = null;
+        if (documentInputRef.value) {
+            documentInputRef.value.value = '';
+        }
+        alert('Document uploaded successfully! You can now start the viva session.');
+    } catch (error: any) {
+        alert(`Error uploading document: ${error.message}`);
+    } finally {
+        isUploadingDocument.value = false;
+    }
+};
+
 const generateQuestions = async () => {
+    // Check if document is uploaded
+    if (!documentUploaded.value && !uploadedDocumentPath.value) {
+        alert('Please upload your document before starting the viva session.');
+        return false;
+    }
+
     isLoadingQuestions.value = true;
 
     try {
@@ -64,10 +168,12 @@ const generateQuestions = async () => {
             },
             credentials: 'same-origin',
             body: JSON.stringify({
-                topic: vivaSession.title,
-                description: vivaSession.title + ' viva session',
+                vivaId: vivaSession.value.id,
+                topic: vivaSession.value.title,
+                description: (vivaSession.value.description || vivaSession.value.title) + ' viva session',
                 numQuestions: 5,
                 difficulty: 'intermediate',
+                studentDocumentPath: uploadedDocumentPath.value,
             }),
         });
 
@@ -449,7 +555,7 @@ const evaluateAnswer = async (question: string, answerText: string) => {
             body: JSON.stringify({
                 question: question,
                 answer: answerText,
-                topic: vivaSession.title,
+                topic: vivaSession.value.title,
             }),
         });
 
@@ -552,7 +658,7 @@ const generateConversationalResponse = async (question: string, studentAnswer: s
             body: JSON.stringify({
                 question: question,
                 studentAnswer: studentAnswer,
-                topic: vivaSession.title,
+                topic: vivaSession.value.title,
                 conversationHistory: conversationHistory.value,
                 attemptNumber: conversationHistory.value.length + 1,
             }),
@@ -680,13 +786,57 @@ onUnmounted(() => {
         <div class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-2xl font-bold">{{ vivaSession.title }}</h1>
-                    <p class="text-muted-foreground">{{ vivaSession.lecturer }} • {{ vivaSession.date }} at {{ vivaSession.time }}</p>
+                    <h1 class="text-2xl font-bold">{{ vivaSession.value.title }}</h1>
+                    <p class="text-muted-foreground">{{ vivaSession.lecturer }} • {{ vivaSession.scheduled_at }}</p>
                 </div>
                 <Badge v-if="sessionActive" variant="default" class="text-sm">
                     Session Active
                 </Badge>
             </div>
+
+            <!-- Document Upload Section -->
+            <Card v-if="!documentUploaded" class="mb-6">
+                <CardHeader>
+                    <CardTitle>Upload Your Document</CardTitle>
+                    <CardDescription>Please upload your document before starting the viva session</CardDescription>
+                </CardHeader>
+                <CardContent class="space-y-4">
+                    <div class="space-y-2">
+                        <Label for="document">Document (PDF or Word)</Label>
+                        <div class="flex gap-4">
+                            <Input
+                                ref="documentInputRef"
+                                id="document"
+                                type="file"
+                                accept=".pdf,.doc,.docx"
+                                @change="handleDocumentSelect"
+                                class="flex-1"
+                            />
+                            <Button
+                                @click="uploadDocument"
+                                :disabled="!documentFile || isUploadingDocument"
+                            >
+                                <Upload class="h-4 w-4 mr-2" />
+                                <span v-if="isUploadingDocument">Uploading...</span>
+                                <span v-else>Upload</span>
+                            </Button>
+                        </div>
+                        <p class="text-xs text-muted-foreground">
+                            Maximum file size: 10MB. Supported formats: PDF, DOC, DOCX
+                        </p>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <!-- Document Uploaded Confirmation -->
+            <Card v-else class="mb-6 border-green-500">
+                <CardContent class="pt-6">
+                    <div class="flex items-center gap-2 text-green-600">
+                        <FileText class="h-5 w-5" />
+                        <span class="font-medium">Document uploaded successfully</span>
+                    </div>
+                </CardContent>
+            </Card>
 
             <div class="grid gap-6 md:grid-cols-3">
                 <!-- Voice Agent UI -->
@@ -810,7 +960,8 @@ onUnmounted(() => {
                         </div>
 
                         <div v-else class="text-center text-muted-foreground py-8">
-                            <p>Click "Start Session" to begin the viva</p>
+                            <p v-if="!documentUploaded">Please upload your document first</p>
+                            <p v-else>Click "Start Session" to begin the viva</p>
                         </div>
 
                         <!-- Session Controls -->
@@ -819,10 +970,11 @@ onUnmounted(() => {
                                 v-if="!sessionActive"
                                 @click="startSession"
                                 size="lg"
-                                :disabled="isLoadingQuestions"
+                                :disabled="isLoadingQuestions || !documentUploaded"
                             >
                                 <Play class="h-4 w-4 mr-2" />
                                 <span v-if="isLoadingQuestions">Generating Questions...</span>
+                                <span v-else-if="!documentUploaded">Upload Document First</span>
                                 <span v-else>Start Session</span>
                             </Button>
                             <Button

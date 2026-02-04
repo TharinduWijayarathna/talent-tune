@@ -39,14 +39,21 @@ const form = useForm({
 const availableBatches = computed(() => props.batches || []);
 
 const fileInputRef = ref<HTMLInputElement | null>(null);
-const uploadedFiles = ref<Array<{ name: string; size: number }>>([]);
+const uploadedFiles = ref<Array<{ name: string; size: number; file: File }>>([]);
 
 const handleFileUpload = (event: Event) => {
     const target = event.target as HTMLInputElement;
     if (target.files) {
         Array.from(target.files).forEach((file) => {
-            uploadedFiles.value.push({ name: file.name, size: file.size });
+            // Check file size (max 10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                alert(`File "${file.name}" is too large. Maximum size is 10MB.`);
+                return;
+            }
+            uploadedFiles.value.push({ name: file.name, size: file.size, file });
         });
+        // Reset input to allow selecting the same file again
+        target.value = '';
     }
 };
 
@@ -63,7 +70,27 @@ const formatFileSize = (bytes: number) => {
 };
 
 const submitForm = () => {
-    form.post('/lecturer/vivas');
+    // Create FormData to handle file uploads
+    const formData = new FormData();
+    
+    // Add form fields
+    formData.append('title', form.title);
+    formData.append('description', form.description || '');
+    formData.append('batch', form.batch);
+    formData.append('date', form.date);
+    formData.append('time', form.time);
+    formData.append('instructions', form.instructions || '');
+    
+    // Add files
+    uploadedFiles.value.forEach((fileItem, index) => {
+        formData.append(`lecture_materials[${index}]`, fileItem.file);
+    });
+    
+    // Submit using Inertia's post method with FormData
+    form.transform(() => formData).post('/lecturer/vivas', {
+        forceFormData: true,
+        preserveScroll: true,
+    });
 };
 </script>
 

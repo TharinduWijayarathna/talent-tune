@@ -4,7 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Institution;
 use App\Models\User;
+use App\Models\Viva;
+use App\Services\GeminiFileService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class LecturerController extends Controller
@@ -53,44 +57,35 @@ class LecturerController extends Controller
         $this->authorizeLecturer($request);
         $user = $request->user();
 
-        // TODO: When Viva model exists, query vivas scoped to institution
         $stats = [
-            'totalSessions' => 0,
-            'activeSessions' => 0,
+            'totalSessions' => Viva::where('institution_id', $institution->id)
+                ->where('lecturer_id', $user->id)
+                ->count(),
+            'activeSessions' => Viva::where('institution_id', $institution->id)
+                ->where('lecturer_id', $user->id)
+                ->where('status', 'upcoming')
+                ->count(),
             'totalStudents' => User::forInstitution($institution->id)
                 ->where('role', 'student')
                 ->count(),
-            'completedSessions' => 0,
+            'completedSessions' => Viva::where('institution_id', $institution->id)
+                ->where('lecturer_id', $user->id)
+                ->where('status', 'completed')
+                ->count(),
         ];
 
-        // TODO: When Viva model exists:
-        // $stats['totalSessions'] = Viva::where('institution_id', $institution->id)
-        //     ->where('lecturer_id', $user->id)
-        //     ->count();
-        // $stats['activeSessions'] = Viva::where('institution_id', $institution->id)
-        //     ->where('lecturer_id', $user->id)
-        //     ->where('status', 'upcoming')
-        //     ->count();
-        // $stats['completedSessions'] = Viva::where('institution_id', $institution->id)
-        //     ->where('lecturer_id', $user->id)
-        //     ->where('status', 'completed')
-        //     ->count();
-
-        $recentSessions = [];
-        // TODO: When Viva model exists:
-        // $recentSessions = Viva::where('institution_id', $institution->id)
-        //     ->where('lecturer_id', $user->id)
-        //     ->orderBy('scheduled_at', 'desc')
-        //     ->limit(5)
-        //     ->get()
-        //     ->map(fn ($viva) => [
-        //         'id' => $viva->id,
-        //         'title' => $viva->title,
-        //         'batch' => $viva->batch,
-        //         'date' => $viva->scheduled_at->format('Y-m-d'),
-        //         'students' => $viva->students->count(),
-        //         'status' => $viva->status,
-        //     ]);
+        $recentSessions = Viva::where('institution_id', $institution->id)
+            ->where('lecturer_id', $user->id)
+            ->orderBy('scheduled_at', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(fn ($viva) => [
+                'id' => $viva->id,
+                'title' => $viva->title,
+                'batch' => $viva->batch,
+                'date' => $viva->scheduled_at->format('Y-m-d'),
+                'status' => $viva->status,
+            ]);
 
         return Inertia::render('lecturer/Dashboard', [
             'stats' => $stats,
@@ -107,14 +102,13 @@ class LecturerController extends Controller
         $this->authorizeLecturer($request);
         $user = $request->user();
 
-        // TODO: When Viva model exists:
-        // $vivas = Viva::where('institution_id', $institution->id)
-        //     ->where('lecturer_id', $user->id)
-        //     ->orderBy('scheduled_at', 'desc')
-        //     ->get();
+        $vivas = Viva::where('institution_id', $institution->id)
+            ->where('lecturer_id', $user->id)
+            ->orderBy('scheduled_at', 'desc')
+            ->get();
 
         return Inertia::render('lecturer/Dashboard', [
-            'vivas' => [],
+            'vivas' => $vivas,
         ]);
     }
 
@@ -158,21 +152,42 @@ class LecturerController extends Controller
             'date' => ['required', 'date'],
             'time' => ['required', 'string'],
             'instructions' => ['nullable', 'string'],
+            'lecture_materials' => ['nullable', 'array'],
+            'lecture_materials.*' => ['file', 'mimes:pdf,doc,docx,ppt,pptx', 'max:10240'], // Max 10MB per file
         ]);
 
-        // TODO: When Viva model exists:
-        // $viva = Viva::create([
-        //     'title' => $validated['title'],
-        //     'description' => $validated['description'],
-        //     'batch' => $validated['batch'],
-        //     'scheduled_at' => Carbon::parse($validated['date'] . ' ' . $validated['time']),
-        //     'instructions' => $validated['instructions'],
-        //     'institution_id' => $institution->id, // Automatically scoped
-        //     'lecturer_id' => $user->id,
-        //     'status' => 'upcoming',
-        // ]);
+        // Store uploaded files
+        $storedFiles = [];
+        if ($request->hasFile('lecture_materials')) {
+            foreach ($request->file('lecture_materials') as $file) {
+                $path = $file->store('vivas/lecture-materials', 'private');
+                $storedFiles[] = $path;
+            }
+        }
 
-        // For now, just redirect
+        // Process files with Gemini to generate background and base prompt
+        $geminiService = new GeminiFileService();
+        $processedData = $geminiService->processLectureMaterials(
+            $storedFiles,
+            $validated['title'],
+            $validated['description'] ?? null
+        );
+
+        // Create viva record
+        $viva = Viva::create([
+            'title' => $validated['title'],
+            'description' => $validated['description'] ?? null,
+            'batch' => $validated['batch'],
+            'scheduled_at' => Carbon::parse($validated['date'] . ' ' . $validated['time']),
+            'instructions' => $validated['instructions'] ?? null,
+            'lecture_materials' => $storedFiles,
+            'viva_background' => $processedData['background'],
+            'base_prompt' => $processedData['base_prompt'],
+            'institution_id' => $institution->id,
+            'lecturer_id' => $user->id,
+            'status' => 'upcoming',
+        ]);
+
         return redirect()->route('lecturer.dashboard')->with('status', 'Viva session created successfully.');
     }
 
@@ -185,13 +200,12 @@ class LecturerController extends Controller
         $this->authorizeLecturer($request);
         $user = $request->user();
 
-        // TODO: When Viva model exists:
-        // $viva = Viva::where('institution_id', $institution->id)
-        //     ->where('lecturer_id', $user->id)
-        //     ->findOrFail($id);
+        $viva = Viva::where('institution_id', $institution->id)
+            ->where('lecturer_id', $user->id)
+            ->findOrFail($id);
 
         return Inertia::render('lecturer/Dashboard', [
-            'viva' => null, // When model exists, pass $viva
+            'viva' => $viva,
         ]);
     }
 }
