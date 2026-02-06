@@ -6,6 +6,7 @@ use App\Models\Institution;
 use App\Models\User;
 use App\Models\Viva;
 use App\Models\VivaStudentSubmission;
+use App\Services\RubricService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -199,6 +200,54 @@ class StudentController extends Controller
             'success' => true,
             'message' => 'Document uploaded successfully',
             'document_path' => $path,
+        ]);
+    }
+
+    /**
+     * Complete viva submission: save answers (with 1-10 scores), call rubric service, store rubric score.
+     */
+    public function completeVivaSubmission(Request $request)
+    {
+        $this->authorizeStudent($request);
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'submission_id' => ['required', 'integer', 'exists:viva_student_submissions,id'],
+            'answers' => ['required', 'array', 'size:5'],
+            'answers.*.question' => ['required', 'string'],
+            'answers.*.answer' => ['required', 'string'],
+            'answers.*.score_1_10' => ['required', 'integer', 'min:1', 'max:10'],
+            'answers.*.feedback' => ['nullable', 'string'],
+            'answers.*.correctPoints' => ['nullable', 'array'],
+            'answers.*.improvements' => ['nullable', 'array'],
+        ]);
+
+        $submission = VivaStudentSubmission::where('id', $validated['submission_id'])
+            ->where('student_id', $user->id)
+            ->firstOrFail();
+
+        $answers = $validated['answers'];
+        $scores = array_map(fn ($a) => (int) $a['score_1_10'], $answers);
+
+        $submission->answers = $answers;
+        $submission->status = 'completed';
+
+        $rubric = app(RubricService::class)->getRubricScore($scores);
+        if ($rubric['success']) {
+            $submission->total_score = (int) round($rubric['score']);
+            $submission->feedback = null; // or aggregate if you want
+        } else {
+            // Store average of 1-10 scaled to 0-100 as fallback if Python service fails
+            $submission->total_score = (int) round(array_sum($scores) / 5 * 10);
+            $submission->feedback = 'Rubric service unavailable; score is average of question scores.';
+        }
+
+        $submission->save();
+
+        return response()->json([
+            'success' => true,
+            'rubric_score' => $submission->total_score,
+            'rubric_from_service' => $rubric['success'],
         ]);
     }
 

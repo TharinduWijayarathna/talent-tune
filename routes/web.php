@@ -110,6 +110,7 @@ Route::prefix('student')->middleware(['auth', 'verified', \App\Http\Middleware\E
     Route::get('vivas', [App\Http\Controllers\StudentController::class, 'vivas'])->name('student.vivas');
     Route::get('vivas/{id}/attend', [App\Http\Controllers\StudentController::class, 'attendViva'])->name('student.vivas.attend');
     Route::post('vivas/{id}/upload-document', [App\Http\Controllers\StudentController::class, 'uploadVivaDocument'])->name('student.vivas.upload-document');
+    Route::post('vivas/complete-submission', [App\Http\Controllers\StudentController::class, 'completeVivaSubmission'])->name('student.vivas.complete-submission');
     Route::get('marks', [App\Http\Controllers\StudentController::class, 'marks'])->name('student.marks');
 });
 

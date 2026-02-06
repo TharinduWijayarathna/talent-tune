@@ -202,13 +202,13 @@ class GeminiController extends Controller
             }
 
             $prompt .= "Please provide:\n";
-            $prompt .= "1. A score out of 100\n";
-            $prompt .= "2. Brief feedback (2-3 sentences)\n";
+            $prompt .= "1. A score from 1 to 10 (integer, 1=very poor, 10=excellent)\n";
+            $prompt .= "2. Brief feedback (2-3 sentences) for the student\n";
             $prompt .= "3. Key points that were covered correctly\n";
             $prompt .= "4. Areas that need improvement (if any)\n\n";
             $prompt .= "Return your response as a JSON object with the following structure:\n";
             $prompt .= "{\n";
-            $prompt .= '  "score": <number 0-100>,\n';
+            $prompt .= '  "score_1_10": <integer 1-10>,\n';
             $prompt .= '  "feedback": "<brief feedback text>",\n';
             $prompt .= '  "correctPoints": ["point1", "point2", ...],\n';
             $prompt .= '  "improvements": ["area1", "area2", ...]\n';
@@ -255,9 +255,10 @@ class GeminiController extends Controller
                 $evaluation = json_decode($matches[0], true);
 
                 if (json_last_error() === JSON_ERROR_NONE && is_array($evaluation)) {
-                    // Ensure all required fields exist
-                    $evaluation['score'] = isset($evaluation['score']) ? (int) $evaluation['score'] : 0;
-                    $evaluation['score'] = max(0, min(100, $evaluation['score'])); // Clamp between 0-100
+                    // score_1_10: stored, not shown to user
+                    $score1_10 = isset($evaluation['score_1_10']) ? (int) $evaluation['score_1_10'] : (isset($evaluation['score']) ? (int) round($evaluation['score'] / 10) : 5);
+                    $score1_10 = max(1, min(10, $score1_10));
+                    $evaluation['score_1_10'] = $score1_10;
                     $evaluation['feedback'] = $evaluation['feedback'] ?? 'No feedback provided';
                     $evaluation['correctPoints'] = $evaluation['correctPoints'] ?? [];
                     $evaluation['improvements'] = $evaluation['improvements'] ?? [];
@@ -267,16 +268,14 @@ class GeminiController extends Controller
             }
 
             // Fallback: parse text response manually
-            $score = 0;
+            $score1_10 = 5;
             $feedback = 'Could not parse evaluation response';
 
-            // Try to extract score
             if (preg_match('/score[:\s]+(\d+)/i', $text, $scoreMatch)) {
-                $score = (int) $scoreMatch[1];
-                $score = max(0, min(100, $score));
+                $score1_10 = (int) $scoreMatch[1];
+                $score1_10 = max(1, min(10, $score1_10));
             }
 
-            // Use first few sentences as feedback
             $sentences = preg_split('/[.!?]+/', $text);
             $feedback = trim($sentences[0] ?? $text);
             if (strlen($feedback) > 200) {
@@ -284,7 +283,7 @@ class GeminiController extends Controller
             }
 
             return response()->json([
-                'score' => $score,
+                'score_1_10' => $score1_10,
                 'feedback' => $feedback,
                 'correctPoints' => [],
                 'improvements' => [],

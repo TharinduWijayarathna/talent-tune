@@ -40,4 +40,8 @@ return [
         'gemini_api_key' => env('GEMINI_API_KEY'),
     ],
 
+    'rubric' => [
+        'url' => env('RUBRIC_SERVICE_URL', 'http://127.0.0.1:5000'),
+    ],
+
 ];
