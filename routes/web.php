@@ -34,16 +34,28 @@ Route::get('/', function () {
             $subdomain = $parts[0];
         }
         
-        // Look up institution by slug
+        // Look up institution by slug (check both active and inactive)
         if ($subdomain && $subdomain !== 'www' && $subdomain !== 'app' && $subdomain !== 'talenttune') {
-            $institution = \App\Models\Institution::where('slug', $subdomain)
-                ->where('is_active', true)
-                ->first();
+            $institution = \App\Models\Institution::where('slug', $subdomain)->first();
         }
     }
     
-    // If institution detected, show institution-specific homepage
+    // If institution detected
     if ($institution) {
+        // If institution is inactive, show pending activation page
+        if (!$institution->is_active) {
+            return Inertia::render('home/InstitutionPending', [
+                'institution' => [
+                    'id' => $institution->id,
+                    'name' => $institution->name,
+                    'slug' => $institution->slug,
+                    'email' => $institution->email,
+                    'contact_person' => $institution->contact_person,
+                ],
+            ]);
+        }
+        
+        // If active, show institution-specific homepage
         return Inertia::render('home/HomePage', [
             'canRegister' => Features::enabled(Features::registration()),
             'institution' => [

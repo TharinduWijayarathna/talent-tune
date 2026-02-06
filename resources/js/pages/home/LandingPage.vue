@@ -27,6 +27,7 @@ import {
 } from 'lucide-vue-next'
 import { login } from '@/routes'
 import { ref, onMounted, computed } from 'vue'
+import { usePage } from '@inertiajs/vue3'
 import { useDomain } from '@/composables/useDomain'
 
 interface Props {
@@ -37,7 +38,11 @@ withDefaults(defineProps<Props>(), {
   canRegister: true,
 })
 
+const page = usePage()
 const { baseDomain } = useDomain()
+
+// Check if we're on main domain (no institution = main domain)
+const isMainDomain = computed(() => !page.props.institution)
 
 const howItWorksSteps = computed(() => [
   {
@@ -113,7 +118,9 @@ onMounted(() => {
             >
               Register Your University
             </Link>
+            <!-- Hide login link on main domain, but keep /login route accessible for admins -->
             <Link
+              v-if="!isMainDomain"
               :href="login()"
               class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
@@ -192,7 +199,8 @@ onMounted(() => {
                 <Building2 class="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
-            <Link :href="login()">
+            <!-- Hide login button on main domain -->
+            <Link v-if="!isMainDomain" :href="login()">
               <Button size="lg" variant="outline" class="w-full sm:w-auto border-2 hover:bg-muted/50">
                 Sign In
               </Button>
@@ -459,7 +467,8 @@ onMounted(() => {
                 <ArrowRight class="ml-2 h-4 w-4" />
               </Button>
             </Link>
-            <Link :href="login()">
+            <!-- Hide login button on main domain -->
+            <Link v-if="!isMainDomain" :href="login()">
               <Button size="lg" variant="outline" class="w-full sm:w-auto bg-transparent border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
                 Sign In
               </Button>

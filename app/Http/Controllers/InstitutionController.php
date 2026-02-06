@@ -3,7 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Institution;
+use App\Models\User;
+use App\Notifications\InstitutionActivated;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\AnonymousNotifiable;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
@@ -110,13 +116,99 @@ class InstitutionController extends Controller
             'is_active' => 'required|boolean',
         ]);
 
+        $wasInactive = !$institution->is_active;
+        $isActivating = $wasInactive && $request->is_active;
+
         $institution->update([
             'is_active' => $request->is_active,
         ]);
 
+        // If activating, create admin user and send email
+        if ($isActivating) {
+            $this->activateInstitution($institution, $request);
+        }
+
         return back()->with('success', $request->is_active 
-            ? 'Institution activated successfully.' 
+            ? 'Institution activated successfully. Admin user created and credentials sent via email.' 
             : 'Institution deactivated successfully.');
+    }
+
+    /**
+     * Activate institution: create admin user and send credentials.
+     */
+    protected function activateInstitution(Institution $institution, Request $request): void
+    {
+        // Check if admin user already exists
+        $existingAdmin = User::where('institution_id', $institution->id)
+            ->where('role', 'institution')
+            ->first();
+
+        if ($existingAdmin) {
+            // Admin already exists, just send activation email
+            $password = Str::random(12);
+            $existingAdmin->update([
+                'password' => Hash::make($password),
+            ]);
+
+            $this->sendActivationEmail($institution, $existingAdmin->email, $password, $request);
+            return;
+        }
+
+        // Generate email and password for admin user
+        $adminEmail = $institution->email ?? ($institution->settings['email'] ?? null);
+        
+        if (!$adminEmail) {
+            Log::warning("Cannot activate institution {$institution->id}: No email address found");
+            return;
+        }
+
+        // Check if user with this email already exists
+        $existingUser = User::where('email', $adminEmail)->first();
+        
+        if ($existingUser) {
+            // Update existing user to be admin for this institution
+            $password = Str::random(12);
+            $existingUser->update([
+                'institution_id' => $institution->id,
+                'role' => 'institution',
+                'password' => Hash::make($password),
+            ]);
+
+            $this->sendActivationEmail($institution, $adminEmail, $password, $request);
+            return;
+        }
+
+        // Create new admin user
+        $password = Str::random(12);
+        $adminUser = User::create([
+            'name' => $institution->contact_person ?? $institution->name,
+            'email' => $adminEmail,
+            'password' => Hash::make($password),
+            'role' => 'institution',
+            'institution_id' => $institution->id,
+            'department' => 'Administration',
+            'email_verified_at' => now(),
+        ]);
+
+        // Send activation email
+        $this->sendActivationEmail($institution, $adminEmail, $password, $request);
+    }
+
+    /**
+     * Send activation email with credentials.
+     */
+    protected function sendActivationEmail(Institution $institution, string $email, string $password, Request $request): void
+    {
+        // Get base domain
+        $host = $request->getHost();
+        $parts = explode('.', $host);
+        $baseDomain = str_ends_with($host, '.test') 
+            ? (count($parts) >= 2 ? implode('.', array_slice($parts, -2)) : $host)
+            : (count($parts) >= 2 ? implode('.', array_slice($parts, -2)) : $host);
+
+        // Send notification directly to email address
+        Notification::route('mail', $email)
+            ->notify(new InstitutionActivated($institution, $email, $password, $baseDomain));
     }
 
     /**
