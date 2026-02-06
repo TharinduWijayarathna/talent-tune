@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Building2, Check, X, Trash2, Search, Mail, Phone, MapPin, User } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
+import { useDomain } from '@/composables/useDomain';
 
 interface Institution {
     id: number;
@@ -26,6 +27,8 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+const { baseDomain } = useDomain();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/admin/dashboard' },
@@ -143,7 +146,7 @@ const activeCount = computed(() => props.institutions.filter(i => i.is_active).l
                                     <div>
                                         <h3 class="font-semibold">{{ institution.name }}</h3>
                                         <p class="text-sm text-muted-foreground">
-                                            {{ institution.slug }}.talenttune.com
+                                            {{ institution.slug }}.{{ baseDomain }}
                                         </p>
                                     </div>
                                 </div>

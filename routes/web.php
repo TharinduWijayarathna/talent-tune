@@ -16,13 +16,43 @@ Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
     ->name('logout');
 
 Route::get('/', function () {
+    // Try to get institution from request attributes (set by middleware)
     $institution = request()->attributes->get('institution');
+    
+    // If not found, try to detect it directly (fallback)
+    if (!$institution) {
+        $host = request()->getHost();
+        $parts = explode('.', $host);
+        
+        // Extract subdomain
+        $subdomain = null;
+        if (count($parts) >= 3) {
+            // e.g., tamara-pratt.talenttune.test -> tamara-pratt
+            $subdomain = $parts[0];
+        } elseif (count($parts) === 2 && str_ends_with($host, '.test')) {
+            // e.g., tamara-pratt.test -> tamara-pratt
+            $subdomain = $parts[0];
+        }
+        
+        // Look up institution by slug
+        if ($subdomain && $subdomain !== 'www' && $subdomain !== 'app' && $subdomain !== 'talenttune') {
+            $institution = \App\Models\Institution::where('slug', $subdomain)
+                ->where('is_active', true)
+                ->first();
+        }
+    }
     
     // If institution detected, show institution-specific homepage
     if ($institution) {
         return Inertia::render('home/HomePage', [
             'canRegister' => Features::enabled(Features::registration()),
-            'institution' => $institution,
+            'institution' => [
+                'id' => $institution->id,
+                'name' => $institution->name,
+                'slug' => $institution->slug,
+                'logo_url' => $institution->logo_url,
+                'primary_color' => $institution->primary_color,
+            ],
         ]);
     }
     

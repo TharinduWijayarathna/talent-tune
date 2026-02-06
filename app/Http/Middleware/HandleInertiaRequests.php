@@ -39,6 +39,13 @@ class HandleInertiaRequests extends Middleware
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
         $institution = $request->attributes->get('institution');
+        
+        // Get base domain (e.g., talenttune.test or talenttune.com)
+        $host = $request->getHost();
+        $parts = explode('.', $host);
+        $baseDomain = str_ends_with($host, '.test') 
+            ? (count($parts) >= 2 ? implode('.', array_slice($parts, -2)) : $host)
+            : (count($parts) >= 2 ? implode('.', array_slice($parts, -2)) : $host);
 
         return [
             ...parent::share($request),
@@ -56,6 +63,7 @@ class HandleInertiaRequests extends Middleware
             ] : null,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'csrfToken' => $request->session()->token(),
+            'baseDomain' => $baseDomain,
         ];
     }
 }

@@ -3,6 +3,7 @@ import { Head, Link } from '@inertiajs/vue3'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { GraduationCap, CheckCircle2, Clock, Mail } from 'lucide-vue-next'
+import { useDomain } from '@/composables/useDomain'
 
 interface Props {
     institution: {
@@ -12,7 +13,8 @@ interface Props {
     }
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
+const { baseDomain } = useDomain()
 </script>
 
 <template>
@@ -58,7 +60,7 @@ defineProps<Props>()
                                             <ul class="space-y-2 text-sm text-muted-foreground">
                                                 <li>• Our admin team will review your registration</li>
                                                 <li>• You'll receive an email notification once your account is activated</li>
-                                                <li>• Once activated, access your portal at: <code class="bg-background px-2 py-1 rounded">{{ institution.slug }}.talenttune.com</code></li>
+                                                <li>• Once activated, access your portal at: <code class="bg-background px-2 py-1 rounded">{{ institution.slug }}.{{ baseDomain }}</code></li>
                                             </ul>
                                         </div>
                                     </div>

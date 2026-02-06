@@ -26,7 +26,8 @@ import {
   ChevronDown
 } from 'lucide-vue-next'
 import { login } from '@/routes'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { useDomain } from '@/composables/useDomain'
 
 interface Props {
   canRegister: boolean
@@ -35,6 +36,29 @@ interface Props {
 withDefaults(defineProps<Props>(), {
   canRegister: true,
 })
+
+const { baseDomain } = useDomain()
+
+const howItWorksSteps = computed(() => [
+  {
+    number: '1',
+    title: 'Register Your Institution',
+    description: 'Fill out the registration form with your institution details. Our admin team will review and activate your account within 24 hours.',
+    icon: Building2
+  },
+  {
+    number: '2',
+    title: 'Get Your Subdomain',
+    description: `Once activated, access your institution portal via your custom subdomain (e.g., your-university.${baseDomain.value}).`,
+    icon: Globe
+  },
+  {
+    number: '3',
+    title: 'Start Managing Vivas',
+    description: 'Add lecturers and students, create viva sessions, and leverage AI-powered question generation and evaluation.',
+    icon: Zap
+  }
+])
 
 const isVisible = ref(false)
 const statsVisible = ref(false)
@@ -315,26 +339,7 @@ onMounted(() => {
         </div>
         <div class="grid gap-8 md:grid-cols-3 max-w-5xl mx-auto">
           <div 
-            v-for="(step, index) in [
-              {
-                number: '1',
-                title: 'Register Your Institution',
-                description: 'Fill out the registration form with your institution details. Our admin team will review and activate your account within 24 hours.',
-                icon: Building2
-              },
-              {
-                number: '2',
-                title: 'Get Your Subdomain',
-                description: 'Once activated, access your institution portal via your custom subdomain (e.g., your-university.talenttune.com).',
-                icon: Globe
-              },
-              {
-                number: '3',
-                title: 'Start Managing Vivas',
-                description: 'Add lecturers and students, create viva sessions, and leverage AI-powered question generation and evaluation.',
-                icon: Zap
-              }
-            ]"
+            v-for="(step, index) in howItWorksSteps"
             :key="index"
             class="text-center relative"
           >

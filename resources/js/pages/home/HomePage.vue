@@ -17,7 +17,7 @@ import {
   Globe
 } from 'lucide-vue-next'
 import { dashboard, login, register } from '@/routes'
-import { computed } from 'vue'
+import { computed, onMounted, watch } from 'vue'
 import type { Institution } from '@/types'
 
 interface Props {
@@ -34,6 +34,36 @@ const page = usePage()
 const institution = computed(() => props.institution || page.props.institution)
 const institutionName = computed(() => institution.value?.name || 'TalentTune')
 const institutionLogo = computed(() => institution.value?.logo_url)
+const institutionColor = computed(() => institution.value?.primary_color)
+
+// Apply institution color as CSS variable if available
+onMounted(() => {
+    applyInstitutionColor()
+})
+watch(institutionColor, () => {
+    applyInstitutionColor()
+})
+
+const applyInstitutionColor = () => {
+    if (institutionColor.value) {
+        // Apply as CSS variable
+        document.documentElement.style.setProperty('--institution-primary', institutionColor.value)
+        // Also apply to primary color classes via style tag
+        const styleId = 'institution-branding'
+        let styleElement = document.getElementById(styleId)
+        if (!styleElement) {
+            styleElement = document.createElement('style')
+            styleElement.id = styleId
+            document.head.appendChild(styleElement)
+        }
+        styleElement.textContent = `
+            .institution-primary { color: ${institutionColor.value} !important; }
+            .institution-bg-primary { background-color: ${institutionColor.value} !important; }
+            .institution-border-primary { border-color: ${institutionColor.value} !important; }
+            .institution-gradient { background: linear-gradient(to right, ${institutionColor.value}, ${institutionColor.value}80) !important; }
+        `
+    }
+}
 </script>
 
 <template>
@@ -46,7 +76,7 @@ const institutionLogo = computed(() => institution.value?.logo_url)
         <div class="flex h-16 items-center justify-between">
           <div class="flex items-center gap-2">
             <img v-if="institutionLogo" :src="institutionLogo" :alt="institutionName" class="h-8 w-8 rounded" />
-            <GraduationCap v-else class="h-6 w-6 text-primary" />
+            <GraduationCap v-else :class="institutionColor ? 'institution-primary' : 'text-primary'" class="h-6 w-6" />
             <span class="text-xl font-bold">{{ institutionName }}</span>
           </div>
           <div class="flex items-center gap-4">
@@ -82,31 +112,50 @@ const institutionLogo = computed(() => institution.value?.logo_url)
       <div class="container mx-auto px-4 sm:px-6 lg:px-8">
         <div class="mx-auto max-w-4xl text-center">
           <div class="mb-6 inline-flex items-center gap-2 rounded-full border bg-muted px-4 py-1.5 text-sm">
-            <Sparkles class="h-4 w-4 text-primary" />
-            <span>AI-Powered Viva Management</span>
+            <Sparkles :class="institutionColor ? '' : 'text-primary'" :style="institutionColor ? { color: institutionColor } : {}" class="h-4 w-4" />
+            <span>{{ institutionName }} - AI-Powered Viva Management</span>
           </div>
           <h1 class="mb-6 text-4xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
-            Welcome to
-            <span class="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            <span v-if="$page.props.auth?.user">Welcome back to</span>
+            <span v-else>Welcome to</span>
+            <span 
+              :class="institutionColor ? '' : 'bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent'"
+              :style="institutionColor ? { color: institutionColor } : {}"
+            >
               {{ institutionName }}
             </span>
           </h1>
           <p class="mb-10 text-lg text-muted-foreground sm:text-xl lg:text-2xl">
-            Streamline viva examinations with intelligent question generation, 
-            automated evaluation, and seamless management for institutions, lecturers, and students.
+            <span v-if="$page.props.auth?.user">
+              You're logged in! Access your dashboard to manage viva sessions, view your progress, and more.
+            </span>
+            <span v-else>
+              Streamline viva examinations with intelligent question generation, 
+              automated evaluation, and seamless management for institutions, lecturers, and students.
+            </span>
           </p>
           <div class="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link v-if="canRegister" :href="register()">
-              <Button size="lg" class="w-full sm:w-auto">
-                Start Free Trial
-                <ArrowRight class="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-            <Link :href="login()">
-              <Button size="lg" variant="outline" class="w-full sm:w-auto">
-                Sign In
-              </Button>
-            </Link>
+            <template v-if="$page.props.auth?.user">
+              <Link :href="dashboard()">
+                <Button size="lg" class="w-full sm:w-auto">
+                  Go to Dashboard
+                  <ArrowRight class="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </template>
+            <template v-else>
+              <Link v-if="canRegister" :href="register()">
+                <Button size="lg" class="w-full sm:w-auto">
+                  Start Free Trial
+                  <ArrowRight class="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+              <Link :href="login()">
+                <Button size="lg" variant="outline" class="w-full sm:w-auto">
+                  Sign In
+                </Button>
+              </Link>
+            </template>
           </div>
         </div>
       </div>
@@ -249,7 +298,7 @@ const institutionLogo = computed(() => institution.value?.logo_url)
           <div class="grid gap-8 lg:grid-cols-2 lg:gap-12">
             <div>
               <h2 class="text-3xl font-bold tracking-tight sm:text-4xl mb-6">
-                Why Choose TalentTune?
+                Why Choose {{ institutionName }}?
               </h2>
               <ul class="space-y-4">
                 <li class="flex items-start gap-3">
@@ -340,27 +389,43 @@ const institutionLogo = computed(() => institution.value?.logo_url)
     </section>
 
     <!-- CTA Section -->
-    <section class="bg-primary py-20 sm:py-32">
+    <section :class="institutionColor ? 'institution-bg-primary' : 'bg-primary'" class="py-20 sm:py-32">
       <div class="container mx-auto px-4 sm:px-6 lg:px-8">
         <div class="mx-auto max-w-2xl text-center">
           <h2 class="text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl mb-4">
-            Ready to Transform Your Viva Sessions?
+            <span v-if="$page.props.auth?.user">Ready to Continue Your Journey?</span>
+            <span v-else>Ready to Transform Your Viva Sessions?</span>
           </h2>
           <p class="text-lg text-primary-foreground/90 mb-8">
-            Join institutions worldwide using TalentTune to streamline their examination process.
+            <span v-if="$page.props.auth?.user">
+              Access your dashboard to manage sessions, view results, and track your progress.
+            </span>
+            <span v-else>
+              Join {{ institutionName }} in streamlining your examination process with AI-powered viva management.
+            </span>
           </p>
           <div class="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link v-if="canRegister" :href="register()">
-              <Button size="lg" variant="secondary" class="w-full sm:w-auto">
-                Get Started Free
-                <ArrowRight class="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-            <Link :href="login()">
-              <Button size="lg" variant="outline" class="w-full sm:w-auto bg-transparent border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10">
-                Learn More
-              </Button>
-            </Link>
+            <template v-if="$page.props.auth?.user">
+              <Link :href="dashboard()">
+                <Button size="lg" variant="secondary" class="w-full sm:w-auto">
+                  Go to Dashboard
+                  <ArrowRight class="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </template>
+            <template v-else>
+              <Link v-if="canRegister" :href="register()">
+                <Button size="lg" variant="secondary" class="w-full sm:w-auto">
+                  Get Started Free
+                  <ArrowRight class="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+              <Link :href="login()">
+                <Button size="lg" variant="outline" class="w-full sm:w-auto bg-transparent border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10">
+                  Learn More
+                </Button>
+              </Link>
+            </template>
           </div>
         </div>
       </div>
@@ -372,11 +437,12 @@ const institutionLogo = computed(() => institution.value?.logo_url)
         <div class="grid gap-8 md:grid-cols-4">
           <div class="md:col-span-2">
             <div class="flex items-center gap-2 mb-4">
-              <GraduationCap class="h-6 w-6 text-primary" />
-              <span class="text-xl font-bold">TalentTune</span>
+              <img v-if="institutionLogo" :src="institutionLogo" :alt="institutionName" class="h-6 w-6 rounded" />
+              <GraduationCap v-else :class="institutionColor ? '' : 'text-primary'" :style="institutionColor ? { color: institutionColor } : {}" class="h-6 w-6" />
+              <span class="text-xl font-bold">{{ institutionName }}</span>
             </div>
             <p class="text-sm text-muted-foreground max-w-md">
-              AI-powered viva management platform designed to revolutionize how educational institutions conduct examinations.
+              AI-powered viva management platform designed to revolutionize how {{ institutionName }} conducts examinations.
             </p>
           </div>
           <div>
@@ -397,7 +463,7 @@ const institutionLogo = computed(() => institution.value?.logo_url)
           </div>
         </div>
         <div class="mt-8 border-t pt-8 text-center text-sm text-muted-foreground">
-          <p>&copy; {{ new Date().getFullYear() }} TalentTune. All rights reserved.</p>
+          <p>&copy; {{ new Date().getFullYear() }} {{ institutionName }}. All rights reserved.</p>
         </div>
       </div>
     </footer>

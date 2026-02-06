@@ -162,16 +162,16 @@ class AuthenticatedSessionController extends Controller
         $host = $request->getHost();
         $subdomain = $this->extractSubdomain($host);
 
-        // If we're already on the correct subdomain, redirect to role-specific dashboard
+        // If we're already on the correct subdomain, redirect to home page (institution landing page)
         if ($subdomain === $institution->slug) {
-            return $this->getRoleDashboard($user->role);
+            return '/';
         }
 
-        // If we're on the main domain or wrong subdomain, redirect to institution subdomain
+        // If we're on the main domain or wrong subdomain, redirect to institution subdomain home page
         $baseDomain = $this->getBaseDomain($host);
         $scheme = $request->getScheme();
 
-        return "{$scheme}://{$institution->slug}.{$baseDomain}" . $this->getRoleDashboard($user->role);
+        return "{$scheme}://{$institution->slug}.{$baseDomain}/";
     }
 
     /**
