@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/tooltip';
 import UserMenuContent from '@/components/UserMenuContent.vue';
 import { getInitials } from '@/composables/useInitials';
+import { useInstitution } from '@/composables/useInstitution';
 import { toUrl, urlIsActive } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem, NavItem } from '@/types';
@@ -47,6 +48,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const page = usePage();
 const auth = computed(() => page.props.auth);
+const { institution, institutionLogo, institutionName } = useInstitution();
 
 const isCurrentRoute = computed(
     () => (url: NonNullable<InertiaLinkProps['href']>) =>
@@ -149,7 +151,9 @@ const rightNavItems: NavItem[] = [
                 </div>
 
                 <Link :href="dashboard()" class="flex items-center gap-x-2">
-                    <AppLogo />
+                    <img v-if="institutionLogo" :src="institutionLogo" :alt="institutionName" class="h-8 w-8 rounded" />
+                    <AppLogo v-else />
+                    <span v-if="institution" class="text-sm font-semibold hidden sm:inline-block">{{ institutionName }}</span>
                 </Link>
 
                 <!-- Desktop Menu -->

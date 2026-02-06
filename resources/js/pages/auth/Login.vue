@@ -6,50 +6,114 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { register } from '@/routes';
-import { store } from '@/routes/login';
 import { request } from '@/routes/password';
-import { Form, Head } from '@inertiajs/vue3';
-import { ref } from 'vue';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { GraduationCap, User, Building2, Shield } from 'lucide-vue-next';
+import { Head, useForm, usePage } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
+import { GraduationCap, User, Building2 } from 'lucide-vue-next';
 
-defineProps<{
+const props = defineProps<{
     status?: string;
     canResetPassword: boolean;
     canRegister: boolean;
+    showRoleSelection?: boolean;
+    institution?: {
+        name: string;
+        slug: string;
+    } | null;
 }>();
 
-const selectedRole = ref<'student' | 'lecturer' | 'institution' | 'admin' | null>(null);
+const page = usePage();
+const serverErrors = computed(() => page.props.errors || {});
+
+// Combine form errors and server errors for display
+const allErrors = computed(() => {
+    const errors: Record<string, string> = {};
+    
+    // Add form errors
+    if (form.errors) {
+        Object.assign(errors, form.errors);
+    }
+    
+    // Add server errors (from page props)
+    if (serverErrors.value) {
+        Object.assign(errors, serverErrors.value);
+    }
+    
+    return errors;
+});
+
+const selectedRole = ref<'institution' | 'lecturer' | 'student' | null>(
+    props.showRoleSelection ? null : null
+);
 
 const roles = [
     { value: 'student', label: 'Student', icon: GraduationCap, description: 'Access viva sessions and view marks' },
     { value: 'lecturer', label: 'Lecturer', icon: User, description: 'Create viva sessions and manage materials' },
-    { value: 'institution', label: 'Institution', icon: Building2, description: 'Manage lecturers and students' },
-    { value: 'admin', label: 'Admin', icon: Shield, description: 'Monitor all activities' },
+    { value: 'institution', label: 'Institution Admin', icon: Building2, description: 'Manage lecturers and students' },
 ];
+
+const form = useForm({
+    email: '',
+    password: '',
+    remember: false,
+    role: null as 'institution' | 'lecturer' | 'student' | null,
+});
+
+const submit = () => {
+    // If role selection is shown, require role to be selected
+    if (props.showRoleSelection && !selectedRole.value) {
+        return;
+    }
+
+    form.role = selectedRole.value;
+    
+    form.post('/login', {
+        preserveState: true,
+        preserveScroll: true,
+        onSuccess: () => {
+            // Reset password only on successful login
+            form.reset('password');
+        },
+        onError: () => {
+            // Keep role selection and form data on error
+            // Don't reset anything - let user see their mistake and correct it
+        },
+    });
+};
 </script>
 
 <template>
     <AuthBase
-        title="Log in to your account"
-        description="Enter your email and password below to log in"
+        :title="showRoleSelection && institution ? `Log in to ${institution.name}` : 'Log in to your account'"
+        :description="showRoleSelection ? 'Select your role and enter your credentials' : 'Enter your email and password below to log in'"
     >
         <Head title="Log in" />
 
         <div
             v-if="status"
-            class="mb-4 text-center text-sm font-medium text-green-600"
+            class="mb-4 rounded-lg border border-green-200 bg-green-50 p-4 text-center text-sm font-medium text-green-800 dark:border-green-800 dark:bg-green-900/20 dark:text-green-200"
         >
             {{ status }}
         </div>
+        
+        <div
+            v-if="Object.keys(allErrors).length > 0"
+            class="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200"
+        >
+            <div v-for="(error, key) in allErrors" :key="key" class="mb-1 last:mb-0">
+                {{ Array.isArray(error) ? error[0] : error }}
+            </div>
+        </div>
 
-        <div v-if="!selectedRole" class="space-y-4">
-            <div class="text-center text-sm text-muted-foreground mb-6">
+        <!-- Role Selection (only shown on institution subdomain) -->
+        <div v-if="showRoleSelection && !selectedRole" class="mb-6 w-full space-y-4">
+            <div class="text-center text-sm text-muted-foreground">
                 Select your role to continue
             </div>
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <Card
                     v-for="role in roles"
                     :key="role.value"
@@ -57,12 +121,12 @@ const roles = [
                     :class="{ 'border-primary ring-2 ring-primary': selectedRole === role.value }"
                     @click="selectedRole = role.value as any"
                 >
-                    <CardHeader class="pb-3">
-                        <div class="flex items-center gap-3">
-                            <component :is="role.icon" class="h-5 w-5 text-primary" />
+                    <CardHeader class="pb-3 text-center">
+                        <div class="flex flex-col items-center gap-3">
+                            <component :is="role.icon" class="h-6 w-6 text-primary" />
                             <CardTitle class="text-base">{{ role.label }}</CardTitle>
                         </div>
-                        <CardDescription class="text-xs mt-2">
+                        <CardDescription class="text-xs mt-2 text-center">
                             {{ role.description }}
                         </CardDescription>
                     </CardHeader>
@@ -70,14 +134,9 @@ const roles = [
             </div>
         </div>
 
-        <Form
-            v-else
-            v-bind="store.form()"
-            :reset-on-success="['password']"
-            v-slot="{ errors, processing }"
-            class="flex flex-col gap-6"
-        >
-            <div class="flex items-center justify-between mb-2">
+        <form @submit.prevent="submit" class="w-full flex flex-col gap-6" v-if="!showRoleSelection || selectedRole">
+            <!-- Role Indicator (when role is selected) -->
+            <div v-if="showRoleSelection && selectedRole" class="flex items-center justify-between w-full px-1 mb-2">
                 <div class="flex items-center gap-2">
                     <component :is="roles.find(r => r.value === selectedRole)?.icon" class="h-4 w-4" />
                     <span class="text-sm font-medium">{{ roles.find(r => r.value === selectedRole)?.label }}</span>
@@ -94,20 +153,21 @@ const roles = [
 
             <input type="hidden" name="role" :value="selectedRole" />
 
-            <div class="grid gap-6">
+            <div class="grid gap-6 w-full">
                 <div class="grid gap-2">
                     <Label for="email">Email address</Label>
                     <Input
                         id="email"
                         type="email"
-                        name="email"
+                        v-model="form.email"
                         required
                         autofocus
                         :tabindex="1"
                         autocomplete="email"
                         placeholder="email@example.com"
+                        :class="{ 'border-red-500': form.errors.email || allErrors.email }"
                     />
-                    <InputError :message="errors.email" />
+                    <InputError :message="form.errors.email || allErrors.email" />
                 </div>
 
                 <div class="grid gap-2">
@@ -125,41 +185,46 @@ const roles = [
                     <Input
                         id="password"
                         type="password"
-                        name="password"
+                        v-model="form.password"
                         required
                         :tabindex="2"
                         autocomplete="current-password"
                         placeholder="Password"
+                        :class="{ 'border-red-500': form.errors.password || allErrors.password }"
                     />
-                    <InputError :message="errors.password" />
+                    <InputError :message="form.errors.password || allErrors.password" />
                 </div>
 
-                <div class="flex items-center justify-between">
-                    <Label for="remember" class="flex items-center space-x-3">
-                        <Checkbox id="remember" name="remember" :tabindex="3" />
-                        <span>Remember me</span>
+                <div class="flex items-center justify-between w-full">
+                    <Label for="remember" class="flex items-center gap-2 cursor-pointer">
+                        <Checkbox 
+                            id="remember" 
+                            v-model:checked="form.remember" 
+                            :tabindex="3" 
+                        />
+                        <span class="text-sm">Remember me</span>
                     </Label>
                 </div>
 
                 <Button
                     type="submit"
-                    class="mt-4 w-full"
+                    class="w-full"
                     :tabindex="4"
-                    :disabled="processing"
+                    :disabled="form.processing || (showRoleSelection && !selectedRole)"
                     data-test="login-button"
                 >
-                    <Spinner v-if="processing" />
+                    <Spinner v-if="form.processing" class="mr-2" />
                     Log in
                 </Button>
             </div>
 
             <div
-                class="text-center text-sm text-muted-foreground"
+                class="text-center text-sm text-muted-foreground w-full"
                 v-if="canRegister"
             >
                 Don't have an account?
                 <TextLink :href="register()" :tabindex="5">Sign up</TextLink>
             </div>
-        </Form>
+        </form>
     </AuthBase>
 </template>

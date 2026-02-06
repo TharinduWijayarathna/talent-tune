@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'google' => [
+        'tts_api_key' => env('GOOGLE_TTS_API_KEY'),
+        'gemini_api_key' => env('GEMINI_API_KEY'),
+    ],
+
 ];

@@ -6,6 +6,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { GraduationCap, Calendar, Award, BookOpen } from 'lucide-vue-next';
 import { Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
+
+const props = defineProps<{
+    stats?: {
+        upcomingVivas: number;
+        completedVivas: number;
+        averageMarks: number;
+        totalSessions: number;
+    };
+    upcomingVivas?: Array<{
+        id: number;
+        title: string;
+        date: string;
+        time: string;
+        lecturer: string;
+    }>;
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -14,19 +31,14 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-// Mock data - in real app, this would come from props
-const stats = {
-    upcomingVivas: 3,
-    completedVivas: 5,
-    averageMarks: 85,
-    totalSessions: 8,
-};
+const stats = computed(() => props.stats ?? {
+    upcomingVivas: 0,
+    completedVivas: 0,
+    averageMarks: 0,
+    totalSessions: 0,
+});
 
-const upcomingVivas = [
-    { id: 1, title: 'Database Systems Viva', date: '2024-01-20', time: '10:00 AM', lecturer: 'Dr. Smith' },
-    { id: 2, title: 'Software Engineering Viva', date: '2024-01-22', time: '2:00 PM', lecturer: 'Dr. Johnson' },
-    { id: 3, title: 'Web Development Viva', date: '2024-01-25', time: '11:00 AM', lecturer: 'Dr. Williams' },
-];
+const upcomingVivas = computed(() => props.upcomingVivas ?? []);
 </script>
 
 <template>
@@ -95,7 +107,10 @@ const upcomingVivas = [
                     <CardDescription>Your scheduled viva sessions</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div class="space-y-4">
+                    <div v-if="upcomingVivas.length === 0" class="text-center py-8 text-muted-foreground">
+                        No upcoming viva sessions
+                    </div>
+                    <div v-else class="space-y-4">
                         <div
                             v-for="viva in upcomingVivas"
                             :key="viva.id"

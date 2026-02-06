@@ -41,23 +41,19 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::createUsersUsing(CreateNewUser::class);
         
-        // Register custom login response for role-based redirects
-        $this->app->singleton(
-            \Laravel\Fortify\Contracts\LoginResponse::class,
-            \App\Http\Responses\LoginResponse::class
-        );
+        // Note: Login handling is done by our custom AuthenticatedSessionController
+        // No need for custom LoginResponse as we handle redirects in the controller
     }
 
     /**
      * Configure Fortify views.
+     * 
+     * Note: Login is handled by our custom AuthenticatedSessionController,
+     * so we don't register a login view here.
      */
     private function configureViews(): void
     {
-        Fortify::loginView(fn (Request $request) => Inertia::render('auth/Login', [
-            'canResetPassword' => Features::enabled(Features::resetPasswords()),
-            'canRegister' => Features::enabled(Features::registration()),
-            'status' => $request->session()->get('status'),
-        ]));
+        // Login view is handled by custom controller in routes/web.php
 
         Fortify::resetPasswordView(fn (Request $request) => Inertia::render('auth/ResetPassword', [
             'email' => $request->email,

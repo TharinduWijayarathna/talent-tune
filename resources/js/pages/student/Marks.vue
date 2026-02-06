@@ -5,59 +5,33 @@ import { Head } from '@inertiajs/vue3';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Award, TrendingUp, Calendar, User } from 'lucide-vue-next';
+import { computed } from 'vue';
+
+const props = defineProps<{
+    marks?: Array<{
+        id: number;
+        vivaTitle: string;
+        lecturer: string;
+        date: string;
+        marks: number;
+        maxMarks: number;
+        grade: string;
+        feedback?: string;
+    }>;
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/student/dashboard' },
     { title: 'Marks', href: '/student/marks' },
 ];
 
-// Mock data
-const marks = [
-    {
-        id: 1,
-        vivaTitle: 'Data Structures Viva',
-        lecturer: 'Dr. Brown',
-        date: '2024-01-15',
-        marks: 88,
-        maxMarks: 100,
-        grade: 'A',
-        feedback: 'Excellent understanding of algorithms and data structures. Well done!',
-    },
-    {
-        id: 2,
-        vivaTitle: 'Operating Systems Viva',
-        lecturer: 'Dr. Davis',
-        date: '2024-01-10',
-        marks: 92,
-        maxMarks: 100,
-        grade: 'A+',
-        feedback: 'Outstanding performance. Strong grasp of OS concepts.',
-    },
-    {
-        id: 3,
-        vivaTitle: 'Computer Networks Viva',
-        lecturer: 'Dr. Wilson',
-        date: '2024-01-05',
-        marks: 85,
-        maxMarks: 100,
-        grade: 'A',
-        feedback: 'Good understanding of networking fundamentals.',
-    },
-    {
-        id: 4,
-        vivaTitle: 'Programming Languages Viva',
-        lecturer: 'Dr. Martinez',
-        date: '2023-12-28',
-        marks: 90,
-        maxMarks: 100,
-        grade: 'A+',
-        feedback: 'Excellent knowledge of programming paradigms.',
-    },
-];
-
-const averageMarks = Math.round(marks.reduce((sum, m) => sum + m.marks, 0) / marks.length);
-const totalMarks = marks.reduce((sum, m) => sum + m.marks, 0);
-const maxTotalMarks = marks.reduce((sum, m) => sum + m.maxMarks, 0);
+const marks = computed(() => props.marks || []);
+const averageMarks = computed(() => {
+    if (marks.value.length === 0) return 0;
+    return Math.round(marks.value.reduce((sum, m) => sum + m.marks, 0) / marks.value.length);
+});
+const totalMarks = computed(() => marks.value.reduce((sum, m) => sum + m.marks, 0));
+const maxTotalMarks = computed(() => marks.value.reduce((sum, m) => sum + m.maxMarks, 0));
 
 const getGradeColor = (grade: string) => {
     if (grade === 'A+') return 'text-green-600 dark:text-green-400';
@@ -122,7 +96,10 @@ const getGradeColor = (grade: string) => {
                     <CardDescription>Detailed marks and feedback for each session</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div class="space-y-4">
+                    <div v-if="marks.length === 0" class="text-center py-12 text-muted-foreground">
+                        No marks available yet
+                    </div>
+                    <div v-else class="space-y-4">
                         <div
                             v-for="mark in marks"
                             :key="mark.id"

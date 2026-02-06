@@ -6,6 +6,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Calendar, Users, FileText, Plus } from 'lucide-vue-next';
 import { Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
+
+const props = defineProps<{
+    stats?: {
+        totalSessions: number;
+        activeSessions: number;
+        totalStudents: number;
+        completedSessions: number;
+    };
+    recentSessions?: Array<{
+        id: number;
+        title: string;
+        batch: string;
+        date: string;
+        students: number;
+        status: string;
+    }>;
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -14,19 +32,14 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-// Mock data
-const stats = {
-    totalSessions: 12,
-    activeSessions: 3,
-    totalStudents: 150,
-    completedSessions: 9,
-};
+const stats = computed(() => props.stats || {
+    totalSessions: 0,
+    activeSessions: 0,
+    totalStudents: 0,
+    completedSessions: 0,
+});
 
-const recentSessions = [
-    { id: 1, title: 'Database Systems Viva', batch: 'CS-2024', date: '2024-01-20', students: 25, status: 'upcoming' },
-    { id: 2, title: 'Software Engineering Viva', batch: 'CS-2024', date: '2024-01-22', students: 30, status: 'upcoming' },
-    { id: 3, title: 'Data Structures Viva', batch: 'CS-2024', date: '2024-01-15', students: 28, status: 'completed' },
-];
+const recentSessions = computed(() => props.recentSessions || []);
 </script>
 
 <template>
@@ -101,7 +114,10 @@ const recentSessions = [
                     <CardDescription>Your latest viva session activities</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div class="space-y-4">
+                    <div v-if="recentSessions.length === 0" class="text-center py-8 text-muted-foreground">
+                        No recent viva sessions
+                    </div>
+                    <div v-else class="space-y-4">
                         <div
                             v-for="session in recentSessions"
                             :key="session.id"

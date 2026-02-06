@@ -20,19 +20,52 @@ class LoginResponse implements LoginResponseContract
             return redirect('/dashboard');
         }
         
-        // Redirect based on user role
-        $role = $user->role ?? 'student';
-        $redirectPath = match($role) {
-            'student' => '/student/dashboard',
-            'lecturer' => '/lecturer/dashboard',
-            'institution' => '/institution/dashboard',
-            'admin' => '/admin/dashboard',
-            default => '/student/dashboard',
-        };
+        // For admin users, redirect directly (no institution context needed)
+        if ($user->role === 'admin') {
+            // Clear any intended URL to prevent conflicts
+            $request->session()->forget('url.intended');
+            
+            // Redirect to admin dashboard
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'two_factor' => false,
+                    'redirect' => '/admin/dashboard'
+                ]);
+            }
+            
+            return redirect('/admin/dashboard');
+        }
         
+        // For other users, check if they have an institution
+        $institution = $user->institution;
+        
+        if ($institution && $institution->is_active) {
+            // Build subdomain URL
+            $host = $request->getHost();
+            $parts = explode('.', $host);
+            
+            // If we're already on a subdomain, stay there and redirect to home (institution landing page)
+            if (count($parts) >= 3 || str_ends_with($host, '.test')) {
+                // Already on subdomain, redirect to home page (institution landing page)
+                return $request->wantsJson()
+                    ? response()->json(['two_factor' => false, 'redirect' => '/'])
+                    : redirect()->intended('/');
+            } else {
+                // Redirect to institution subdomain home page
+                $baseDomain = count($parts) >= 2 ? implode('.', array_slice($parts, -2)) : $host;
+                $scheme = $request->getScheme();
+                $redirectUrl = "{$scheme}://{$institution->slug}.{$baseDomain}/";
+                
+                return $request->wantsJson()
+                    ? response()->json(['two_factor' => false, 'redirect' => $redirectUrl])
+                    : redirect($redirectUrl);
+            }
+        }
+        
+        // No active institution, redirect to home
         return $request->wantsJson()
-            ? response()->json(['two_factor' => false, 'redirect' => $redirectPath])
-            : redirect()->intended($redirectPath);
+            ? response()->json(['two_factor' => false, 'redirect' => '/'])
+            : redirect('/');
     }
 }
 

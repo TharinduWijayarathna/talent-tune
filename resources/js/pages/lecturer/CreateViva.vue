@@ -8,43 +8,56 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Upload, X, FileText, Plus } from 'lucide-vue-next';
-import { ref } from 'vue';
-import { Form } from '@inertiajs/vue3';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { TimePicker } from '@/components/ui/time-picker';
+import { Upload, X, FileText, Plus, Calendar as CalendarIcon, Clock } from 'lucide-vue-next';
+import { ref, computed } from 'vue';
+import { useForm, Link } from '@inertiajs/vue3';
+import { format } from 'date-fns';
+import InputError from '@/components/InputError.vue';
+
+const props = defineProps<{
+    batches?: string[];
+    institutionId?: number;
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/lecturer/dashboard' },
     { title: 'Create Viva Session', href: '/lecturer/vivas/create' },
 ];
 
-const form = ref({
+const form = useForm({
     title: '',
     description: '',
     batch: '',
     date: '',
     time: '',
     instructions: '',
-    materials: [] as File[],
 });
 
-const uploadedFiles = ref<Array<{ name: string; size: number }>>([]);
+const availableBatches = computed(() => props.batches || []);
+
 const fileInputRef = ref<HTMLInputElement | null>(null);
+const uploadedFiles = ref<Array<{ name: string; size: number; file: File }>>([]);
 
 const handleFileUpload = (event: Event) => {
     const target = event.target as HTMLInputElement;
     if (target.files) {
         Array.from(target.files).forEach((file) => {
-            form.value.materials.push(file);
-            uploadedFiles.value.push({
-                name: file.name,
-                size: file.size,
-            });
+            // Check file size (max 10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                alert(`File "${file.name}" is too large. Maximum size is 10MB.`);
+                return;
+            }
+            uploadedFiles.value.push({ name: file.name, size: file.size, file });
         });
+        // Reset input to allow selecting the same file again
+        target.value = '';
     }
 };
 
 const removeFile = (index: number) => {
-    form.value.materials.splice(index, 1);
     uploadedFiles.value.splice(index, 1);
 };
 
@@ -57,9 +70,27 @@ const formatFileSize = (bytes: number) => {
 };
 
 const submitForm = () => {
-    // In a real app, this would submit to the backend
-    console.log('Submitting form:', form.value);
-    alert('Viva session created successfully!');
+    // Create FormData to handle file uploads
+    const formData = new FormData();
+    
+    // Add form fields
+    formData.append('title', form.title);
+    formData.append('description', form.description || '');
+    formData.append('batch', form.batch);
+    formData.append('date', form.date);
+    formData.append('time', form.time);
+    formData.append('instructions', form.instructions || '');
+    
+    // Add files
+    uploadedFiles.value.forEach((fileItem, index) => {
+        formData.append(`lecture_materials[${index}]`, fileItem.file);
+    });
+    
+    // Submit using Inertia's post method with FormData
+    form.transform(() => formData).post('/lecturer/vivas', {
+        forceFormData: true,
+        preserveScroll: true,
+    });
 };
 </script>
 
@@ -75,7 +106,7 @@ const submitForm = () => {
                 </div>
             </div>
 
-            <Form @submit.prevent="submitForm" class="space-y-6">
+            <form @submit.prevent="submitForm" class="space-y-6">
                 <div class="grid gap-6 md:grid-cols-2">
                     <!-- Basic Information -->
                     <Card class="md:col-span-2">
@@ -93,15 +124,22 @@ const submitForm = () => {
                                         placeholder="e.g., Database Systems Viva"
                                         required
                                     />
+                                    <InputError :message="form.errors.title" />
                                 </div>
                                 <div class="space-y-2">
                                     <Label for="batch">Batch *</Label>
-                                    <Input
+                                    <select
                                         id="batch"
                                         v-model="form.batch"
-                                        placeholder="e.g., CS-2024"
+                                        class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                         required
-                                    />
+                                    >
+                                        <option value="">Select a batch</option>
+                                        <option v-for="batch in availableBatches" :key="batch" :value="batch">
+                                            {{ batch }}
+                                        </option>
+                                    </select>
+                                    <InputError :message="form.errors.batch" />
                                 </div>
                             </div>
 
@@ -113,6 +151,7 @@ const submitForm = () => {
                                     placeholder="Brief description of the viva session..."
                                     rows="3"
                                 />
+                                <InputError :message="form.errors.description" />
                             </div>
 
                             <div class="grid gap-4 md:grid-cols-2">
@@ -124,6 +163,7 @@ const submitForm = () => {
                                         type="date"
                                         required
                                     />
+                                    <InputError :message="form.errors.date" />
                                 </div>
                                 <div class="space-y-2">
                                     <Label for="time">Time *</Label>
@@ -133,6 +173,7 @@ const submitForm = () => {
                                         type="time"
                                         required
                                     />
+                                    <InputError :message="form.errors.time" />
                                 </div>
                             </div>
                         </CardContent>
@@ -223,14 +264,14 @@ const submitForm = () => {
 
                 <!-- Submit Button -->
                 <div class="flex justify-end gap-4">
-                    <Button type="button" variant="outline">
-                        Cancel
+                    <Button type="button" variant="outline" as-child>
+                        <Link href="/lecturer/dashboard">Cancel</Link>
                     </Button>
-                    <Button type="submit">
+                    <Button type="submit" :disabled="form.processing">
                         Create Viva Session
                     </Button>
                 </div>
-            </Form>
+            </form>
         </div>
     </AppLayout>
 </template>
