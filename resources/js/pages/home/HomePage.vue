@@ -2,12 +2,12 @@
 import { Head, Link, usePage } from '@inertiajs/vue3'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { 
-  Mic, 
-  GraduationCap, 
-  Users, 
-  Brain, 
-  Clock, 
+import {
+  Mic,
+  GraduationCap,
+  Users,
+  Brain,
+  Clock,
   BarChart3,
   CheckCircle2,
   ArrowRight,
@@ -68,7 +68,7 @@ const applyInstitutionColor = () => {
 
 <template>
   <Head :title="`${institutionName} - AI-Powered Viva Management Platform`" />
-  
+
   <div class="min-h-screen bg-background">
     <!-- Navigation -->
     <nav class="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
@@ -117,8 +117,8 @@ const applyInstitutionColor = () => {
           </div>
           <h1 class="mb-6 text-4xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
             <span v-if="$page.props.auth?.user">Welcome back to</span>
-            <span v-else>Welcome to</span>
-            <span 
+            <span v-else>Welcome to </span>
+            <span
               :class="institutionColor ? '' : 'bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent'"
               :style="institutionColor ? { color: institutionColor } : {}"
             >
@@ -130,7 +130,7 @@ const applyInstitutionColor = () => {
               You're logged in! Access your dashboard to manage viva sessions, view your progress, and more.
             </span>
             <span v-else>
-              Streamline viva examinations with intelligent question generation, 
+              Streamline viva examinations with intelligent question generation,
               automated evaluation, and seamless management for institutions, lecturers, and students.
             </span>
           </p>
