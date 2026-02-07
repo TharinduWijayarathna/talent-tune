@@ -57,6 +57,7 @@ test('getRubricScore clamps scores to 1-10', function () {
     expect($result['success'])->toBeTrue();
     Http::assertSent(function ($request) {
         $body = $request->data();
+
         return ($body['q1_score'] ?? 0) >= 1 && ($body['q1_score'] ?? 0) <= 10
             && ($body['q2_score'] ?? 0) === 10
             && ($body['q3_score'] ?? 0) === 1;

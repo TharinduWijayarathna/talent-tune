@@ -4,8 +4,8 @@ use App\Models\Batch;
 use App\Models\Institution;
 use App\Models\User;
 use App\Models\Viva;
-use App\Services\Application\LecturerService;
 use App\Services\Ai\GeminiFileService;
+use App\Services\Application\LecturerService;
 
 beforeEach(function () {
     $this->geminiFileService = \Mockery::mock(GeminiFileService::class);
