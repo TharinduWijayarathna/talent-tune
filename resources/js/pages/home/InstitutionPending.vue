@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { GraduationCap, Clock, Mail, CheckCircle2 } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { usePage } from '@inertiajs/vue3'
