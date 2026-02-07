@@ -2,6 +2,7 @@
 
 namespace App\Services\Application;
 
+use App\Models\Batch;
 use App\Models\Institution;
 use App\Models\User;
 use App\Models\Viva;
@@ -87,8 +88,20 @@ class LecturerService
             ->all();
     }
 
+    /**
+     * Get batch names for the institution (from Batch model; fallback to distinct student batches).
+     */
     public function getBatchesForInstitution(Institution $institution): array
     {
+        $fromBatches = Batch::where('institution_id', $institution->id)
+            ->orderBy('name')
+            ->pluck('name')
+            ->toArray();
+
+        if (! empty($fromBatches)) {
+            return $fromBatches;
+        }
+
         return User::forInstitution($institution->id)
             ->where('role', 'student')
             ->whereNotNull('batch')
@@ -100,7 +113,7 @@ class LecturerService
     }
 
     /**
-     * @param array<int, UploadedFile> $lectureMaterialFiles
+     * @param  array<int, UploadedFile>  $lectureMaterialFiles
      */
     public function createViva(Institution $institution, User $user, array $validated, array $lectureMaterialFiles = []): Viva
     {
@@ -117,11 +130,17 @@ class LecturerService
             $validated['description'] ?? null
         );
 
+        // Parse scheduled time in lecturer's timezone so "6:30 PM" means their local time, then store as UTC
+        $tz = ! empty($validated['timezone']) && in_array($validated['timezone'], timezone_identifiers_list(), true)
+            ? $validated['timezone']
+            : config('app.timezone');
+        $scheduledAt = Carbon::parse($validated['date'].' '.$validated['time'], $tz)->utc();
+
         return Viva::create([
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
             'batch' => $validated['batch'],
-            'scheduled_at' => Carbon::parse($validated['date'] . ' ' . $validated['time']),
+            'scheduled_at' => $scheduledAt,
             'instructions' => $validated['instructions'] ?? null,
             'lecture_materials' => $storedFiles,
             'viva_background' => $processedData['background'],
@@ -137,5 +156,19 @@ class LecturerService
         return Viva::where('institution_id', $institution->id)
             ->where('lecturer_id', $user->id)
             ->findOrFail($id);
+    }
+
+    /**
+     * Close a viva so students can no longer attend. Only the owning lecturer can close.
+     */
+    public function closeViva(Institution $institution, User $user, int $id): Viva
+    {
+        $viva = Viva::where('institution_id', $institution->id)
+            ->where('lecturer_id', $user->id)
+            ->findOrFail($id);
+
+        $viva->update(['status' => 'completed']);
+
+        return $viva->fresh();
     }
 }

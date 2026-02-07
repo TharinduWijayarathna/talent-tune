@@ -17,9 +17,10 @@ class LecturerController extends Controller
     protected function institution(Request $request): Institution
     {
         $institution = $request->attributes->get('institution');
-        if (!$institution) {
+        if (! $institution) {
             abort(403, 'Institution context required.');
         }
+
         return $institution;
     }
 
@@ -28,7 +29,7 @@ class LecturerController extends Controller
         $user = $request->user();
         $institution = $this->institution($request);
 
-        if (!$user) {
+        if (! $user) {
             abort(403);
         }
 
@@ -93,6 +94,7 @@ class LecturerController extends Controller
             'batch' => ['required', 'string'],
             'date' => ['required', 'date'],
             'time' => ['required', 'string'],
+            'timezone' => ['nullable', 'string', 'max:50'],
             'instructions' => ['nullable', 'string'],
             'lecture_materials' => ['nullable', 'array'],
             'lecture_materials.*' => ['file', 'mimes:pdf,doc,docx,ppt,pptx', 'max:10240'],
@@ -124,5 +126,16 @@ class LecturerController extends Controller
                 'status' => $viva->status,
             ],
         ]);
+    }
+
+    public function closeViva(Request $request, int $id)
+    {
+        $institution = $this->institution($request);
+        $this->authorizeLecturer($request);
+        $user = $request->user();
+
+        $this->lecturerService->closeViva($institution, $user, $id);
+
+        return redirect()->route('lecturer.vivas.show', ['id' => $id])->with('status', 'Viva has been closed. Students can no longer attend.');
     }
 }

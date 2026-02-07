@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Ai;
 
 use App\Http\Controllers\Controller;
 use App\Services\Ai\TTSService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Http\JsonResponse;
 
 class TTSController extends Controller
 {
@@ -44,6 +44,7 @@ class TTSController extends Controller
 
         if (isset($result['error'])) {
             $code = $result['code'] ?? 500;
+
             return response()->json([
                 'error' => $result['error'],
                 'code' => $result['code'] ?? null,
@@ -56,6 +57,6 @@ class TTSController extends Controller
 
         return response($result['audio'], 200)
             ->header('Content-Type', $result['content_type'])
-            ->header('Content-Disposition', 'inline; filename="speech.' . $extension . '"');
+            ->header('Content-Disposition', 'inline; filename="speech.'.$extension.'"');
     }
 }

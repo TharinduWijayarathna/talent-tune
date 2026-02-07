@@ -51,17 +51,17 @@ class SetInstitutionContext
     {
         $path = $request->path();
         $isLoginRoute = $path === 'login' || str_starts_with($path, 'login');
-        
+
         // Detect institution even for login routes (needed for role selection)
         $institution = $this->detectInstitution($request);
-        
+
         // Always set institution if detected (even for login routes)
         if ($institution) {
             $request->merge(['institution' => $institution]);
             $request->attributes->set('institution', $institution);
             view()->share('institution', $institution);
         }
-        
+
         // Skip enforcement for authentication-related paths (but still detect institution above)
         foreach ($this->skipPathPrefixes as $prefix) {
             if (str_starts_with($path, $prefix) || $path === $prefix || $path === rtrim($prefix, '/')) {
@@ -86,7 +86,7 @@ class SetInstitutionContext
         }
 
         // If no institution detected and not on public routes, redirect to home
-        if (!$institution && !$this->isPublicRoute($request)) {
+        if (! $institution && ! $this->isPublicRoute($request)) {
             return redirect()->route('home');
         }
 
@@ -101,12 +101,12 @@ class SetInstitutionContext
         // Method 1: Check subdomain (e.g., university-tech.talenttune.com)
         $host = $request->getHost();
         $subdomain = $this->extractSubdomain($host);
-        
+
         if ($subdomain && $subdomain !== 'www' && $subdomain !== 'app' && $subdomain !== 'talenttune') {
             $institution = Institution::where('slug', $subdomain)
                 ->active()
                 ->first();
-            
+
             if ($institution) {
                 return $institution;
             }
@@ -116,7 +116,7 @@ class SetInstitutionContext
         $institution = Institution::where('domain', $host)
             ->active()
             ->first();
-        
+
         if ($institution) {
             return $institution;
         }
@@ -127,7 +127,7 @@ class SetInstitutionContext
             $institution = Institution::where('slug', $pathInstitution)
                 ->active()
                 ->first();
-            
+
             if ($institution) {
                 return $institution;
             }
@@ -151,7 +151,7 @@ class SetInstitutionContext
     protected function extractSubdomain(string $host): ?string
     {
         $parts = explode('.', $host);
-        
+
         // If we have more than 2 parts, the first part is likely the subdomain
         // e.g., university-tech.talenttune.com -> university-tech
         if (count($parts) >= 3) {
@@ -172,19 +172,19 @@ class SetInstitutionContext
     protected function isPublicRoute(Request $request): bool
     {
         $path = $request->path();
-        
+
         // Check path prefixes for public routes
         foreach ($this->skipPathPrefixes as $prefix) {
             if (str_starts_with($path, $prefix) || $path === rtrim($prefix, '/')) {
                 return true;
             }
         }
-        
+
         // Root path is public
         if ($path === '/' || $path === '') {
             return true;
         }
-        
+
         $publicRoutes = [
             'home',
             'login',

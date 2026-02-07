@@ -12,7 +12,7 @@ class DashboardService
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return Redirect::route('login');
         }
 

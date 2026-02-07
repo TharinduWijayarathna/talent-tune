@@ -16,11 +16,13 @@ const props = defineProps<{
         description?: string;
         date: string;
         time: string;
+        scheduled_at?: string;
         lecturer: string;
         status: string;
         batch?: string;
         materials?: string[];
         marks?: number;
+        can_attend?: boolean;
     }>;
 }>();
 
@@ -31,8 +33,35 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const vivaSessions = computed(() => props.vivaSessions || []);
 
-const getStatusBadge = (status: string) => {
-    return status === 'upcoming' ? 'default' : 'secondary';
+const getStatusBadge = (viva: { status: string; can_attend?: boolean }) => {
+    if (viva.status === 'completed') return 'secondary';
+    if (viva.can_attend) return 'default';
+    return 'outline';
+};
+
+// Format scheduled_at (ISO) in user's local time for display
+const formatScheduledLocal = (viva: { date?: string; time?: string; scheduled_at?: string }) => {
+    if (viva.scheduled_at) {
+        try {
+            const d = new Date(viva.scheduled_at);
+            if (!Number.isNaN(d.getTime())) {
+                return {
+                    date: d.toLocaleDateString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit' }),
+                    time: d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: true }),
+                };
+            }
+        } catch {
+            // fallback
+        }
+    }
+    return { date: viva.date ?? '', time: viva.time ?? '' };
+};
+
+const attendLabel = (viva: { status: string; can_attend?: boolean; date?: string; time?: string; scheduled_at?: string }) => {
+    if (viva.status === 'completed') return 'Closed by lecturer';
+    if (viva.can_attend) return 'Attend Viva';
+    const { date, time } = formatScheduledLocal(viva);
+    return `Opens on ${date} at ${time}`;
 };
 </script>
 
@@ -62,8 +91,8 @@ const getStatusBadge = (status: string) => {
                             <div class="space-y-1 flex-1">
                                 <div class="flex items-center gap-2">
                                     <CardTitle>{{ viva.title }}</CardTitle>
-                                    <Badge :variant="getStatusBadge(viva.status)">
-                                        {{ viva.status }}
+                                    <Badge :variant="getStatusBadge(viva)">
+                                        {{ viva.status === 'completed' ? 'Closed' : viva.can_attend ? 'Open' : 'Upcoming' }}
                                     </Badge>
                                 </div>
                                 <CardDescription>{{ viva.description }}</CardDescription>
@@ -75,11 +104,11 @@ const getStatusBadge = (status: string) => {
                             <div class="grid gap-4 md:grid-cols-2">
                                 <div class="flex items-center gap-2 text-sm text-muted-foreground">
                                     <Calendar class="h-4 w-4" />
-                                    <span>{{ viva.date }}</span>
+                                    <span>{{ formatScheduledLocal(viva).date }}</span>
                                 </div>
                                 <div class="flex items-center gap-2 text-sm text-muted-foreground">
                                     <Clock class="h-4 w-4" />
-                                    <span>{{ viva.time }}</span>
+                                    <span>{{ formatScheduledLocal(viva).time }}</span>
                                 </div>
                                 <div class="flex items-center gap-2 text-sm text-muted-foreground">
                                     <User class="h-4 w-4" />
@@ -115,7 +144,7 @@ const getStatusBadge = (status: string) => {
 
                             <div class="flex gap-2">
                                 <Button
-                                    v-if="viva.status === 'upcoming'"
+                                    v-if="viva.can_attend"
                                     as-child
                                 >
                                     <Link :href="`/student/vivas/${viva.id}/attend`">
@@ -127,7 +156,7 @@ const getStatusBadge = (status: string) => {
                                     variant="outline"
                                     disabled
                                 >
-                                    Completed
+                                    {{ attendLabel(viva) }}
                                 </Button>
                             </div>
                         </div>

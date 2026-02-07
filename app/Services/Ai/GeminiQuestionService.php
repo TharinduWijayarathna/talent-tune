@@ -19,18 +19,22 @@ class GeminiQuestionService
     protected function getApiUrl(): string
     {
         $apiKey = $this->getApiKey();
+
         return "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={$apiKey}";
     }
+
+    private const VIVA_QUESTION_COUNT = 5;
 
     public function generateQuestions(
         ?int $vivaId,
         string $topic,
         string $description = '',
-        int $numQuestions = 5,
+        int $numQuestions = self::VIVA_QUESTION_COUNT,
         string $difficulty = 'intermediate',
         ?string $studentDocumentPath = null
     ): array {
-        if (!$this->getApiKey()) {
+        $numQuestions = min(self::VIVA_QUESTION_COUNT, max(1, $numQuestions));
+        if (! $this->getApiKey()) {
             return ['error' => 'Gemini API key not configured', 'code' => 500];
         }
 
@@ -80,6 +84,7 @@ class GeminiQuestionService
 
         if ($response->failed()) {
             $errorData = $response->json();
+
             return [
                 'error' => $errorData['error']['message'] ?? 'Failed to generate questions',
                 'code' => $response->status(),
@@ -92,6 +97,8 @@ class GeminiQuestionService
         if (preg_match('/\[.*\]/s', $text, $matches)) {
             $questions = json_decode($matches[0], true);
             if (json_last_error() === JSON_ERROR_NONE && is_array($questions)) {
+                $questions = array_slice($questions, 0, $numQuestions);
+
                 return ['questions' => $questions, 'count' => count($questions)];
             }
         }
@@ -102,7 +109,7 @@ class GeminiQuestionService
             $line = preg_replace('/^\d+[\.\)]\s*/', '', $line);
             $line = preg_replace('/^[-*]\s*/', '', $line);
             $line = trim($line);
-            if (!empty($line) && strlen($line) > 10) {
+            if (! empty($line) && strlen($line) > 10) {
                 $questions[] = $line;
             }
         }
@@ -119,7 +126,7 @@ class GeminiQuestionService
 
     public function evaluateAnswer(string $question, string $answer, string $topic = ''): array
     {
-        if (!$this->getApiKey()) {
+        if (! $this->getApiKey()) {
             return ['error' => 'Gemini API key not configured', 'code' => 500];
         }
 
@@ -141,7 +148,7 @@ class GeminiQuestionService
         $prompt .= '  "correctPoints": ["point1", "point2", ...],\n';
         $prompt .= '  "improvements": ["area1", "area2", ...]\n';
         $prompt .= "}\n";
-        $prompt .= "Return ONLY the JSON object, no additional text.";
+        $prompt .= 'Return ONLY the JSON object, no additional text.';
 
         $response = Http::post($this->getApiUrl(), [
             'contents' => [['parts' => [['text' => $prompt]]]],
@@ -155,6 +162,7 @@ class GeminiQuestionService
 
         if ($response->failed()) {
             $errorData = $response->json();
+
             return [
                 'error' => $errorData['error']['message'] ?? 'Failed to evaluate answer',
                 'code' => $response->status(),
@@ -173,6 +181,7 @@ class GeminiQuestionService
                 $evaluation['feedback'] = $evaluation['feedback'] ?? 'No feedback provided';
                 $evaluation['correctPoints'] = $evaluation['correctPoints'] ?? [];
                 $evaluation['improvements'] = $evaluation['improvements'] ?? [];
+
                 return $evaluation;
             }
         }
@@ -186,7 +195,7 @@ class GeminiQuestionService
         $sentences = preg_split('/[.!?]+/', $text);
         $feedback = trim($sentences[0] ?? $text);
         if (strlen($feedback) > 200) {
-            $feedback = substr($feedback, 0, 200) . '...';
+            $feedback = substr($feedback, 0, 200).'...';
         }
 
         return [
@@ -203,17 +212,17 @@ class GeminiQuestionService
         string $topic = '',
         array $conversationHistory = []
     ): array {
-        if (!$this->getApiKey()) {
+        if (! $this->getApiKey()) {
             return ['error' => 'Gemini API key not configured', 'code' => 500];
         }
 
-        $prompt = "You are a viva examiner conducting an oral examination. ";
+        $prompt = 'You are a viva examiner conducting an oral examination. ';
         if ($topic) {
             $prompt .= "The topic is: {$topic}. ";
         }
         $prompt .= "You asked the student: \"{$question}\"\n\n";
         $prompt .= "The student responded: \"{$studentAnswer}\"\n\n";
-        if (!empty($conversationHistory)) {
+        if (! empty($conversationHistory)) {
             $prompt .= "Previous conversation:\n";
             foreach ($conversationHistory as $turn) {
                 $prompt .= "- Examiner: {$turn['examiner']}\n";
@@ -236,7 +245,7 @@ class GeminiQuestionService
         $prompt .= '  "shouldContinue": <true if need more answer, false if can move to next question>,\n';
         $prompt .= '  "isSkipped": <true if student indicated they don\'t know>\n';
         $prompt .= "}\n";
-        $prompt .= "Return ONLY the JSON object, no additional text.";
+        $prompt .= 'Return ONLY the JSON object, no additional text.';
 
         $response = Http::post($this->getApiUrl(), [
             'contents' => [['parts' => [['text' => $prompt]]]],
@@ -250,6 +259,7 @@ class GeminiQuestionService
 
         if ($response->failed()) {
             $errorData = $response->json();
+
             return [
                 'error' => $errorData['error']['message'] ?? 'Failed to generate conversational response',
                 'code' => $response->status(),
@@ -265,6 +275,7 @@ class GeminiQuestionService
                 $result['response'] = $result['response'] ?? 'Please continue with your answer.';
                 $result['shouldContinue'] = isset($result['shouldContinue']) ? (bool) $result['shouldContinue'] : true;
                 $result['isSkipped'] = isset($result['isSkipped']) ? (bool) $result['isSkipped'] : false;
+
                 return $result;
             }
         }
@@ -278,7 +289,7 @@ class GeminiQuestionService
                 : ($isValid
                     ? 'Thank you for your answer. Let\'s move to the next question.'
                     : 'Could you please elaborate on that? I need a bit more detail.'),
-            'shouldContinue' => !$isSkip && !$isValid,
+            'shouldContinue' => ! $isSkip && ! $isValid,
             'isSkipped' => $isSkip,
         ];
     }
@@ -287,21 +298,23 @@ class GeminiQuestionService
     {
         $normalized = strtolower(trim($answer));
         $skipPatterns = [
-            "i don't know", "i do not know", "don't know", "do not know",
-            "skip", "i skip", "pass", "no answer", "cannot answer", "can't answer",
-            "not sure", "unsure", "idk",
+            "i don't know", 'i do not know', "don't know", 'do not know',
+            'skip', 'i skip', 'pass', 'no answer', 'cannot answer', "can't answer",
+            'not sure', 'unsure', 'idk',
         ];
         foreach ($skipPatterns as $pattern) {
             if (str_contains($normalized, $pattern)) {
                 return true;
             }
         }
+
         return false;
     }
 
     protected function isValidAnswer(string $answer): bool
     {
         $trimmed = trim($answer);
-        return strlen($trimmed) >= 10 && !$this->isSkipOrDontKnow($trimmed);
+
+        return strlen($trimmed) >= 10 && ! $this->isSkipOrDontKnow($trimmed);
     }
 }

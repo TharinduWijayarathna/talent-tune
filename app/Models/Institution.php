@@ -83,6 +83,14 @@ class Institution extends Model
     }
 
     /**
+     * Get all batches for this institution.
+     */
+    public function batches(): HasMany
+    {
+        return $this->hasMany(Batch::class);
+    }
+
+    /**
      * Scope a query to only include active institutions.
      */
     public function scopeActive($query)

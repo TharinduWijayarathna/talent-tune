@@ -19,7 +19,7 @@ class AuthRedirectService
 
         $institution = $user->institution;
 
-        if (!$institution || !$institution->is_active) {
+        if (! $institution || ! $institution->is_active) {
             return '/';
         }
 
@@ -44,6 +44,7 @@ class AuthRedirectService
             if (count($parts) === 2) {
                 return $host;
             }
+
             return implode('.', array_slice($parts, -2));
         }
 

@@ -25,7 +25,7 @@ class AuthenticatedSessionController extends Controller
     {
         $institution = $request->attributes->get('institution');
 
-        if (!$institution) {
+        if (! $institution) {
             $institution = $this->institutionResolver->resolveActive($request);
         }
 
@@ -57,7 +57,7 @@ class AuthenticatedSessionController extends Controller
                 'role' => ['nullable', 'string', 'in:student,lecturer,institution,admin'],
             ]);
 
-            if (!Auth::attempt(
+            if (! Auth::attempt(
                 $request->only('email', 'password'),
                 $request->boolean('remember')
             )) {
@@ -97,7 +97,7 @@ class AuthenticatedSessionController extends Controller
             return redirect()->intended($redirectUrl);
         } catch (ValidationException $e) {
             $institution = $request->attributes->get('institution');
-            if (!$institution) {
+            if (! $institution) {
                 $institution = $this->institutionResolver->resolveActive($request);
             }
             throw $e;

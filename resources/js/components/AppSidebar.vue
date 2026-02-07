@@ -17,13 +17,13 @@ import { Link, usePage } from '@inertiajs/vue3';
 import {
     LayoutGrid,
     BookOpen,
-    Award,
     GraduationCap,
     FileText,
     Plus,
     Users,
     Building2,
     CreditCard,
+    Layers,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
@@ -50,11 +50,6 @@ const mainNavItems = computed<NavItem[]>(() => {
                 title: 'Viva Sessions',
                 href: '/student/vivas',
                 icon: BookOpen,
-            },
-            {
-                title: 'Marks',
-                href: '/student/marks',
-                icon: Award,
             },
         ];
     }
@@ -85,6 +80,11 @@ const mainNavItems = computed<NavItem[]>(() => {
                 title: 'Dashboard',
                 href: '/institution/dashboard',
                 icon: LayoutGrid,
+            },
+            {
+                title: 'Batches',
+                href: '/institution/batches',
+                icon: Layers,
             },
             {
                 title: 'Lecturers',

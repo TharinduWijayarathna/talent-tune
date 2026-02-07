@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Application;
 
 use App\Http\Controllers\Controller;
+use App\Models\Batch;
 use App\Models\Institution;
 use App\Models\User;
+use App\Services\Application\AuthRedirectService;
 use App\Services\Application\InstitutionUserService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -13,15 +15,17 @@ use Inertia\Inertia;
 class InstitutionUserController extends Controller
 {
     public function __construct(
-        protected InstitutionUserService $institutionUserService
+        protected InstitutionUserService $institutionUserService,
+        protected AuthRedirectService $authRedirectService
     ) {}
 
     protected function institution(Request $request): Institution
     {
         $institution = $request->attributes->get('institution');
-        if (!$institution) {
+        if (! $institution) {
             abort(403, 'Institution context required.');
         }
+
         return $institution;
     }
 
@@ -70,17 +74,26 @@ class InstitutionUserController extends Controller
             'employee_id' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $this->institutionUserService->createLecturer($institution, $validated);
+        $baseDomain = $this->authRedirectService->getBaseDomain($request->getHost());
+        $scheme = $request->getScheme();
+        $this->institutionUserService->createLecturer($institution, $validated, $baseDomain, $scheme);
 
-        return redirect()->route('institution.lecturers')->with('status', 'Lecturer added successfully.');
+        return redirect()->route('institution.lecturers')->with('status', 'Lecturer added successfully. Credentials have been sent to their email.');
     }
 
     public function createStudent(Request $request)
     {
-        $this->institution($request);
-        $this->authorizeInstitution($request->user(), $request->attributes->get('institution'));
+        $institution = $this->institution($request);
+        $this->authorizeInstitution($request->user(), $institution);
 
-        return Inertia::render('institution/AddStudent');
+        $batches = Batch::where('institution_id', $institution->id)
+            ->orderBy('name')
+            ->pluck('name')
+            ->toArray();
+
+        return Inertia::render('institution/AddStudent', [
+            'batches' => $batches,
+        ]);
     }
 
     public function storeStudent(Request $request)
@@ -97,9 +110,11 @@ class InstitutionUserController extends Controller
             'department' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $this->institutionUserService->createStudent($institution, $validated);
+        $baseDomain = $this->authRedirectService->getBaseDomain($request->getHost());
+        $scheme = $request->getScheme();
+        $this->institutionUserService->createStudent($institution, $validated, $baseDomain, $scheme);
 
-        return redirect()->route('institution.students')->with('status', 'Student added successfully.');
+        return redirect()->route('institution.students')->with('status', 'Student added successfully. Credentials have been sent to their email.');
     }
 
     public function editLecturer(Request $request, int $id)
@@ -147,6 +162,11 @@ class InstitutionUserController extends Controller
 
         $student = $this->institutionUserService->getStudentForEdit($institution, $id);
 
+        $batches = Batch::where('institution_id', $institution->id)
+            ->orderBy('name')
+            ->pluck('name')
+            ->toArray();
+
         return Inertia::render('institution/EditStudent', [
             'studentId' => $student->id,
             'student' => [
@@ -157,6 +177,7 @@ class InstitutionUserController extends Controller
                 'batch' => $student->batch,
                 'department' => $student->department,
             ],
+            'batches' => $batches,
         ]);
     }
 
@@ -204,7 +225,7 @@ class InstitutionUserController extends Controller
 
     protected function authorizeInstitution(?User $user, ?Institution $institution): void
     {
-        if (!$user) {
+        if (! $user) {
             abort(403);
         }
         if ($user->role === 'admin') {

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Application\BatchController;
 use App\Http\Controllers\Application\InstitutionUserController;
 use App\Http\Middleware\EnsureInstitutionAccess;
 use Illuminate\Support\Facades\Route;
@@ -14,6 +15,10 @@ Route::prefix('institution')->middleware(['auth', 'verified', EnsureInstitutionA
     Route::get('dashboard', function () {
         return Inertia::render('institution/Dashboard');
     })->name('institution.dashboard');
+
+    Route::get('batches', [BatchController::class, 'index'])->name('institution.batches');
+    Route::post('batches', [BatchController::class, 'store'])->name('institution.batches.store');
+    Route::delete('batches/{id}', [BatchController::class, 'destroy'])->name('institution.batches.destroy');
 
     Route::get('lecturers', [InstitutionUserController::class, 'lecturers'])->name('institution.lecturers');
     Route::get('lecturers/add', [InstitutionUserController::class, 'createLecturer'])->name('institution.lecturers.add');

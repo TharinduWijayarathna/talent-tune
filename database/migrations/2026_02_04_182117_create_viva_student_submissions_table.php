@@ -21,7 +21,7 @@ return new class extends Migration
             $table->text('feedback')->nullable();
             $table->enum('status', ['pending', 'in_progress', 'completed'])->default('pending');
             $table->timestamps();
-            
+
             $table->unique(['viva_id', 'student_id']); // One submission per student per viva
         });
     }

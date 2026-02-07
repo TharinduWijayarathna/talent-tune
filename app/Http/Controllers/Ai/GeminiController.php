@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Ai;
 
 use App\Http\Controllers\Controller;
 use App\Services\Ai\GeminiQuestionService;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class GeminiController extends Controller
 {
@@ -22,7 +22,6 @@ class GeminiController extends Controller
             'vivaId' => 'nullable|integer|exists:vivas,id',
             'topic' => 'required|string|max:200',
             'description' => 'nullable|string|max:1000',
-            'numQuestions' => 'nullable|integer|min:1|max:20',
             'difficulty' => 'nullable|string|in:beginner,intermediate,advanced',
             'studentDocumentPath' => 'nullable|string',
         ]);
@@ -31,7 +30,7 @@ class GeminiController extends Controller
             $request->input('vivaId'),
             $request->input('topic'),
             $request->input('description', ''),
-            $request->input('numQuestions', 5),
+            5, // always 5 questions for rubric
             $request->input('difficulty', 'intermediate'),
             $request->input('studentDocumentPath')
         );
@@ -39,6 +38,7 @@ class GeminiController extends Controller
         if (isset($result['error'])) {
             $code = $result['code'] ?? 500;
             unset($result['code']);
+
             return response()->json($result, $code);
         }
 
@@ -65,6 +65,7 @@ class GeminiController extends Controller
         if (isset($result['error'])) {
             $code = $result['code'] ?? 500;
             unset($result['code']);
+
             return response()->json($result, $code);
         }
 
@@ -94,6 +95,7 @@ class GeminiController extends Controller
         if (isset($result['error'])) {
             $code = $result['code'] ?? 500;
             unset($result['code']);
+
             return response()->json($result, $code);
         }
 

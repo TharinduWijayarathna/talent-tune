@@ -52,6 +52,6 @@ class InstitutionSeeder extends Seeder
             );
         }
 
-        $this->command->info('Seeded ' . count($institutions) . ' institutions');
+        $this->command->info('Seeded '.count($institutions).' institutions');
     }
 }

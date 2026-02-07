@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Calendar, Users } from 'lucide-vue-next';
+import { ArrowLeft, Lock } from 'lucide-vue-next';
 
 const props = defineProps<{
     viva: {
@@ -24,6 +24,11 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'My Sessions', href: '/lecturer/vivas' },
     { title: props.viva.title, href: '#' },
 ];
+
+const closeViva = () => {
+    if (!confirm('Close this viva? Students will no longer be able to attend.')) return;
+    router.post(`/lecturer/vivas/${props.viva.id}/close`);
+};
 </script>
 
 <template>
@@ -49,9 +54,20 @@ const breadcrumbs: BreadcrumbItem[] = [
                                 Batch: {{ viva.batch }} • {{ viva.scheduled_at }}
                             </CardDescription>
                         </div>
-                        <Badge :variant="viva.status === 'upcoming' ? 'default' : 'secondary'">
-                            {{ viva.status }}
-                        </Badge>
+                        <div class="flex items-center gap-2">
+                            <Badge :variant="viva.status === 'upcoming' ? 'default' : 'secondary'">
+                                {{ viva.status }}
+                            </Badge>
+                            <Button
+                                v-if="viva.status !== 'completed'"
+                                variant="destructive"
+                                size="sm"
+                                @click="closeViva"
+                            >
+                                <Lock class="h-4 w-4 mr-2" />
+                                Close viva
+                            </Button>
+                        </div>
                     </div>
                 </CardHeader>
                 <CardContent class="space-y-4">

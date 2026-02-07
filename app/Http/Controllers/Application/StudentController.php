@@ -17,9 +17,10 @@ class StudentController extends Controller
     protected function institution(Request $request): Institution
     {
         $institution = $request->attributes->get('institution');
-        if (!$institution) {
+        if (! $institution) {
             abort(403, 'Institution context required.');
         }
+
         return $institution;
     }
 
@@ -28,7 +29,7 @@ class StudentController extends Controller
         $user = $request->user();
         $institution = $this->institution($request);
 
-        if (!$user) {
+        if (! $user) {
             abort(403);
         }
 
@@ -121,18 +122,5 @@ class StudentController extends Controller
         $result = $this->studentService->completeVivaSubmission($user, $validated);
 
         return response()->json($result);
-    }
-
-    public function marks(Request $request)
-    {
-        $institution = $this->institution($request);
-        $this->authorizeStudent($request);
-        $user = $request->user();
-
-        $marks = $this->studentService->getMarks($institution, $user);
-
-        return Inertia::render('student/Marks', [
-            'marks' => $marks,
-        ]);
     }
 }

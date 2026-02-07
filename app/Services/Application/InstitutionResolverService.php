@@ -25,7 +25,7 @@ class InstitutionResolverService
             $subdomain = $parts[0];
         }
 
-        if ($subdomain && !in_array($subdomain, ['www', 'app', 'talenttune'], true)) {
+        if ($subdomain && ! in_array($subdomain, ['www', 'app', 'talenttune'], true)) {
             return Institution::where('slug', $subdomain)->first();
         }
 
@@ -37,7 +37,7 @@ class InstitutionResolverService
         $host = $request->getHost();
         $subdomain = $this->extractSubdomain($host);
 
-        if ($subdomain && !in_array($subdomain, ['www', 'app', 'talenttune'], true)) {
+        if ($subdomain && ! in_array($subdomain, ['www', 'app', 'talenttune'], true)) {
             return Institution::where('slug', $subdomain)->active()->first();
         }
 

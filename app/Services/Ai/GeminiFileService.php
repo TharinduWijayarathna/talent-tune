@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 class GeminiFileService
 {
     protected string $apiKey;
+
     protected string $apiUrl;
 
     public function __construct()
@@ -20,9 +21,9 @@ class GeminiFileService
     /**
      * Process lecture materials and generate viva background and base prompt
      *
-     * @param array $files Array of file paths
-     * @param string $title Viva title
-     * @param string|null $description Viva description
+     * @param  array  $files  Array of file paths
+     * @param  string  $title  Viva title
+     * @param  string|null  $description  Viva description
      * @return array ['background' => string, 'base_prompt' => string]
      */
     public function processLectureMaterials(array $files, string $title, ?string $description = null): array
@@ -53,14 +54,15 @@ class GeminiFileService
                 'base_prompt' => $basePrompt,
             ];
         } catch (\Exception $e) {
-            Log::error('Error processing lecture materials: ' . $e->getMessage());
+            Log::error('Error processing lecture materials: '.$e->getMessage());
+
             return $this->generateBasicBackground($title, $description);
         }
     }
 
     protected function extractFileContent(string $filePath): ?string
     {
-        if (!Storage::exists($filePath)) {
+        if (! Storage::exists($filePath)) {
             return null;
         }
 
@@ -81,7 +83,8 @@ class GeminiFileService
                     return null;
             }
         } catch (\Exception $e) {
-            Log::error("Error extracting content from {$filePath}: " . $e->getMessage());
+            Log::error("Error extracting content from {$filePath}: ".$e->getMessage());
+
             return null;
         }
     }
@@ -95,7 +98,7 @@ class GeminiFileService
 
             $response = Http::withHeaders([
                 'x-goog-api-key' => $this->apiKey,
-            ])->post($this->apiUrl . '?key=' . $this->apiKey, [
+            ])->post($this->apiUrl.'?key='.$this->apiKey, [
                 'contents' => [
                     [
                         'parts' => [
@@ -108,11 +111,14 @@ class GeminiFileService
 
             if ($response->successful()) {
                 $data = $response->json();
+
                 return $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
             }
+
             return null;
         } catch (\Exception $e) {
-            Log::error("Error extracting PDF content: " . $e->getMessage());
+            Log::error('Error extracting PDF content: '.$e->getMessage());
+
             return null;
         }
     }
@@ -126,7 +132,7 @@ class GeminiFileService
 
             $response = Http::withHeaders([
                 'x-goog-api-key' => $this->apiKey,
-            ])->post($this->apiUrl . '?key=' . $this->apiKey, [
+            ])->post($this->apiUrl.'?key='.$this->apiKey, [
                 'contents' => [
                     [
                         'parts' => [
@@ -139,11 +145,14 @@ class GeminiFileService
 
             if ($response->successful()) {
                 $data = $response->json();
+
                 return $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
             }
+
             return null;
         } catch (\Exception $e) {
-            Log::error("Error extracting DOCX content: " . $e->getMessage());
+            Log::error('Error extracting DOCX content: '.$e->getMessage());
+
             return null;
         }
     }
@@ -157,7 +166,7 @@ class GeminiFileService
 
             $response = Http::withHeaders([
                 'x-goog-api-key' => $this->apiKey,
-            ])->post($this->apiUrl . '?key=' . $this->apiKey, [
+            ])->post($this->apiUrl.'?key='.$this->apiKey, [
                 'contents' => [
                     [
                         'parts' => [
@@ -170,11 +179,14 @@ class GeminiFileService
 
             if ($response->successful()) {
                 $data = $response->json();
+
                 return $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
             }
+
             return null;
         } catch (\Exception $e) {
-            Log::error("Error extracting PPTX content: " . $e->getMessage());
+            Log::error('Error extracting PPTX content: '.$e->getMessage());
+
             return null;
         }
     }
@@ -187,20 +199,22 @@ class GeminiFileService
             $prompt .= "Description: {$description}\n\n";
         }
         $prompt .= "Lecture Materials Content:\n{$content}\n\n";
-        $prompt .= "Based on the lecture materials above, generate a comprehensive background context for this viva session. ";
-        $prompt .= "This background should summarize the key topics, concepts, and learning objectives that students should be familiar with. ";
-        $prompt .= "The background should be clear, structured, and suitable for generating relevant viva questions. ";
-        $prompt .= "Return only the background text, no additional formatting or commentary.";
+        $prompt .= 'Based on the lecture materials above, generate a comprehensive background context for this viva session. ';
+        $prompt .= 'This background should summarize the key topics, concepts, and learning objectives that students should be familiar with. ';
+        $prompt .= 'The background should be clear, structured, and suitable for generating relevant viva questions. ';
+        $prompt .= 'Return only the background text, no additional formatting or commentary.';
 
-        $response = Http::post($this->apiUrl . '?key=' . $this->apiKey, [
+        $response = Http::post($this->apiUrl.'?key='.$this->apiKey, [
             'contents' => [['parts' => [['text' => $prompt]]]],
             'generationConfig' => ['temperature' => 0.7, 'maxOutputTokens' => 2048],
         ]);
 
         if ($response->successful()) {
             $data = $response->json();
+
             return $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
         }
+
         return '';
     }
 
@@ -217,7 +231,8 @@ class GeminiFileService
         $prompt .= "2. Progress from basic to advanced topics\n";
         $prompt .= "3. Encourage critical thinking and application\n";
         $prompt .= "4. Are clear and concise\n";
-        $prompt .= "5. Are appropriate for oral examination format";
+        $prompt .= '5. Are appropriate for oral examination format';
+
         return $prompt;
     }
 
@@ -232,6 +247,7 @@ class GeminiFileService
         if ($description) {
             $basePrompt .= "\n\nContext: {$description}";
         }
+
         return [
             'background' => $background,
             'base_prompt' => $basePrompt,
@@ -245,10 +261,10 @@ class GeminiFileService
         string $title
     ): string {
         $studentContent = $this->extractFileContent($studentDocumentPath);
-        if (!$studentContent) {
+        if (! $studentContent) {
             return $basePrompt;
         }
-        $enhancedPrompt = $basePrompt . "\n\n";
+        $enhancedPrompt = $basePrompt."\n\n";
         $enhancedPrompt .= "Student's Submitted Document Content:\n{$studentContent}\n\n";
         $enhancedPrompt .= "IMPORTANT: Generate questions that:\n";
         $enhancedPrompt .= "1. Are based on the lecture materials background provided above\n";
@@ -256,6 +272,7 @@ class GeminiFileService
         $enhancedPrompt .= "3. Test the student's understanding of how the lecture concepts apply to their specific work\n";
         $enhancedPrompt .= "4. Probe deeper into areas covered in the student's document\n";
         $enhancedPrompt .= "5. Are personalized to the student's submission while maintaining academic rigor";
+
         return $enhancedPrompt;
     }
 }

@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Viva;
 use App\Models\VivaStudentSubmission;
 use App\Services\Ai\RubricService;
+use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
@@ -16,26 +17,112 @@ class StudentService
         protected RubricService $rubricService
     ) {}
 
+    /**
+     * Get dashboard stats and upcoming vivas for the student (scoped by institution and student's batch).
+     */
     public function getDashboardData(Institution $institution, User $user): array
     {
-        $stats = [
-            'upcomingVivas' => 0,
-            'completedVivas' => 0,
-            'averageMarks' => 0,
-            'totalSessions' => 0,
-        ];
+        $batch = $user->batch;
+
+        $upcomingCount = 0;
+        $totalSessions = 0;
         $upcomingVivas = [];
+
+        if ($batch) {
+            $upcomingCount = Viva::where('institution_id', $institution->id)
+                ->where('batch', $batch)
+                ->where('status', 'upcoming')
+                ->count();
+
+            $totalSessions = Viva::where('institution_id', $institution->id)
+                ->where('batch', $batch)
+                ->count();
+
+            $upcomingList = Viva::where('institution_id', $institution->id)
+                ->where('batch', $batch)
+                ->where('status', 'upcoming')
+                ->with('lecturer')
+                ->orderBy('scheduled_at')
+                ->limit(10)
+                ->get();
+            $upcomingVivas = $upcomingList->map(fn (Viva $v) => [
+                'id' => $v->id,
+                'title' => $v->title,
+                'date' => $v->scheduled_at->format('Y-m-d'),
+                'time' => $v->scheduled_at->format('g:i A'),
+                'lecturer' => $v->lecturer->name,
+            ])->all();
+        }
+
+        $completedSubmissions = VivaStudentSubmission::where('student_id', $user->id)
+            ->where('status', 'completed');
+        $completedCount = $completedSubmissions->count();
+
+        $stats = [
+            'upcomingVivas' => $upcomingCount,
+            'completedVivas' => $completedCount,
+            'totalSessions' => $totalSessions,
+        ];
+
         return [
             'stats' => $stats,
             'upcomingVivas' => $upcomingVivas,
         ];
     }
 
+    /**
+     * Get viva sessions for the student (only vivas in their batch).
+     */
     public function getVivaSessions(Institution $institution, User $user): array
     {
-        return [];
+        if (! $user->batch) {
+            return [];
+        }
+
+        $vivas = Viva::where('institution_id', $institution->id)
+            ->where('batch', $user->batch)
+            ->with('lecturer')
+            ->orderBy('scheduled_at', 'desc')
+            ->get();
+
+        $submissionScores = VivaStudentSubmission::where('student_id', $user->id)
+            ->whereIn('viva_id', $vivas->pluck('id'))
+            ->get()
+            ->keyBy('viva_id');
+
+        // Compare in UTC: stored scheduled_at is in UTC
+        $nowUtc = now()->utc();
+
+        return $vivas->map(function (Viva $viva) use ($submissionScores, $nowUtc) {
+            $submission = $submissionScores->get($viva->id);
+            $marks = $submission && $submission->status === 'completed' ? $submission->total_score : null;
+
+            $rawScheduled = $viva->getRawOriginal('scheduled_at');
+            $scheduledAtUtc = $rawScheduled ? Carbon::parse($rawScheduled, 'UTC') : $viva->scheduled_at->copy()->utc();
+            $scheduledReached = $scheduledAtUtc->lte($nowUtc);
+            $notClosed = $viva->status !== 'completed';
+            $can_attend = $scheduledReached && $notClosed;
+
+            return [
+                'id' => $viva->id,
+                'title' => $viva->title,
+                'description' => $viva->description,
+                'date' => $viva->scheduled_at->format('Y-m-d'),
+                'time' => $viva->scheduled_at->format('g:i A'),
+                'scheduled_at' => $scheduledAtUtc->toIso8601String(),
+                'lecturer' => $viva->lecturer->name,
+                'status' => $viva->status,
+                'batch' => $viva->batch,
+                'materials' => $viva->lecture_materials,
+                'marks' => $marks,
+                'can_attend' => $can_attend,
+            ];
+        })->all();
     }
 
+    /**
+     * Get viva for attend. Student may attend only on/after scheduled date and until lecturer closes the viva.
+     */
     public function getVivaForAttend(Institution $institution, User $user, int $id): array
     {
         $viva = Viva::where('institution_id', $institution->id)
@@ -43,6 +130,16 @@ class StudentService
             ->where('batch', $user->batch)
             ->with('lecturer')
             ->firstOrFail();
+
+        if ($viva->status === 'completed') {
+            abort(403, 'This viva has been closed by the lecturer. You can no longer attend.');
+        }
+
+        $rawScheduled = $viva->getRawOriginal('scheduled_at');
+        $scheduledAtUtc = $rawScheduled ? Carbon::parse($rawScheduled, 'UTC') : $viva->scheduled_at->copy()->utc();
+        if ($scheduledAtUtc->isFuture()) {
+            abort(403, 'This viva opens on '.$scheduledAtUtc->format('M j, Y \a\t g:i A').' UTC. You cannot attend before the scheduled date and time.');
+        }
 
         $submission = VivaStudentSubmission::firstOrCreate(
             [
@@ -132,10 +229,5 @@ class StudentService
             'rubric_score' => $submission->total_score,
             'rubric_from_service' => $rubric['success'],
         ];
-    }
-
-    public function getMarks(Institution $institution, User $user): array
-    {
-        return [];
     }
 }

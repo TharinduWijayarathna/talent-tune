@@ -24,7 +24,7 @@ class EnsureInstitutionAccess
         if ($user && $user->role === 'admin') {
             return $next($request);
         }
-        
+
         // Admin routes don't need institution context
         if ($request->routeIs('admin.*')) {
             return $next($request);
@@ -39,21 +39,22 @@ class EnsureInstitutionAccess
         }
 
         // If user is logged in but no institution context, redirect to home
-        if ($user && !$institution && $user->institution_id) {
+        if ($user && ! $institution && $user->institution_id) {
             // Try to redirect to their institution
             $userInstitution = $user->institution;
             if ($userInstitution) {
                 $host = $request->getHost();
                 $parts = explode('.', $host);
-                
+
                 if (count($parts) >= 3) {
                     // Replace subdomain
                     $baseDomain = implode('.', array_slice($parts, -2));
                     $newHost = "{$userInstitution->slug}.{$baseDomain}";
+
                     return redirect()->to("{$request->getScheme()}://{$newHost}{$request->getPathInfo()}");
                 }
             }
-            
+
             return redirect()->route('home');
         }
 

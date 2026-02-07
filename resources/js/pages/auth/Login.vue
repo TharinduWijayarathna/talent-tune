@@ -50,7 +50,7 @@ const selectedRole = ref<'institution' | 'lecturer' | 'student' | null>(
 );
 
 const roles = [
-    { value: 'student', label: 'Student', icon: GraduationCap, description: 'Access viva sessions and view marks' },
+    { value: 'student', label: 'Student', icon: GraduationCap, description: 'Access viva sessions' },
     { value: 'lecturer', label: 'Lecturer', icon: User, description: 'Create viva sessions and manage materials' },
     { value: 'institution', label: 'Institution Admin', icon: Building2, description: 'Manage lecturers and students' },
 ];
