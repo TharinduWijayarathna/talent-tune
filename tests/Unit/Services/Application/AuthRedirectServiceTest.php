@@ -89,3 +89,12 @@ test('getBaseDomain returns full host for .test with two parts', function () {
 test('getBaseDomain returns last two parts for .test with three parts', function () {
     expect($this->service->getBaseDomain('app.talenttune.test'))->toBe('talenttune.test');
 });
+
+test('getBaseDomainFromRequest uses config domain when set', function () {
+    config(['domain.domain' => 'myapp.com']);
+    $request = Request::createFromBase(SymfonyRequest::create('https://other.example.com/', 'GET'));
+
+    $baseDomain = $this->service->getBaseDomainFromRequest($request);
+
+    expect($baseDomain)->toBe('myapp.com');
+});

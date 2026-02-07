@@ -31,5 +31,8 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <env name="APP_DOMAIN" value=""/>
+        <env name="APP_RESERVED_SUBDOMAINS" value="www,app,talenttune"/>
+        <env name="APP_LOCAL_TLD" value=".test"/>
     </php>
 </phpunit>

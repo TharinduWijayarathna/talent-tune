@@ -109,7 +109,7 @@ const institutionName = computed(
                                                         }}.{{
                                                             (page.props as any)
                                                                 .baseDomain ||
-                                                            'talenttune.com'
+                                                            'your-domain'
                                                         }}</code
                                                     >
                                                 </li>

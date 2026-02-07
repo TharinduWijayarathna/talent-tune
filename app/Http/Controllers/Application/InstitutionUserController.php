@@ -74,7 +74,7 @@ class InstitutionUserController extends Controller
             'employee_id' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $baseDomain = $this->authRedirectService->getBaseDomain($request->getHost());
+        $baseDomain = $this->authRedirectService->getBaseDomainFromRequest($request);
         $scheme = $request->getScheme();
         $this->institutionUserService->createLecturer($institution, $validated, $baseDomain, $scheme);
 
@@ -110,7 +110,7 @@ class InstitutionUserController extends Controller
             'department' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $baseDomain = $this->authRedirectService->getBaseDomain($request->getHost());
+        $baseDomain = $this->authRedirectService->getBaseDomainFromRequest($request);
         $scheme = $request->getScheme();
         $this->institutionUserService->createStudent($institution, $validated, $baseDomain, $scheme);
 
