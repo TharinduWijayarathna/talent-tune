@@ -52,7 +52,7 @@ const filteredInstitutions = computed(() => {
 });
 
 const toggleStatus = (institution: Institution) => {
-    router.patch(`/admin/institutions/${institution.id}/status`, {
+    router.patch(`/admin/institutions/${institution.slug}/status`, {
         is_active: !institution.is_active,
     }, {
         preserveScroll: true,
@@ -61,7 +61,7 @@ const toggleStatus = (institution: Institution) => {
 
 const deleteInstitution = (institution: Institution) => {
     if (confirm(`Are you sure you want to delete ${institution.name}? This action cannot be undone.`)) {
-        router.delete(`/admin/institutions/${institution.id}`, {
+        router.delete(`/admin/institutions/${institution.slug}`, {
             preserveScroll: true,
         });
     }

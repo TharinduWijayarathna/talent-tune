@@ -1,19 +1,21 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Application;
 
+use App\Http\Controllers\Controller;
 use App\Models\Institution;
 use App\Models\User;
+use App\Services\Application\InstitutionUserService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class InstitutionUserController extends Controller
 {
-    /**
-     * Get the current institution from request (set by SetInstitutionContext middleware).
-     */
+    public function __construct(
+        protected InstitutionUserService $institutionUserService
+    ) {}
+
     protected function institution(Request $request): Institution
     {
         $institution = $request->attributes->get('institution');
@@ -23,66 +25,30 @@ class InstitutionUserController extends Controller
         return $institution;
     }
 
-    /**
-     * List lecturers for the current institution only.
-     */
     public function lecturers(Request $request)
     {
         $institution = $this->institution($request);
         $this->authorizeInstitution($request->user(), $institution);
 
-        $lecturers = User::forInstitution($institution->id)
-            ->where('role', 'lecturer')
-            ->orderBy('name')
-            ->get()
-            ->map(fn (User $u) => [
-                'id' => $u->id,
-                'name' => $u->name,
-                'email' => $u->email,
-                'employee_id' => $u->employee_id,
-                'department' => $u->department,
-                'status' => 'active',
-                'totalSessions' => 0,
-                'created_at' => $u->created_at->toISOString(),
-            ]);
+        $lecturers = $this->institutionUserService->getLecturers($institution);
 
         return Inertia::render('institution/Lecturers', [
             'lecturers' => $lecturers,
         ]);
     }
 
-    /**
-     * List students for the current institution only.
-     */
     public function students(Request $request)
     {
         $institution = $this->institution($request);
         $this->authorizeInstitution($request->user(), $institution);
 
-        $students = User::forInstitution($institution->id)
-            ->where('role', 'student')
-            ->orderBy('name')
-            ->get()
-            ->map(fn (User $u) => [
-                'id' => $u->id,
-                'name' => $u->name,
-                'email' => $u->email,
-                'student_id' => $u->student_id,
-                'batch' => $u->batch,
-                'department' => $u->department,
-                'status' => 'active',
-                'completedVivas' => 0,
-                'created_at' => $u->created_at->toISOString(),
-            ]);
+        $students = $this->institutionUserService->getStudents($institution);
 
         return Inertia::render('institution/Students', [
             'students' => $students,
         ]);
     }
 
-    /**
-     * Show add lecturer form.
-     */
     public function createLecturer(Request $request)
     {
         $this->institution($request);
@@ -91,9 +57,6 @@ class InstitutionUserController extends Controller
         return Inertia::render('institution/AddLecturer');
     }
 
-    /**
-     * Store a new lecturer for the current institution.
-     */
     public function storeLecturer(Request $request)
     {
         $institution = $this->institution($request);
@@ -107,22 +70,11 @@ class InstitutionUserController extends Controller
             'employee_id' => ['nullable', 'string', 'max:255'],
         ]);
 
-        User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'role' => 'lecturer',
-            'institution_id' => $institution->id,
-            'department' => $validated['department'] ?? null,
-            'employee_id' => $validated['employee_id'] ?? null,
-        ]);
+        $this->institutionUserService->createLecturer($institution, $validated);
 
         return redirect()->route('institution.lecturers')->with('status', 'Lecturer added successfully.');
     }
 
-    /**
-     * Show add student form.
-     */
     public function createStudent(Request $request)
     {
         $this->institution($request);
@@ -131,9 +83,6 @@ class InstitutionUserController extends Controller
         return Inertia::render('institution/AddStudent');
     }
 
-    /**
-     * Store a new student for the current institution.
-     */
     public function storeStudent(Request $request)
     {
         $institution = $this->institution($request);
@@ -148,31 +97,17 @@ class InstitutionUserController extends Controller
             'department' => ['nullable', 'string', 'max:255'],
         ]);
 
-        User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'role' => 'student',
-            'institution_id' => $institution->id,
-            'student_id' => $validated['student_id'] ?? null,
-            'batch' => $validated['batch'] ?? null,
-            'department' => $validated['department'] ?? null,
-        ]);
+        $this->institutionUserService->createStudent($institution, $validated);
 
         return redirect()->route('institution.students')->with('status', 'Student added successfully.');
     }
 
-    /**
-     * Show edit lecturer form (only for lecturers belonging to current institution).
-     */
     public function editLecturer(Request $request, int $id)
     {
         $institution = $this->institution($request);
         $this->authorizeInstitution($request->user(), $institution);
 
-        $lecturer = User::forInstitution($institution->id)
-            ->where('role', 'lecturer')
-            ->findOrFail($id);
+        $lecturer = $this->institutionUserService->getLecturerForEdit($institution, $id);
 
         return Inertia::render('institution/EditLecturer', [
             'lecturerId' => $lecturer->id,
@@ -186,17 +121,12 @@ class InstitutionUserController extends Controller
         ]);
     }
 
-    /**
-     * Update a lecturer (only if belongs to current institution).
-     */
     public function updateLecturer(Request $request, int $id)
     {
         $institution = $this->institution($request);
         $this->authorizeInstitution($request->user(), $institution);
 
-        $lecturer = User::forInstitution($institution->id)
-            ->where('role', 'lecturer')
-            ->findOrFail($id);
+        $lecturer = $this->institutionUserService->getLecturerForEdit($institution, $id);
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -205,22 +135,17 @@ class InstitutionUserController extends Controller
             'employee_id' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $lecturer->update($validated);
+        $this->institutionUserService->updateLecturer($lecturer, $validated);
 
         return redirect()->route('institution.lecturers')->with('status', 'Lecturer updated successfully.');
     }
 
-    /**
-     * Show edit student form (only for students belonging to current institution).
-     */
     public function editStudent(Request $request, int $id)
     {
         $institution = $this->institution($request);
         $this->authorizeInstitution($request->user(), $institution);
 
-        $student = User::forInstitution($institution->id)
-            ->where('role', 'student')
-            ->findOrFail($id);
+        $student = $this->institutionUserService->getStudentForEdit($institution, $id);
 
         return Inertia::render('institution/EditStudent', [
             'studentId' => $student->id,
@@ -235,17 +160,12 @@ class InstitutionUserController extends Controller
         ]);
     }
 
-    /**
-     * Update a student (only if belongs to current institution).
-     */
     public function updateStudent(Request $request, int $id)
     {
         $institution = $this->institution($request);
         $this->authorizeInstitution($request->user(), $institution);
 
-        $student = User::forInstitution($institution->id)
-            ->where('role', 'student')
-            ->findOrFail($id);
+        $student = $this->institutionUserService->getStudentForEdit($institution, $id);
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -255,48 +175,33 @@ class InstitutionUserController extends Controller
             'department' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $student->update($validated);
+        $this->institutionUserService->updateStudent($student, $validated);
 
         return redirect()->route('institution.students')->with('status', 'Student updated successfully.');
     }
 
-    /**
-     * Delete a lecturer (only if belongs to current institution).
-     */
     public function destroyLecturer(Request $request, int $id)
     {
         $institution = $this->institution($request);
         $this->authorizeInstitution($request->user(), $institution);
 
-        $lecturer = User::forInstitution($institution->id)
-            ->where('role', 'lecturer')
-            ->findOrFail($id);
-
-        $lecturer->delete();
+        $lecturer = $this->institutionUserService->getLecturerForEdit($institution, $id);
+        $this->institutionUserService->destroyLecturer($lecturer);
 
         return redirect()->route('institution.lecturers')->with('status', 'Lecturer removed.');
     }
 
-    /**
-     * Delete a student (only if belongs to current institution).
-     */
     public function destroyStudent(Request $request, int $id)
     {
         $institution = $this->institution($request);
         $this->authorizeInstitution($request->user(), $institution);
 
-        $student = User::forInstitution($institution->id)
-            ->where('role', 'student')
-            ->findOrFail($id);
-
-        $student->delete();
+        $student = $this->institutionUserService->getStudentForEdit($institution, $id);
+        $this->institutionUserService->destroyStudent($student);
 
         return redirect()->route('institution.students')->with('status', 'Student removed.');
     }
 
-    /**
-     * Ensure the user can manage this institution (must be institution admin or admin).
-     */
     protected function authorizeInstitution(?User $user, ?Institution $institution): void
     {
         if (!$user) {

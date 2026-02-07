@@ -75,6 +75,14 @@ class Institution extends Model
     }
 
     /**
+     * Get all payments for this institution.
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    /**
      * Scope a query to only include active institutions.
      */
     public function scopeActive($query)

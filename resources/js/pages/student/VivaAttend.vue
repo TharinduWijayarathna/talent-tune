@@ -67,7 +67,7 @@ const speechRecognition: any = ref(null);
 const recognitionActive = ref(false);
 const isLoadingQuestions = ref(false);
 const questionIndex = ref(0);
-const answers = ref<Array<{question: string, answer: string, evaluation?: any}>>([]);
+const answers = ref<Array<{question: string, answer: string, evaluation?: { score_1_10: number; feedback: string; correctPoints?: string[]; improvements?: string[] } }>>([]);
 const currentEvaluation = ref<any>(null);
 const showEvaluation = ref(false);
 const conversationHistory = ref<Array<{examiner: string, student: string}>>([]);
@@ -567,9 +567,8 @@ const evaluateAnswer = async (question: string, answerText: string) => {
         const evaluation = await response.json();
         return evaluation;
     } catch (error: any) {
-        // Return a default evaluation if API fails
         return {
-            score: 0,
+            score_1_10: 5,
             feedback: 'Could not evaluate answer automatically. Please review manually.',
             correctPoints: [],
             improvements: [],
@@ -588,11 +587,11 @@ const evaluateAndMoveOn = async (answerText: string, isSkipped: boolean) => {
     showEvaluation.value = true;
     isProcessingAnswer.value = true;
 
-    // Evaluate answer using Gemini AI (only if not skipped)
-    let evaluation;
+    // Evaluate answer using Gemini AI (only if not skipped). score_1_10 is stored, not shown to user.
+    let evaluation: { score_1_10: number; feedback: string; correctPoints?: string[]; improvements?: string[] };
     if (isSkipped) {
         evaluation = {
-            score: 0,
+            score_1_10: 1,
             feedback: 'Question was skipped or student indicated they do not know the answer.',
             correctPoints: [],
             improvements: [],
@@ -601,11 +600,11 @@ const evaluateAndMoveOn = async (answerText: string, isSkipped: boolean) => {
         evaluation = await evaluateAnswer(currentQuestion.value!, answerText);
     }
 
-    // Store answer and evaluation
+    // Store answer and evaluation (score_1_10 kept for backend, not displayed)
     answers.value.push({
         question: currentQuestion.value!,
         answer: answerText,
-        evaluation: evaluation,
+        evaluation,
     });
 
     // Show evaluation
@@ -622,7 +621,49 @@ const evaluateAndMoveOn = async (answerText: string, isSkipped: boolean) => {
     }, 3000);
 };
 
-const moveToNextQuestion = () => {
+// Complete viva submission: send 5 answers with score_1_10 to backend; backend calls Python rubric service and returns rubric score.
+const completeAndShowRubric = async () => {
+    const submissionId = props.submission?.id;
+    if (!submissionId || answers.value.length !== 5) {
+        alert('Viva session completed. Your answers have been recorded.');
+        return;
+    }
+    const payload = {
+        submission_id: submissionId,
+        answers: answers.value.map((a) => ({
+            question: a.question,
+            answer: a.answer,
+            score_1_10: a.evaluation?.score_1_10 ?? 5,
+            feedback: a.evaluation?.feedback ?? '',
+            correctPoints: a.evaluation?.correctPoints ?? [],
+            improvements: a.evaluation?.improvements ?? [],
+        })),
+    };
+    try {
+        const response = await fetch('/student/vivas/complete-submission', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken.value,
+                'X-Requested-With': 'XMLHttpRequest',
+                Accept: 'application/json',
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify(payload),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (response.ok && data.success) {
+            const rubricScore = data.rubric_score != null ? data.rubric_score : '—';
+            alert(`Viva session completed!\n\nYour answers have been saved.${data.rubric_from_service ? `\n\nRubric-based score: ${rubricScore}` : '\n\nScore has been recorded based on your answers.'}`);
+        } else {
+            alert('Viva session completed. Your answers have been saved.');
+        }
+    } catch {
+        alert('Viva session completed. Your answers have been saved.');
+    }
+};
+
+const moveToNextQuestion = async () => {
     questionIndex.value++;
     showEvaluation.value = false;
     currentEvaluation.value = null;
@@ -633,14 +674,9 @@ const moveToNextQuestion = () => {
         // Speak the next question
         speakQuestion(currentQuestion.value);
     } else {
-        // All questions answered
+        // All questions answered: save submission and get rubric score from Python service
         stopSession();
-
-        // Calculate total score
-        const totalScore = answers.value.reduce((sum, item) => sum + (item.evaluation?.score || 0), 0);
-        const averageScore = Math.round(totalScore / answers.value.length);
-
-        alert(`Viva session completed!\n\nAverage Score: ${averageScore}/100\n\nYour answers have been evaluated and saved.`);
+        await completeAndShowRubric();
     }
 };
 
@@ -786,7 +822,7 @@ onUnmounted(() => {
         <div class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-2xl font-bold">{{ vivaSession.value.title }}</h1>
+                    <h1 class="text-2xl font-bold">{{ vivaSession.title }}</h1>
                     <p class="text-muted-foreground">{{ vivaSession.lecturer }} • {{ vivaSession.scheduled_at }}</p>
                 </div>
                 <Badge v-if="sessionActive" variant="default" class="text-sm">
@@ -877,14 +913,9 @@ onUnmounted(() => {
                             </div>
                         </div>
 
-                        <!-- Evaluation Result -->
+                        <!-- Evaluation Result (score 1-10 is not shown to user, only feedback) -->
                         <div v-if="showEvaluation && currentEvaluation" class="rounded-lg border-2 border-primary bg-primary/5 p-4 space-y-3">
-                            <div class="flex items-center justify-between">
-                                <div class="text-sm font-medium">Answer Evaluation</div>
-                                <Badge :variant="currentEvaluation.score >= 70 ? 'default' : currentEvaluation.score >= 50 ? 'secondary' : 'destructive'">
-                                    Score: {{ currentEvaluation.score }}/100
-                                </Badge>
-                            </div>
+                            <div class="text-sm font-medium">Answer Evaluation</div>
                             <div class="text-sm text-muted-foreground">
                                 {{ currentEvaluation.feedback }}
                             </div>
