@@ -587,7 +587,10 @@ const evaluateAndMoveOn = async (answerText: string, isSkipped: boolean) => {
 
     // Evaluate answer using Gemini AI (only if not skipped). score_1_10 is stored, not shown to user.
     let evaluation: { score_1_10: number; feedback: string; correctPoints?: string[]; improvements?: string[] };
-    const skipFeedbackMessage = "That's okay — no problem at all. Let's move on to the next question.";
+    const isLastQuestion = questionIndex.value >= questions.value.length - 1;
+    const skipFeedbackMessage = isLastQuestion
+        ? "That's okay — no problem at all. That was the last question. We're all done."
+        : "That's okay — no problem at all. Let's move on to the next question.";
 
     if (isSkipped) {
         evaluation = {
@@ -615,7 +618,7 @@ const evaluateAndMoveOn = async (answerText: string, isSkipped: boolean) => {
     finalAnswer = '';
     answer.value = '';
 
-    // When user said "don't know", speak the supportive message via TTS
+    // When user said "don't know", speak the supportive message via TTS (no "next question" on last question)
     if (isSkipped) {
         speakQuestion(skipFeedbackMessage).catch(() => {
             // If TTS fails, we still move on after the delay
