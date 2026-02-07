@@ -42,7 +42,7 @@ class InstitutionService
         $counter = 1;
 
         while (Institution::where('slug', $slug)->exists()) {
-            $slug = $baseSlug . '-' . $counter;
+            $slug = $baseSlug.'-'.$counter;
             $counter++;
         }
 
@@ -68,7 +68,7 @@ class InstitutionService
 
     public function updateStatus(Institution $institution, bool $isActive, Request $request): void
     {
-        $wasInactive = !$institution->is_active;
+        $wasInactive = ! $institution->is_active;
         $isActivating = $wasInactive && $isActive;
 
         $institution->update(['is_active' => $isActive]);
@@ -88,13 +88,15 @@ class InstitutionService
             $password = Str::random(12);
             $existingAdmin->update(['password' => Hash::make($password)]);
             $this->sendActivationEmail($institution, $existingAdmin->email, $password, $request);
+
             return;
         }
 
         $adminEmail = $institution->email ?? ($institution->settings['email'] ?? null);
 
-        if (!$adminEmail) {
+        if (! $adminEmail) {
             Log::warning("Cannot activate institution {$institution->id}: No email address found");
+
             return;
         }
 
@@ -108,6 +110,7 @@ class InstitutionService
                 'password' => Hash::make($password),
             ]);
             $this->sendActivationEmail($institution, $adminEmail, $password, $request);
+
             return;
         }
 

@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Ai;
 
 use App\Http\Controllers\Controller;
 use App\Services\Ai\GeminiQuestionService;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class GeminiController extends Controller
 {
@@ -38,6 +38,7 @@ class GeminiController extends Controller
         if (isset($result['error'])) {
             $code = $result['code'] ?? 500;
             unset($result['code']);
+
             return response()->json($result, $code);
         }
 
@@ -64,6 +65,7 @@ class GeminiController extends Controller
         if (isset($result['error'])) {
             $code = $result['code'] ?? 500;
             unset($result['code']);
+
             return response()->json($result, $code);
         }
 
@@ -93,6 +95,7 @@ class GeminiController extends Controller
         if (isset($result['error'])) {
             $code = $result['code'] ?? 500;
             unset($result['code']);
+
             return response()->json($result, $code);
         }
 

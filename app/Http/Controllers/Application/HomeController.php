@@ -23,7 +23,7 @@ class HomeController extends Controller
         $institution = $this->institutionResolver->resolve($request);
 
         if ($institution) {
-            if (!$institution->is_active) {
+            if (! $institution->is_active) {
                 return Inertia::render('home/InstitutionPending', [
                     'institution' => [
                         'id' => $institution->id,

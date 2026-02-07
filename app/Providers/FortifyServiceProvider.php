@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
-use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
 
 class FortifyServiceProvider extends ServiceProvider
@@ -40,14 +39,14 @@ class FortifyServiceProvider extends ServiceProvider
     {
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::createUsersUsing(CreateNewUser::class);
-        
+
         // Note: Login handling is done by our custom AuthenticatedSessionController
         // No need for custom LoginResponse as we handle redirects in the controller
     }
 
     /**
      * Configure Fortify views.
-     * 
+     *
      * Note: Login is handled by our custom AuthenticatedSessionController,
      * so we don't register a login view here.
      */

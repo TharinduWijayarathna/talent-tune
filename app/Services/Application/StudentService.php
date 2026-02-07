@@ -75,7 +75,7 @@ class StudentService
      */
     public function getVivaSessions(Institution $institution, User $user): array
     {
-        if (!$user->batch) {
+        if (! $user->batch) {
             return [];
         }
 
@@ -138,7 +138,7 @@ class StudentService
         $rawScheduled = $viva->getRawOriginal('scheduled_at');
         $scheduledAtUtc = $rawScheduled ? Carbon::parse($rawScheduled, 'UTC') : $viva->scheduled_at->copy()->utc();
         if ($scheduledAtUtc->isFuture()) {
-            abort(403, 'This viva opens on ' . $scheduledAtUtc->format('M j, Y \a\t g:i A') . ' UTC. You cannot attend before the scheduled date and time.');
+            abort(403, 'This viva opens on '.$scheduledAtUtc->format('M j, Y \a\t g:i A').' UTC. You cannot attend before the scheduled date and time.');
         }
 
         $submission = VivaStudentSubmission::firstOrCreate(

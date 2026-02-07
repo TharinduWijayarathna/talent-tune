@@ -10,7 +10,7 @@ class RubricService
     /**
      * Get rubric-based score from Python service using 5 question scores (1-10 each).
      *
-     * @param array<int, int> $scores [q1_score, q2_score, q3_score, q4_score, q5_score] each 1-10
+     * @param  array<int, int>  $scores  [q1_score, q2_score, q3_score, q4_score, q5_score] each 1-10
      * @return array{success: bool, score?: float|int, error?: string}
      */
     public function getRubricScore(array $scores): array
@@ -28,7 +28,7 @@ class RubricService
         ];
 
         $baseUrl = rtrim(config('services.rubric.url', 'http://127.0.0.1:5000'), '/');
-        $url = $baseUrl . '/predict';
+        $url = $baseUrl.'/predict';
 
         try {
             $response = Http::timeout(15)
@@ -41,9 +41,10 @@ class RubricService
                     'status' => $response->status(),
                     'body' => $response->body(),
                 ]);
+
                 return [
                     'success' => false,
-                    'error' => 'Rubric service returned ' . $response->status(),
+                    'error' => 'Rubric service returned '.$response->status(),
                 ];
             }
 
@@ -59,6 +60,7 @@ class RubricService
             ];
         } catch (\Exception $e) {
             Log::error('Rubric service error', ['message' => $e->getMessage(), 'url' => $url]);
+
             return [
                 'success' => false,
                 'error' => $e->getMessage(),

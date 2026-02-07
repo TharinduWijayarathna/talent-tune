@@ -98,7 +98,7 @@ class LecturerService
             ->pluck('name')
             ->toArray();
 
-        if (!empty($fromBatches)) {
+        if (! empty($fromBatches)) {
             return $fromBatches;
         }
 
@@ -113,7 +113,7 @@ class LecturerService
     }
 
     /**
-     * @param array<int, UploadedFile> $lectureMaterialFiles
+     * @param  array<int, UploadedFile>  $lectureMaterialFiles
      */
     public function createViva(Institution $institution, User $user, array $validated, array $lectureMaterialFiles = []): Viva
     {
@@ -131,10 +131,10 @@ class LecturerService
         );
 
         // Parse scheduled time in lecturer's timezone so "6:30 PM" means their local time, then store as UTC
-        $tz = !empty($validated['timezone']) && in_array($validated['timezone'], timezone_identifiers_list(), true)
+        $tz = ! empty($validated['timezone']) && in_array($validated['timezone'], timezone_identifiers_list(), true)
             ? $validated['timezone']
             : config('app.timezone');
-        $scheduledAt = Carbon::parse($validated['date'] . ' ' . $validated['time'], $tz)->utc();
+        $scheduledAt = Carbon::parse($validated['date'].' '.$validated['time'], $tz)->utc();
 
         return Viva::create([
             'title' => $validated['title'],

@@ -22,7 +22,7 @@ class TTSService
     ): array {
         $apiKey = config('services.google.tts_api_key');
 
-        if (!$apiKey) {
+        if (! $apiKey) {
             return ['error' => 'Google TTS API key not configured', 'code' => 500];
         }
 
@@ -37,7 +37,7 @@ class TTSService
             ],
         ];
 
-        if (!$useStandardTTS && $modelName) {
+        if (! $useStandardTTS && $modelName) {
             $requestBody['voice'] = [
                 'languageCode' => $languageCode,
                 'modelName' => $modelName,
@@ -67,7 +67,7 @@ class TTSService
             $isIAMPermissionError = str_contains($errorMessage, 'IAM_PERMISSION_DENIED')
                 || (str_contains($errorMessage, 'Permission') && str_contains($errorMessage, 'denied'));
 
-            if ($isIAMPermissionError && $errorCode === 403 && !$useStandardTTS) {
+            if ($isIAMPermissionError && $errorCode === 403 && ! $useStandardTTS) {
                 $standardResult = $this->generate(
                     $text,
                     'en-US',
@@ -79,7 +79,7 @@ class TTSService
                     $pitch,
                     true
                 );
-                if (!isset($standardResult['error'])) {
+                if (! isset($standardResult['error'])) {
                     return $standardResult;
                 }
             }
@@ -96,7 +96,7 @@ class TTSService
         $data = $response->json();
         $audioContent = $data['audioContent'] ?? null;
 
-        if (!$audioContent) {
+        if (! $audioContent) {
             return ['error' => 'No audio content received', 'code' => 500];
         }
 
@@ -119,15 +119,15 @@ class TTSService
     {
         if ($isIAMPermissionError && $errorCode === 403) {
             return 'API key lacks IAM permissions for Gemini TTS model. '
-                . "To fix this:\n\nOption 1: Grant API key permissions\n"
-                . "1. Go to Google Cloud Console > IAM & Admin > IAM\n"
-                . "2. Find your API key service account or create one\n"
-                . "3. Grant \"Vertex AI User\" role (roles/aiplatform.user)\n"
-                . "4. Or use a service account with proper permissions\n\n"
-                . "Option 2: Use standard TTS voices (without Gemini model)\n"
-                . "The Gemini model requires Vertex AI permissions. "
-                . "You can use standard Google TTS voices instead.\n\n"
-                . "Note: The system attempted to use standard TTS automatically.";
+                ."To fix this:\n\nOption 1: Grant API key permissions\n"
+                ."1. Go to Google Cloud Console > IAM & Admin > IAM\n"
+                ."2. Find your API key service account or create one\n"
+                ."3. Grant \"Vertex AI User\" role (roles/aiplatform.user)\n"
+                ."4. Or use a service account with proper permissions\n\n"
+                ."Option 2: Use standard TTS voices (without Gemini model)\n"
+                .'The Gemini model requires Vertex AI permissions. '
+                ."You can use standard Google TTS voices instead.\n\n"
+                .'Note: The system attempted to use standard TTS automatically.';
         }
 
         if ($isVertexAIError && $errorCode === 403) {
@@ -141,9 +141,10 @@ class TTSService
                 }
             }
             $msg = 'Vertex AI API is required for Gemini TTS model but is not enabled. ';
+
             return $activationUrl
-                ? $msg . "Enable it here: {$activationUrl}"
-                : $msg . "Enable it in Google Cloud Console:\n1. Go to APIs & Services > Library\n2. Search for \"Vertex AI API\"\n3. Click Enable\n4. Wait a few minutes for it to propagate";
+                ? $msg."Enable it here: {$activationUrl}"
+                : $msg."Enable it in Google Cloud Console:\n1. Go to APIs & Services > Library\n2. Search for \"Vertex AI API\"\n3. Click Enable\n4. Wait a few minutes for it to propagate";
         }
 
         return match ($errorCode) {

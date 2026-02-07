@@ -4,7 +4,6 @@ namespace App\Notifications;
 
 use App\Models\Institution;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -40,12 +39,12 @@ class InstitutionActivated extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         $loginUrl = url("https://{$this->institution->slug}.{$this->baseDomain}/login");
-        
+
         return (new MailMessage)
             ->subject("{$this->institution->name} - Your TalentTune Account Has Been Activated")
             ->greeting("Hello {$this->institution->contact_person},")
             ->line("Great news! Your institution **{$this->institution->name}** has been reviewed and activated by our admin team.")
-            ->line("You can now access your TalentTune portal and start managing viva sessions.")
+            ->line('You can now access your TalentTune portal and start managing viva sessions.')
             ->line('## Your Login Credentials')
             ->line("**Email:** {$this->email}")
             ->line("**Password:** {$this->password}")

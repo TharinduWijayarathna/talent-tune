@@ -22,9 +22,10 @@ class InstitutionUserController extends Controller
     protected function institution(Request $request): Institution
     {
         $institution = $request->attributes->get('institution');
-        if (!$institution) {
+        if (! $institution) {
             abort(403, 'Institution context required.');
         }
+
         return $institution;
     }
 
@@ -224,7 +225,7 @@ class InstitutionUserController extends Controller
 
     protected function authorizeInstitution(?User $user, ?Institution $institution): void
     {
-        if (!$user) {
+        if (! $user) {
             abort(403);
         }
         if ($user->role === 'admin') {
