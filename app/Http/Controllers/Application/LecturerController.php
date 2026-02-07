@@ -125,4 +125,15 @@ class LecturerController extends Controller
             ],
         ]);
     }
+
+    public function closeViva(Request $request, int $id)
+    {
+        $institution = $this->institution($request);
+        $this->authorizeLecturer($request);
+        $user = $request->user();
+
+        $this->lecturerService->closeViva($institution, $user, $id);
+
+        return redirect()->route('lecturer.vivas.show', ['id' => $id])->with('status', 'Viva has been closed. Students can no longer attend.');
+    }
 }

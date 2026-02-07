@@ -92,9 +92,15 @@ class StudentService
             ->get()
             ->keyBy('viva_id');
 
-        return $vivas->map(function (Viva $viva) use ($submissionScores) {
+        $now = now();
+
+        return $vivas->map(function (Viva $viva) use ($submissionScores, $now) {
             $submission = $submissionScores->get($viva->id);
             $marks = $submission && $submission->status === 'completed' ? $submission->total_score : null;
+
+            $scheduledReached = $viva->scheduled_at->lte($now);
+            $notClosed = $viva->status !== 'completed';
+            $can_attend = $scheduledReached && $notClosed;
 
             return [
                 'id' => $viva->id,
@@ -102,15 +108,20 @@ class StudentService
                 'description' => $viva->description,
                 'date' => $viva->scheduled_at->format('Y-m-d'),
                 'time' => $viva->scheduled_at->format('g:i A'),
+                'scheduled_at' => $viva->scheduled_at->toIso8601String(),
                 'lecturer' => $viva->lecturer->name,
                 'status' => $viva->status,
                 'batch' => $viva->batch,
                 'materials' => $viva->lecture_materials,
                 'marks' => $marks,
+                'can_attend' => $can_attend,
             ];
         })->all();
     }
 
+    /**
+     * Get viva for attend. Student may attend only on/after scheduled date and until lecturer closes the viva.
+     */
     public function getVivaForAttend(Institution $institution, User $user, int $id): array
     {
         $viva = Viva::where('institution_id', $institution->id)
@@ -118,6 +129,14 @@ class StudentService
             ->where('batch', $user->batch)
             ->with('lecturer')
             ->firstOrFail();
+
+        if ($viva->status === 'completed') {
+            abort(403, 'This viva has been closed by the lecturer. You can no longer attend.');
+        }
+
+        if ($viva->scheduled_at->isFuture()) {
+            abort(403, 'This viva opens on ' . $viva->scheduled_at->format('M j, Y \a\t g:i A') . '. You cannot attend before the scheduled date and time.');
+        }
 
         $submission = VivaStudentSubmission::firstOrCreate(
             [

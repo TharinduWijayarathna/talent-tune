@@ -16,11 +16,13 @@ const props = defineProps<{
         description?: string;
         date: string;
         time: string;
+        scheduled_at?: string;
         lecturer: string;
         status: string;
         batch?: string;
         materials?: string[];
         marks?: number;
+        can_attend?: boolean;
     }>;
 }>();
 
@@ -31,8 +33,16 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const vivaSessions = computed(() => props.vivaSessions || []);
 
-const getStatusBadge = (status: string) => {
-    return status === 'upcoming' ? 'default' : 'secondary';
+const getStatusBadge = (viva: { status: string; can_attend?: boolean }) => {
+    if (viva.status === 'completed') return 'secondary';
+    if (viva.can_attend) return 'default';
+    return 'outline';
+};
+
+const attendLabel = (viva: { status: string; can_attend?: boolean; date?: string; time?: string; scheduled_at?: string }) => {
+    if (viva.status === 'completed') return 'Closed by lecturer';
+    if (viva.can_attend) return 'Attend Viva';
+    return `Opens on ${viva.date} at ${viva.time}`;
 };
 </script>
 
@@ -62,8 +72,8 @@ const getStatusBadge = (status: string) => {
                             <div class="space-y-1 flex-1">
                                 <div class="flex items-center gap-2">
                                     <CardTitle>{{ viva.title }}</CardTitle>
-                                    <Badge :variant="getStatusBadge(viva.status)">
-                                        {{ viva.status }}
+                                    <Badge :variant="getStatusBadge(viva)">
+                                        {{ viva.status === 'completed' ? 'Closed' : viva.can_attend ? 'Open' : 'Upcoming' }}
                                     </Badge>
                                 </div>
                                 <CardDescription>{{ viva.description }}</CardDescription>
@@ -115,7 +125,7 @@ const getStatusBadge = (status: string) => {
 
                             <div class="flex gap-2">
                                 <Button
-                                    v-if="viva.status === 'upcoming'"
+                                    v-if="viva.can_attend"
                                     as-child
                                 >
                                     <Link :href="`/student/vivas/${viva.id}/attend`">
@@ -127,7 +137,7 @@ const getStatusBadge = (status: string) => {
                                     variant="outline"
                                     disabled
                                 >
-                                    Completed
+                                    {{ attendLabel(viva) }}
                                 </Button>
                             </div>
                         </div>

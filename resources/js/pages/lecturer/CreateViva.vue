@@ -15,6 +15,7 @@ import { Upload, X, FileText, Plus, Calendar as CalendarIcon, Clock } from 'luci
 import { ref, computed } from 'vue';
 import { useForm, Link } from '@inertiajs/vue3';
 import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 import InputError from '@/components/InputError.vue';
 
 const props = defineProps<{
@@ -156,23 +157,50 @@ const submitForm = () => {
 
                             <div class="grid gap-4 md:grid-cols-2">
                                 <div class="space-y-2">
-                                    <Label for="date">Date *</Label>
-                                    <Input
-                                        id="date"
-                                        v-model="form.date"
-                                        type="date"
-                                        required
-                                    />
+                                    <Label>Date *</Label>
+                                    <Popover>
+                                        <PopoverTrigger as-child>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                :class="cn(
+                                                    'w-full justify-start text-left font-normal',
+                                                    !form.date && 'text-muted-foreground'
+                                                )"
+                                            >
+                                                <CalendarIcon class="mr-2 h-4 w-4" />
+                                                {{ form.date ? format(new Date(form.date + 'T12:00:00'), 'PPP') : 'Pick a date' }}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent class="w-auto p-0" align="start">
+                                            <Calendar
+                                                :model-value="form.date ? new Date(form.date + 'T12:00:00') : undefined"
+                                                @update:model-value="(d) => { if (d) form.date = format(d, 'yyyy-MM-dd') }"
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
                                     <InputError :message="form.errors.date" />
                                 </div>
                                 <div class="space-y-2">
-                                    <Label for="time">Time *</Label>
-                                    <Input
-                                        id="time"
-                                        v-model="form.time"
-                                        type="time"
-                                        required
-                                    />
+                                    <Label>Time *</Label>
+                                    <Popover>
+                                        <PopoverTrigger as-child>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                :class="cn(
+                                                    'w-full justify-start text-left font-normal',
+                                                    !form.time && 'text-muted-foreground'
+                                                )"
+                                            >
+                                                <Clock class="mr-2 h-4 w-4" />
+                                                {{ form.time || 'Pick a time' }}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent class="w-auto p-0" align="start">
+                                            <TimePicker v-model="form.time" />
+                                        </PopoverContent>
+                                    </Popover>
                                     <InputError :message="form.errors.time" />
                                 </div>
                             </div>
@@ -202,10 +230,9 @@ const submitForm = () => {
                     <Card>
                         <CardHeader>
                             <CardTitle>Lecture Materials</CardTitle>
-                            <CardDescription>Upload materials and resources (Dropbox integration)</CardDescription>
+                            <CardDescription>Upload materials and resources</CardDescription>
                         </CardHeader>
                         <CardContent class="space-y-4">
-                            <!-- Dropbox Upload Area -->
                             <div
                                 class="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-primary transition-colors"
                                 @click="() => fileInputRef?.click()"
@@ -249,14 +276,6 @@ const submitForm = () => {
                                         </Button>
                                     </div>
                                 </div>
-                            </div>
-
-                            <!-- Dropbox Integration Note -->
-                            <div class="rounded-lg bg-muted p-3 text-sm text-muted-foreground">
-                                <strong>Note:</strong> You can also connect your Dropbox account to import files directly.
-                                <Button type="button" variant="link" size="sm" class="p-0 h-auto ml-1">
-                                    Connect Dropbox
-                                </Button>
                             </div>
                         </CardContent>
                     </Card>

@@ -151,4 +151,18 @@ class LecturerService
             ->where('lecturer_id', $user->id)
             ->findOrFail($id);
     }
+
+    /**
+     * Close a viva so students can no longer attend. Only the owning lecturer can close.
+     */
+    public function closeViva(Institution $institution, User $user, int $id): Viva
+    {
+        $viva = Viva::where('institution_id', $institution->id)
+            ->where('lecturer_id', $user->id)
+            ->findOrFail($id);
+
+        $viva->update(['status' => 'completed']);
+
+        return $viva->fresh();
+    }
 }
