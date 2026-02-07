@@ -4,7 +4,9 @@ namespace App\Services\Application;
 
 use App\Models\Institution;
 use App\Models\User;
+use App\Notifications\UserCredentialsSent;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
 
 class InstitutionUserService
 {
@@ -47,9 +49,12 @@ class InstitutionUserService
             ->all();
     }
 
-    public function createLecturer(Institution $institution, array $validated): User
+    /**
+     * Create a lecturer. If $baseDomain is provided, sends credentials email to the new user.
+     */
+    public function createLecturer(Institution $institution, array $validated, ?string $baseDomain = null, string $scheme = 'https'): User
     {
-        return User::create([
+        $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
@@ -58,11 +63,29 @@ class InstitutionUserService
             'department' => $validated['department'] ?? null,
             'employee_id' => $validated['employee_id'] ?? null,
         ]);
+
+        if ($baseDomain !== null) {
+            Notification::route('mail', $user->email)
+                ->notify(new UserCredentialsSent(
+                    $institution,
+                    $user->name,
+                    $user->email,
+                    $validated['password'],
+                    'lecturer',
+                    $baseDomain,
+                    $scheme
+                ));
+        }
+
+        return $user;
     }
 
-    public function createStudent(Institution $institution, array $validated): User
+    /**
+     * Create a student. If $baseDomain is provided, sends credentials email to the new user.
+     */
+    public function createStudent(Institution $institution, array $validated, ?string $baseDomain = null, string $scheme = 'https'): User
     {
-        return User::create([
+        $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
@@ -72,6 +95,21 @@ class InstitutionUserService
             'batch' => $validated['batch'] ?? null,
             'department' => $validated['department'] ?? null,
         ]);
+
+        if ($baseDomain !== null) {
+            Notification::route('mail', $user->email)
+                ->notify(new UserCredentialsSent(
+                    $institution,
+                    $user->name,
+                    $user->email,
+                    $validated['password'],
+                    'student',
+                    $baseDomain,
+                    $scheme
+                ));
+        }
+
+        return $user;
     }
 
     public function getLecturerForEdit(Institution $institution, int $id): User
