@@ -2,17 +2,22 @@
 import InputError from '@/components/InputError.vue';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { register } from '@/routes';
 import { request } from '@/routes/password';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
-import { GraduationCap, User, Building2 } from 'lucide-vue-next';
+import { Building2, GraduationCap, User } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 const props = defineProps<{
     status?: string;
@@ -31,28 +36,43 @@ const serverErrors = computed(() => page.props.errors || {});
 // Combine form errors and server errors for display
 const allErrors = computed(() => {
     const errors: Record<string, string> = {};
-    
+
     // Add form errors
     if (form.errors) {
         Object.assign(errors, form.errors);
     }
-    
+
     // Add server errors (from page props)
     if (serverErrors.value) {
         Object.assign(errors, serverErrors.value);
     }
-    
+
     return errors;
 });
 
 const selectedRole = ref<'institution' | 'lecturer' | 'student' | null>(
-    props.showRoleSelection ? null : null
+    props.showRoleSelection ? null : null,
 );
 
 const roles = [
-    { value: 'student', label: 'Student', icon: GraduationCap, description: 'Access viva sessions' },
-    { value: 'lecturer', label: 'Lecturer', icon: User, description: 'Create viva sessions and manage materials' },
-    { value: 'institution', label: 'Institution Admin', icon: Building2, description: 'Manage lecturers and students' },
+    {
+        value: 'student',
+        label: 'Student',
+        icon: GraduationCap,
+        description: 'Access viva sessions',
+    },
+    {
+        value: 'lecturer',
+        label: 'Lecturer',
+        icon: User,
+        description: 'Create viva sessions and manage materials',
+    },
+    {
+        value: 'institution',
+        label: 'Institution Admin',
+        icon: Building2,
+        description: 'Manage lecturers and students',
+    },
 ];
 
 const form = useForm({
@@ -69,7 +89,7 @@ const submit = () => {
     }
 
     form.role = selectedRole.value;
-    
+
     form.post('/login', {
         preserveState: true,
         preserveScroll: true,
@@ -87,8 +107,16 @@ const submit = () => {
 
 <template>
     <AuthBase
-        :title="showRoleSelection && institution ? `Log in to ${institution.name}` : 'Log in to your account'"
-        :description="showRoleSelection ? 'Select your role and enter your credentials' : 'Enter your email and password below to log in'"
+        :title="
+            showRoleSelection && institution
+                ? `Log in to ${institution.name}`
+                : 'Log in to your account'
+        "
+        :description="
+            showRoleSelection
+                ? 'Select your role and enter your credentials'
+                : 'Enter your email and password below to log in'
+        "
     >
         <Head title="Log in" />
 
@@ -98,18 +126,25 @@ const submit = () => {
         >
             {{ status }}
         </div>
-        
+
         <div
             v-if="Object.keys(allErrors).length > 0"
             class="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200"
         >
-            <div v-for="(error, key) in allErrors" :key="key" class="mb-1 last:mb-0">
+            <div
+                v-for="(error, key) in allErrors"
+                :key="key"
+                class="mb-1 last:mb-0"
+            >
                 {{ Array.isArray(error) ? error[0] : error }}
             </div>
         </div>
 
         <!-- Role Selection (only shown on institution subdomain) -->
-        <div v-if="showRoleSelection && !selectedRole" class="mb-6 w-full space-y-4">
+        <div
+            v-if="showRoleSelection && !selectedRole"
+            class="mb-6 w-full space-y-4"
+        >
             <div class="text-center text-sm text-muted-foreground">
                 Select your role to continue
             </div>
@@ -118,15 +153,23 @@ const submit = () => {
                     v-for="role in roles"
                     :key="role.value"
                     class="cursor-pointer transition-all hover:border-primary hover:shadow-md"
-                    :class="{ 'border-primary ring-2 ring-primary': selectedRole === role.value }"
+                    :class="{
+                        'border-primary ring-2 ring-primary':
+                            selectedRole === role.value,
+                    }"
                     @click="selectedRole = role.value as any"
                 >
                     <CardHeader class="pb-3 text-center">
                         <div class="flex flex-col items-center gap-3">
-                            <component :is="role.icon" class="h-6 w-6 text-primary" />
-                            <CardTitle class="text-base">{{ role.label }}</CardTitle>
+                            <component
+                                :is="role.icon"
+                                class="h-6 w-6 text-primary"
+                            />
+                            <CardTitle class="text-base">{{
+                                role.label
+                            }}</CardTitle>
                         </div>
-                        <CardDescription class="text-xs mt-2 text-center">
+                        <CardDescription class="mt-2 text-center text-xs">
                             {{ role.description }}
                         </CardDescription>
                     </CardHeader>
@@ -134,12 +177,24 @@ const submit = () => {
             </div>
         </div>
 
-        <form @submit.prevent="submit" class="w-full flex flex-col gap-6" v-if="!showRoleSelection || selectedRole">
+        <form
+            @submit.prevent="submit"
+            class="flex w-full flex-col gap-6"
+            v-if="!showRoleSelection || selectedRole"
+        >
             <!-- Role Indicator (when role is selected) -->
-            <div v-if="showRoleSelection && selectedRole" class="flex items-center justify-between w-full px-1 mb-2">
+            <div
+                v-if="showRoleSelection && selectedRole"
+                class="mb-2 flex w-full items-center justify-between px-1"
+            >
                 <div class="flex items-center gap-2">
-                    <component :is="roles.find(r => r.value === selectedRole)?.icon" class="h-4 w-4" />
-                    <span class="text-sm font-medium">{{ roles.find(r => r.value === selectedRole)?.label }}</span>
+                    <component
+                        :is="roles.find((r) => r.value === selectedRole)?.icon"
+                        class="h-4 w-4"
+                    />
+                    <span class="text-sm font-medium">{{
+                        roles.find((r) => r.value === selectedRole)?.label
+                    }}</span>
                 </div>
                 <Button
                     type="button"
@@ -153,7 +208,7 @@ const submit = () => {
 
             <input type="hidden" name="role" :value="selectedRole" />
 
-            <div class="grid gap-6 w-full">
+            <div class="grid w-full gap-6">
                 <div class="grid gap-2">
                     <Label for="email">Email address</Label>
                     <Input
@@ -165,9 +220,14 @@ const submit = () => {
                         :tabindex="1"
                         autocomplete="email"
                         placeholder="email@example.com"
-                        :class="{ 'border-red-500': form.errors.email || allErrors.email }"
+                        :class="{
+                            'border-red-500':
+                                form.errors.email || allErrors.email,
+                        }"
                     />
-                    <InputError :message="form.errors.email || allErrors.email" />
+                    <InputError
+                        :message="form.errors.email || allErrors.email"
+                    />
                 </div>
 
                 <div class="grid gap-2">
@@ -190,17 +250,25 @@ const submit = () => {
                         :tabindex="2"
                         autocomplete="current-password"
                         placeholder="Password"
-                        :class="{ 'border-red-500': form.errors.password || allErrors.password }"
+                        :class="{
+                            'border-red-500':
+                                form.errors.password || allErrors.password,
+                        }"
                     />
-                    <InputError :message="form.errors.password || allErrors.password" />
+                    <InputError
+                        :message="form.errors.password || allErrors.password"
+                    />
                 </div>
 
-                <div class="flex items-center justify-between w-full">
-                    <Label for="remember" class="flex items-center gap-2 cursor-pointer">
-                        <Checkbox 
-                            id="remember" 
-                            v-model:checked="form.remember" 
-                            :tabindex="3" 
+                <div class="flex w-full items-center justify-between">
+                    <Label
+                        for="remember"
+                        class="flex cursor-pointer items-center gap-2"
+                    >
+                        <Checkbox
+                            id="remember"
+                            v-model:checked="form.remember"
+                            :tabindex="3"
                         />
                         <span class="text-sm">Remember me</span>
                     </Label>
@@ -210,7 +278,9 @@ const submit = () => {
                     type="submit"
                     class="w-full"
                     :tabindex="4"
-                    :disabled="form.processing || (showRoleSelection && !selectedRole)"
+                    :disabled="
+                        form.processing || (showRoleSelection && !selectedRole)
+                    "
                     data-test="login-button"
                 >
                     <Spinner v-if="form.processing" class="mr-2" />
@@ -219,7 +289,7 @@ const submit = () => {
             </div>
 
             <div
-                class="text-center text-sm text-muted-foreground w-full"
+                class="w-full text-center text-sm text-muted-foreground"
                 v-if="canRegister"
             >
                 Don't have an account?

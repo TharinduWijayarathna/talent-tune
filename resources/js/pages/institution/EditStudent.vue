@@ -1,13 +1,18 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
-import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/vue3';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import InputError from '@/components/InputError.vue';
-import { useForm } from '@inertiajs/vue3';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { type BreadcrumbItem } from '@/types';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const props = defineProps<{
     studentId: number;
@@ -45,18 +50,24 @@ const submitForm = () => {
     <Head title="Edit Student" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
+        <div
+            class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4"
+        >
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-bold">Edit Student</h1>
-                    <p class="text-muted-foreground">Update student information</p>
+                    <p class="text-muted-foreground">
+                        Update student information
+                    </p>
                 </div>
             </div>
 
             <Card class="max-w-2xl">
                 <CardHeader>
                     <CardTitle>Student Information</CardTitle>
-                    <CardDescription>Update the details of the student</CardDescription>
+                    <CardDescription
+                        >Update the details of the student</CardDescription
+                    >
                 </CardHeader>
                 <CardContent>
                     <form @submit.prevent="submitForm" class="space-y-4">
@@ -97,13 +108,22 @@ const submitForm = () => {
                             <div class="space-y-2">
                                 <Label for="batch">Batch</Label>
                                 <select
-                                    v-if="props.batches && props.batches.length > 0"
+                                    v-if="
+                                        props.batches &&
+                                        props.batches.length > 0
+                                    "
                                     id="batch"
                                     v-model="form.batch"
-                                    class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                                    class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                                 >
                                     <option value="">Select batch</option>
-                                    <option v-for="b in props.batches" :key="b" :value="b">{{ b }}</option>
+                                    <option
+                                        v-for="b in props.batches"
+                                        :key="b"
+                                        :value="b"
+                                    >
+                                        {{ b }}
+                                    </option>
                                 </select>
                                 <Input
                                     v-else

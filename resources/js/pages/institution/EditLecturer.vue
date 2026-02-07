@@ -1,13 +1,18 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
-import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/vue3';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import InputError from '@/components/InputError.vue';
-import { useForm } from '@inertiajs/vue3';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { type BreadcrumbItem } from '@/types';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const props = defineProps<{
     lecturerId: number;
@@ -42,18 +47,24 @@ const submitForm = () => {
     <Head title="Edit Lecturer" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
+        <div
+            class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4"
+        >
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-bold">Edit Lecturer</h1>
-                    <p class="text-muted-foreground">Update lecturer information</p>
+                    <p class="text-muted-foreground">
+                        Update lecturer information
+                    </p>
                 </div>
             </div>
 
             <Card class="max-w-2xl">
                 <CardHeader>
                     <CardTitle>Lecturer Information</CardTitle>
-                    <CardDescription>Update the details of the lecturer</CardDescription>
+                    <CardDescription
+                        >Update the details of the lecturer</CardDescription
+                    >
                 </CardHeader>
                 <CardContent>
                     <form @submit.prevent="submitForm" class="space-y-4">
@@ -89,7 +100,9 @@ const submitForm = () => {
                                     v-model="form.employee_id"
                                     placeholder="EMP001"
                                 />
-                                <InputError :message="form.errors.employee_id" />
+                                <InputError
+                                    :message="form.errors.employee_id"
+                                />
                             </div>
                             <div class="space-y-2">
                                 <Label for="department">Department</Label>
@@ -104,7 +117,9 @@ const submitForm = () => {
 
                         <div class="flex justify-end gap-4 pt-4">
                             <Button type="button" variant="outline" as-child>
-                                <Link href="/institution/lecturers">Cancel</Link>
+                                <Link href="/institution/lecturers"
+                                    >Cancel</Link
+                                >
                             </Button>
                             <Button type="submit" :disabled="form.processing">
                                 Update Lecturer

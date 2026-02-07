@@ -1,5 +1,5 @@
-import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 /**
  * Composable to get the base domain (e.g., talenttune.test or talenttune.com)
@@ -18,12 +18,12 @@ export function useDomain() {
         if (typeof window !== 'undefined') {
             const host = window.location.host;
             const parts = host.split('.');
-            
+
             // For .test domains in local dev
             if (host.endsWith('.test')) {
                 return parts.length >= 2 ? parts.slice(-2).join('.') : host;
             }
-            
+
             // For production domains
             return parts.length >= 2 ? parts.slice(-2).join('.') : host;
         }
@@ -36,7 +36,8 @@ export function useDomain() {
      * Get the full subdomain URL for an institution
      */
     const getInstitutionUrl = (slug: string): string => {
-        const protocol = typeof window !== 'undefined' ? window.location.protocol : 'https:';
+        const protocol =
+            typeof window !== 'undefined' ? window.location.protocol : 'https:';
         return `${protocol}//${slug}.${baseDomain.value}`;
     };
 

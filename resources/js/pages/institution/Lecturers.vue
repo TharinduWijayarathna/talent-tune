@@ -1,22 +1,28 @@
 <script setup lang="ts">
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import {
-    Users,
-    UserPlus,
-    Search,
-    Edit,
-    Trash2,
-    Mail,
     Building2,
-    User
+    Edit,
+    Mail,
+    Search,
+    Trash2,
+    User,
+    UserPlus,
+    Users,
 } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { computed, ref } from 'vue';
 
 interface Lecturer {
     id: number;
@@ -45,11 +51,14 @@ const filteredLecturers = computed(() => {
         return props.lecturers;
     }
     const query = searchQuery.value.toLowerCase();
-    return props.lecturers.filter(lecturer =>
-        lecturer.name.toLowerCase().includes(query) ||
-        lecturer.email.toLowerCase().includes(query) ||
-        (lecturer.employee_id && lecturer.employee_id.toLowerCase().includes(query)) ||
-        (lecturer.department && lecturer.department.toLowerCase().includes(query))
+    return props.lecturers.filter(
+        (lecturer) =>
+            lecturer.name.toLowerCase().includes(query) ||
+            lecturer.email.toLowerCase().includes(query) ||
+            (lecturer.employee_id &&
+                lecturer.employee_id.toLowerCase().includes(query)) ||
+            (lecturer.department &&
+                lecturer.department.toLowerCase().includes(query)),
     );
 });
 
@@ -59,22 +68,27 @@ const handleDelete = (id: number) => {
     }
 };
 
-const formatDate = (iso: string) => iso ? new Date(iso).toLocaleDateString() : '';
+const formatDate = (iso: string) =>
+    iso ? new Date(iso).toLocaleDateString() : '';
 </script>
 
 <template>
     <Head title="Manage Lecturers" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
+        <div
+            class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4"
+        >
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-bold">Manage Lecturers</h1>
-                    <p class="text-muted-foreground">View and manage all lecturers in your institution</p>
+                    <p class="text-muted-foreground">
+                        View and manage all lecturers in your institution
+                    </p>
                 </div>
                 <Button as-child>
                     <Link href="/institution/lecturers/add">
-                        <UserPlus class="h-4 w-4 mr-2" />
+                        <UserPlus class="mr-2 h-4 w-4" />
                         Add Lecturer
                     </Link>
                 </Button>
@@ -85,7 +99,9 @@ const formatDate = (iso: string) => iso ? new Date(iso).toLocaleDateString() : '
                 <CardContent class="pt-6">
                     <div class="flex gap-4">
                         <div class="relative flex-1">
-                            <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Search
+                                class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                            />
                             <Input
                                 v-model="searchQuery"
                                 placeholder="Search by name, email, employee ID, or department..."
@@ -99,8 +115,15 @@ const formatDate = (iso: string) => iso ? new Date(iso).toLocaleDateString() : '
             <!-- Lecturers List -->
             <Card>
                 <CardHeader>
-                    <CardTitle>All Lecturers ({{ filteredLecturers.length }})</CardTitle>
-                    <CardDescription>List of all lecturers registered in your institution</CardDescription>
+                    <CardTitle
+                        >All Lecturers ({{
+                            filteredLecturers.length
+                        }})</CardTitle
+                    >
+                    <CardDescription
+                        >List of all lecturers registered in your
+                        institution</CardDescription
+                    >
                 </CardHeader>
                 <CardContent>
                     <div class="space-y-4">
@@ -109,40 +132,70 @@ const formatDate = (iso: string) => iso ? new Date(iso).toLocaleDateString() : '
                             :key="lecturer.id"
                             class="flex items-center justify-between rounded-lg border p-4 transition-all hover:bg-muted/50"
                         >
-                            <div class="flex items-center gap-4 flex-1">
-                                <div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                            <div class="flex flex-1 items-center gap-4">
+                                <div
+                                    class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10"
+                                >
                                     <User class="h-6 w-6 text-primary" />
                                 </div>
                                 <div class="flex-1 space-y-1">
                                     <div class="flex items-center gap-2">
-                                        <h3 class="font-semibold">{{ lecturer.name }}</h3>
-                                        <Badge variant="default" class="text-xs">
+                                        <h3 class="font-semibold">
+                                            {{ lecturer.name }}
+                                        </h3>
+                                        <Badge
+                                            variant="default"
+                                            class="text-xs"
+                                        >
                                             {{ lecturer.status }}
                                         </Badge>
                                     </div>
-                                    <div class="flex items-center gap-4 text-sm text-muted-foreground">
+                                    <div
+                                        class="flex items-center gap-4 text-sm text-muted-foreground"
+                                    >
                                         <div class="flex items-center gap-1">
                                             <Mail class="h-4 w-4" />
                                             <span>{{ lecturer.email }}</span>
                                         </div>
                                         <div class="flex items-center gap-1">
                                             <Building2 class="h-4 w-4" />
-                                            <span>{{ lecturer.department }}</span>
+                                            <span>{{
+                                                lecturer.department
+                                            }}</span>
                                         </div>
                                     </div>
-                                    <div class="flex items-center gap-4 text-xs text-muted-foreground">
-                                        <span v-if="lecturer.employee_id">Employee ID: {{ lecturer.employee_id }}</span>
-                                        <span v-if="lecturer.employee_id">•</span>
-                                        <span>{{ lecturer.totalSessions }} sessions</span>
+                                    <div
+                                        class="flex items-center gap-4 text-xs text-muted-foreground"
+                                    >
+                                        <span v-if="lecturer.employee_id"
+                                            >Employee ID:
+                                            {{ lecturer.employee_id }}</span
+                                        >
+                                        <span v-if="lecturer.employee_id"
+                                            >•</span
+                                        >
+                                        <span
+                                            >{{
+                                                lecturer.totalSessions
+                                            }}
+                                            sessions</span
+                                        >
                                         <span>•</span>
-                                        <span>Joined: {{ formatDate(lecturer.created_at) }}</span>
+                                        <span
+                                            >Joined:
+                                            {{
+                                                formatDate(lecturer.created_at)
+                                            }}</span
+                                        >
                                     </div>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2">
                                 <Button variant="outline" size="sm" as-child>
-                                    <Link :href="`/institution/lecturers/${lecturer.id}/edit`">
-                                        <Edit class="h-4 w-4 mr-2" />
+                                    <Link
+                                        :href="`/institution/lecturers/${lecturer.id}/edit`"
+                                    >
+                                        <Edit class="mr-2 h-4 w-4" />
                                         Edit
                                     </Link>
                                 </Button>
@@ -157,10 +210,17 @@ const formatDate = (iso: string) => iso ? new Date(iso).toLocaleDateString() : '
                             </div>
                         </div>
 
-                        <div v-if="filteredLecturers.length === 0" class="text-center py-12">
-                            <Users class="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                            <p class="text-muted-foreground">No lecturers found</p>
-                            <p class="text-sm text-muted-foreground mt-2">
+                        <div
+                            v-if="filteredLecturers.length === 0"
+                            class="py-12 text-center"
+                        >
+                            <Users
+                                class="mx-auto mb-4 h-12 w-12 text-muted-foreground"
+                            />
+                            <p class="text-muted-foreground">
+                                No lecturers found
+                            </p>
+                            <p class="mt-2 text-sm text-muted-foreground">
                                 Try adjusting your search criteria
                             </p>
                         </div>
@@ -170,4 +230,3 @@ const formatDate = (iso: string) => iso ? new Date(iso).toLocaleDateString() : '
         </div>
     </AppLayout>
 </template>
-

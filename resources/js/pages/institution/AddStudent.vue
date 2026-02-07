@@ -1,13 +1,18 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
-import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/vue3';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import InputError from '@/components/InputError.vue';
-import { useForm } from '@inertiajs/vue3';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { type BreadcrumbItem } from '@/types';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/institution/dashboard' },
@@ -37,18 +42,24 @@ const submitForm = () => {
     <Head title="Add Student" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
+        <div
+            class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4"
+        >
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-bold">Add Student</h1>
-                    <p class="text-muted-foreground">Register a new student to the system</p>
+                    <p class="text-muted-foreground">
+                        Register a new student to the system
+                    </p>
                 </div>
             </div>
 
             <Card class="max-w-2xl">
                 <CardHeader>
                     <CardTitle>Student Information</CardTitle>
-                    <CardDescription>Enter the details of the new student</CardDescription>
+                    <CardDescription
+                        >Enter the details of the new student</CardDescription
+                    >
                 </CardHeader>
                 <CardContent>
                     <form @submit.prevent="submitForm" class="space-y-4">
@@ -89,13 +100,22 @@ const submitForm = () => {
                             <div class="space-y-2">
                                 <Label for="batch">Batch</Label>
                                 <select
-                                    v-if="props.batches && props.batches.length > 0"
+                                    v-if="
+                                        props.batches &&
+                                        props.batches.length > 0
+                                    "
                                     id="batch"
                                     v-model="form.batch"
-                                    class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                                    class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                                 >
                                     <option value="">Select batch</option>
-                                    <option v-for="b in props.batches" :key="b" :value="b">{{ b }}</option>
+                                    <option
+                                        v-for="b in props.batches"
+                                        :key="b"
+                                        :value="b"
+                                    >
+                                        {{ b }}
+                                    </option>
                                 </select>
                                 <Input
                                     v-else
@@ -129,7 +149,9 @@ const submitForm = () => {
                                 <InputError :message="form.errors.password" />
                             </div>
                             <div class="space-y-2">
-                                <Label for="password_confirmation">Confirm Password *</Label>
+                                <Label for="password_confirmation"
+                                    >Confirm Password *</Label
+                                >
                                 <Input
                                     id="password_confirmation"
                                     v-model="form.password_confirmation"
@@ -153,4 +175,3 @@ const submitForm = () => {
         </div>
     </AppLayout>
 </template>
-

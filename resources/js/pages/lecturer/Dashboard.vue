@@ -1,11 +1,16 @@
 <script setup lang="ts">
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/vue3';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Calendar, Users, FileText, Plus } from 'lucide-vue-next';
-import { Link } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
+import { Calendar, FileText, Plus, Users } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 const props = defineProps<{
@@ -32,12 +37,15 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const stats = computed(() => props.stats || {
-    totalSessions: 0,
-    activeSessions: 0,
-    totalStudents: 0,
-    completedSessions: 0,
-});
+const stats = computed(
+    () =>
+        props.stats || {
+            totalSessions: 0,
+            activeSessions: 0,
+            totalStudents: 0,
+            completedSessions: 0,
+        },
+);
 
 const recentSessions = computed(() => props.recentSessions || []);
 </script>
@@ -46,15 +54,19 @@ const recentSessions = computed(() => props.recentSessions || []);
     <Head title="Lecturer Dashboard" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
+        <div
+            class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4"
+        >
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-bold">Welcome back, Lecturer!</h1>
-                    <p class="text-muted-foreground">Manage your viva sessions and students</p>
+                    <p class="text-muted-foreground">
+                        Manage your viva sessions and students
+                    </p>
                 </div>
                 <Button as-child>
                     <Link href="/lecturer/vivas/create">
-                        <Plus class="h-4 w-4 mr-2" />
+                        <Plus class="mr-2 h-4 w-4" />
                         Create Viva Session
                     </Link>
                 </Button>
@@ -63,46 +75,74 @@ const recentSessions = computed(() => props.recentSessions || []);
             <!-- Stats Cards -->
             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card>
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">Total Sessions</CardTitle>
+                    <CardHeader
+                        class="flex flex-row items-center justify-between space-y-0 pb-2"
+                    >
+                        <CardTitle class="text-sm font-medium"
+                            >Total Sessions</CardTitle
+                        >
                         <Calendar class="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div class="text-2xl font-bold">{{ stats.totalSessions }}</div>
+                        <div class="text-2xl font-bold">
+                            {{ stats.totalSessions }}
+                        </div>
                         <p class="text-xs text-muted-foreground">All time</p>
                     </CardContent>
                 </Card>
 
                 <Card>
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">Active Sessions</CardTitle>
+                    <CardHeader
+                        class="flex flex-row items-center justify-between space-y-0 pb-2"
+                    >
+                        <CardTitle class="text-sm font-medium"
+                            >Active Sessions</CardTitle
+                        >
                         <FileText class="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div class="text-2xl font-bold">{{ stats.activeSessions }}</div>
+                        <div class="text-2xl font-bold">
+                            {{ stats.activeSessions }}
+                        </div>
                         <p class="text-xs text-muted-foreground">Upcoming</p>
                     </CardContent>
                 </Card>
 
                 <Card>
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">Total Students</CardTitle>
+                    <CardHeader
+                        class="flex flex-row items-center justify-between space-y-0 pb-2"
+                    >
+                        <CardTitle class="text-sm font-medium"
+                            >Total Students</CardTitle
+                        >
                         <Users class="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div class="text-2xl font-bold">{{ stats.totalStudents }}</div>
-                        <p class="text-xs text-muted-foreground">Across all batches</p>
+                        <div class="text-2xl font-bold">
+                            {{ stats.totalStudents }}
+                        </div>
+                        <p class="text-xs text-muted-foreground">
+                            Across all batches
+                        </p>
                     </CardContent>
                 </Card>
 
                 <Card>
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">Completed</CardTitle>
+                    <CardHeader
+                        class="flex flex-row items-center justify-between space-y-0 pb-2"
+                    >
+                        <CardTitle class="text-sm font-medium"
+                            >Completed</CardTitle
+                        >
                         <FileText class="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div class="text-2xl font-bold">{{ stats.completedSessions }}</div>
-                        <p class="text-xs text-muted-foreground">Finished sessions</p>
+                        <div class="text-2xl font-bold">
+                            {{ stats.completedSessions }}
+                        </div>
+                        <p class="text-xs text-muted-foreground">
+                            Finished sessions
+                        </p>
                     </CardContent>
                 </Card>
             </div>
@@ -111,10 +151,15 @@ const recentSessions = computed(() => props.recentSessions || []);
             <Card>
                 <CardHeader>
                     <CardTitle>Recent Viva Sessions</CardTitle>
-                    <CardDescription>Your latest viva session activities</CardDescription>
+                    <CardDescription
+                        >Your latest viva session activities</CardDescription
+                    >
                 </CardHeader>
                 <CardContent>
-                    <div v-if="recentSessions.length === 0" class="text-center py-8 text-muted-foreground">
+                    <div
+                        v-if="recentSessions.length === 0"
+                        class="py-8 text-center text-muted-foreground"
+                    >
                         No recent viva sessions
                     </div>
                     <div v-else class="space-y-4">
@@ -124,14 +169,20 @@ const recentSessions = computed(() => props.recentSessions || []);
                             class="flex items-center justify-between rounded-lg border p-4"
                         >
                             <div class="space-y-1">
-                                <h3 class="font-semibold">{{ session.title }}</h3>
+                                <h3 class="font-semibold">
+                                    {{ session.title }}
+                                </h3>
                                 <p class="text-sm text-muted-foreground">
-                                    Batch: {{ session.batch }} • Date: {{ session.date }} • Students: {{ session.students }}
+                                    Batch: {{ session.batch }} • Date:
+                                    {{ session.date }} • Students:
+                                    {{ session.students }}
                                 </p>
                             </div>
                             <div class="flex gap-2">
                                 <Button variant="outline" as-child>
-                                    <Link :href="`/lecturer/vivas/${session.id}`">
+                                    <Link
+                                        :href="`/lecturer/vivas/${session.id}`"
+                                    >
                                         View
                                     </Link>
                                 </Button>
@@ -144,7 +195,9 @@ const recentSessions = computed(() => props.recentSessions || []);
             <!-- Quick Actions -->
             <div class="grid gap-4 md:grid-cols-2">
                 <Link href="/lecturer/vivas/create" class="block">
-                    <Card class="cursor-pointer hover:border-primary transition-colors">
+                    <Card
+                        class="cursor-pointer transition-colors hover:border-primary"
+                    >
                         <CardHeader>
                             <CardTitle class="flex items-center gap-2">
                                 <Plus class="h-5 w-5" />
@@ -158,7 +211,9 @@ const recentSessions = computed(() => props.recentSessions || []);
                 </Link>
 
                 <Link href="/lecturer/vivas" class="block">
-                    <Card class="cursor-pointer hover:border-primary transition-colors">
+                    <Card
+                        class="cursor-pointer transition-colors hover:border-primary"
+                    >
                         <CardHeader>
                             <CardTitle class="flex items-center gap-2">
                                 <FileText class="h-5 w-5" />
@@ -174,4 +229,3 @@ const recentSessions = computed(() => props.recentSessions || []);
         </div>
     </AppLayout>
 </template>
-

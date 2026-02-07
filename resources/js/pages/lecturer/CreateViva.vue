@@ -1,21 +1,36 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
-import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/vue3';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
 import { TimePicker } from '@/components/ui/time-picker';
-import { Upload, X, FileText, Calendar as CalendarIcon, Clock } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
-import { useForm, Link } from '@inertiajs/vue3';
-import { format } from 'date-fns';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { cn } from '@/lib/utils';
-import InputError from '@/components/InputError.vue';
+import { type BreadcrumbItem } from '@/types';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import { format } from 'date-fns';
+import {
+    Calendar as CalendarIcon,
+    Clock,
+    FileText,
+    Upload,
+    X,
+} from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 const props = defineProps<{
     batches?: string[];
@@ -39,7 +54,9 @@ const form = useForm({
 const availableBatches = computed(() => props.batches || []);
 
 const fileInputRef = ref<HTMLInputElement | null>(null);
-const uploadedFiles = ref<Array<{ name: string; size: number; file: File }>>([]);
+const uploadedFiles = ref<Array<{ name: string; size: number; file: File }>>(
+    [],
+);
 
 const handleFileUpload = (event: Event) => {
     const target = event.target as HTMLInputElement;
@@ -47,10 +64,16 @@ const handleFileUpload = (event: Event) => {
         Array.from(target.files).forEach((file) => {
             // Check file size (max 10MB)
             if (file.size > 10 * 1024 * 1024) {
-                alert(`File "${file.name}" is too large. Maximum size is 10MB.`);
+                alert(
+                    `File "${file.name}" is too large. Maximum size is 10MB.`,
+                );
                 return;
             }
-            uploadedFiles.value.push({ name: file.name, size: file.size, file });
+            uploadedFiles.value.push({
+                name: file.name,
+                size: file.size,
+                file,
+            });
         });
         // Reset input to allow selecting the same file again
         target.value = '';
@@ -66,13 +89,13 @@ const formatFileSize = (bytes: number) => {
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
 };
 
 const submitForm = () => {
     // Create FormData to handle file uploads
     const formData = new FormData();
-    
+
     // Add form fields
     formData.append('title', form.title);
     formData.append('description', form.description || '');
@@ -82,16 +105,19 @@ const submitForm = () => {
     formData.append('instructions', form.instructions || '');
     // Send lecturer's timezone so scheduled time is stored correctly (then compared in UTC)
     try {
-        formData.append('timezone', Intl.DateTimeFormat().resolvedOptions().timeZone || '');
+        formData.append(
+            'timezone',
+            Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+        );
     } catch {
         formData.append('timezone', '');
     }
-    
+
     // Add files
     uploadedFiles.value.forEach((fileItem, index) => {
         formData.append(`lecture_materials[${index}]`, fileItem.file);
     });
-    
+
     // Submit using Inertia's post method with FormData
     form.transform(() => formData).post('/lecturer/vivas', {
         forceFormData: true,
@@ -104,11 +130,15 @@ const submitForm = () => {
     <Head title="Create Viva Session" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
+        <div
+            class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4"
+        >
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-bold">Create Viva Session</h1>
-                    <p class="text-muted-foreground">Set up a new viva session for your batch</p>
+                    <p class="text-muted-foreground">
+                        Set up a new viva session for your batch
+                    </p>
                 </div>
             </div>
 
@@ -118,7 +148,10 @@ const submitForm = () => {
                     <Card class="md:col-span-2">
                         <CardHeader>
                             <CardTitle>Basic Information</CardTitle>
-                            <CardDescription>Enter the basic details of the viva session</CardDescription>
+                            <CardDescription
+                                >Enter the basic details of the viva
+                                session</CardDescription
+                            >
                         </CardHeader>
                         <CardContent class="space-y-4">
                             <div class="grid gap-4 md:grid-cols-2">
@@ -137,11 +170,15 @@ const submitForm = () => {
                                     <select
                                         id="batch"
                                         v-model="form.batch"
-                                        class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                        class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                         required
                                     >
                                         <option value="">Select a batch</option>
-                                        <option v-for="batch in availableBatches" :key="batch" :value="batch">
+                                        <option
+                                            v-for="batch in availableBatches"
+                                            :key="batch"
+                                            :value="batch"
+                                        >
                                             {{ batch }}
                                         </option>
                                     </select>
@@ -157,7 +194,9 @@ const submitForm = () => {
                                     placeholder="Brief description of the viva session..."
                                     rows="3"
                                 />
-                                <InputError :message="form.errors.description" />
+                                <InputError
+                                    :message="form.errors.description"
+                                />
                             </div>
 
                             <div class="grid gap-4 md:grid-cols-2">
@@ -168,19 +207,52 @@ const submitForm = () => {
                                             <Button
                                                 type="button"
                                                 variant="outline"
-                                                :class="cn(
-                                                    'w-full justify-start text-left font-normal',
-                                                    !form.date && 'text-muted-foreground'
-                                                )"
+                                                :class="
+                                                    cn(
+                                                        'w-full justify-start text-left font-normal',
+                                                        !form.date &&
+                                                            'text-muted-foreground',
+                                                    )
+                                                "
                                             >
-                                                <CalendarIcon class="mr-2 h-4 w-4" />
-                                                {{ form.date ? format(new Date(form.date + 'T12:00:00'), 'PPP') : 'Pick a date' }}
+                                                <CalendarIcon
+                                                    class="mr-2 h-4 w-4"
+                                                />
+                                                {{
+                                                    form.date
+                                                        ? format(
+                                                              new Date(
+                                                                  form.date +
+                                                                      'T12:00:00',
+                                                              ),
+                                                              'PPP',
+                                                          )
+                                                        : 'Pick a date'
+                                                }}
                                             </Button>
                                         </PopoverTrigger>
-                                        <PopoverContent class="w-auto p-0" align="start">
+                                        <PopoverContent
+                                            class="w-auto p-0"
+                                            align="start"
+                                        >
                                             <Calendar
-                                                :model-value="form.date ? new Date(form.date + 'T12:00:00') : undefined"
-                                                @update:model-value="(d) => { if (d) form.date = format(d, 'yyyy-MM-dd') }"
+                                                :model-value="
+                                                    form.date
+                                                        ? new Date(
+                                                              form.date +
+                                                                  'T12:00:00',
+                                                          )
+                                                        : undefined
+                                                "
+                                                @update:model-value="
+                                                    (d) => {
+                                                        if (d)
+                                                            form.date = format(
+                                                                d,
+                                                                'yyyy-MM-dd',
+                                                            );
+                                                    }
+                                                "
                                             />
                                         </PopoverContent>
                                     </Popover>
@@ -193,16 +265,22 @@ const submitForm = () => {
                                             <Button
                                                 type="button"
                                                 variant="outline"
-                                                :class="cn(
-                                                    'w-full justify-start text-left font-normal',
-                                                    !form.time && 'text-muted-foreground'
-                                                )"
+                                                :class="
+                                                    cn(
+                                                        'w-full justify-start text-left font-normal',
+                                                        !form.time &&
+                                                            'text-muted-foreground',
+                                                    )
+                                                "
                                             >
                                                 <Clock class="mr-2 h-4 w-4" />
                                                 {{ form.time || 'Pick a time' }}
                                             </Button>
                                         </PopoverTrigger>
-                                        <PopoverContent class="w-auto p-0" align="start">
+                                        <PopoverContent
+                                            class="w-auto p-0"
+                                            align="start"
+                                        >
                                             <TimePicker v-model="form.time" />
                                         </PopoverContent>
                                     </Popover>
@@ -216,7 +294,10 @@ const submitForm = () => {
                     <Card>
                         <CardHeader>
                             <CardTitle>Instructions</CardTitle>
-                            <CardDescription>Provide instructions for students</CardDescription>
+                            <CardDescription
+                                >Provide instructions for
+                                students</CardDescription
+                            >
                         </CardHeader>
                         <CardContent>
                             <div class="space-y-2">
@@ -235,16 +316,24 @@ const submitForm = () => {
                     <Card>
                         <CardHeader>
                             <CardTitle>Lecture Materials</CardTitle>
-                            <CardDescription>Upload materials and resources</CardDescription>
+                            <CardDescription
+                                >Upload materials and resources</CardDescription
+                            >
                         </CardHeader>
                         <CardContent class="space-y-4">
                             <div
-                                class="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-primary transition-colors"
+                                class="cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors hover:border-primary"
                                 @click="() => fileInputRef?.click()"
                             >
-                                <Upload class="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                                <p class="text-sm font-medium mb-1">Click to upload or drag and drop</p>
-                                <p class="text-xs text-muted-foreground">PDF, DOC, DOCX, PPT, PPTX (Max 10MB)</p>
+                                <Upload
+                                    class="mx-auto mb-2 h-8 w-8 text-muted-foreground"
+                                />
+                                <p class="mb-1 text-sm font-medium">
+                                    Click to upload or drag and drop
+                                </p>
+                                <p class="text-xs text-muted-foreground">
+                                    PDF, DOC, DOCX, PPT, PPTX (Max 10MB)
+                                </p>
                                 <input
                                     ref="fileInputRef"
                                     type="file"
@@ -256,19 +345,40 @@ const submitForm = () => {
                             </div>
 
                             <!-- Uploaded Files List -->
-                            <div v-if="uploadedFiles.length > 0" class="space-y-2">
-                                <div class="text-sm font-medium">Uploaded Files:</div>
+                            <div
+                                v-if="uploadedFiles.length > 0"
+                                class="space-y-2"
+                            >
+                                <div class="text-sm font-medium">
+                                    Uploaded Files:
+                                </div>
                                 <div class="space-y-2">
                                     <div
                                         v-for="(file, index) in uploadedFiles"
                                         :key="index"
                                         class="flex items-center justify-between rounded-lg border p-3"
                                     >
-                                        <div class="flex items-center gap-2 flex-1">
-                                            <FileText class="h-4 w-4 text-muted-foreground" />
-                                            <div class="flex-1 min-w-0">
-                                                <div class="text-sm font-medium truncate">{{ file.name }}</div>
-                                                <div class="text-xs text-muted-foreground">{{ formatFileSize(file.size) }}</div>
+                                        <div
+                                            class="flex flex-1 items-center gap-2"
+                                        >
+                                            <FileText
+                                                class="h-4 w-4 text-muted-foreground"
+                                            />
+                                            <div class="min-w-0 flex-1">
+                                                <div
+                                                    class="truncate text-sm font-medium"
+                                                >
+                                                    {{ file.name }}
+                                                </div>
+                                                <div
+                                                    class="text-xs text-muted-foreground"
+                                                >
+                                                    {{
+                                                        formatFileSize(
+                                                            file.size,
+                                                        )
+                                                    }}
+                                                </div>
                                             </div>
                                         </div>
                                         <Button
@@ -299,4 +409,3 @@ const submitForm = () => {
         </div>
     </AppLayout>
 </template>
-

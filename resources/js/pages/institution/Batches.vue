@@ -1,14 +1,19 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
-import { type BreadcrumbItem } from '@/types';
-import { Head, router } from '@inertiajs/vue3';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Layers, Plus, Trash2, GraduationCap } from 'lucide-vue-next';
-import { useForm } from '@inertiajs/vue3';
-import InputError from '@/components/InputError.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { type BreadcrumbItem } from '@/types';
+import { Head, router, useForm } from '@inertiajs/vue3';
+import { GraduationCap, Layers, Plus, Trash2 } from 'lucide-vue-next';
 
 interface BatchItem {
     id: number;
@@ -38,23 +43,33 @@ const submitBatch = () => {
 };
 
 const handleDelete = (id: number, name: string) => {
-    if (confirm(`Remove batch "${name}"? Students in this batch will keep their batch value; only the batch definition will be removed.`)) {
+    if (
+        confirm(
+            `Remove batch "${name}"? Students in this batch will keep their batch value; only the batch definition will be removed.`,
+        )
+    ) {
         router.delete(`/institution/batches/${id}`);
     }
 };
 
-const formatDate = (iso: string) => iso ? new Date(iso).toLocaleDateString() : '';
+const formatDate = (iso: string) =>
+    iso ? new Date(iso).toLocaleDateString() : '';
 </script>
 
 <template>
     <Head title="Manage Batches" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
+        <div
+            class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4"
+        >
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-bold">Manage Batches</h1>
-                    <p class="text-muted-foreground">Create batches for grouping students; vivas are scheduled per batch</p>
+                    <p class="text-muted-foreground">
+                        Create batches for grouping students; vivas are
+                        scheduled per batch
+                    </p>
                 </div>
             </div>
 
@@ -65,11 +80,18 @@ const formatDate = (iso: string) => iso ? new Date(iso).toLocaleDateString() : '
                         <Plus class="h-5 w-5" />
                         Add Batch
                     </CardTitle>
-                    <CardDescription>Create a new batch (e.g. CS-2024, SE-2024). Students and viva sessions are assigned to batches.</CardDescription>
+                    <CardDescription
+                        >Create a new batch (e.g. CS-2024, SE-2024). Students
+                        and viva sessions are assigned to
+                        batches.</CardDescription
+                    >
                 </CardHeader>
                 <CardContent>
-                    <form @submit.prevent="submitBatch" class="flex flex-wrap items-end gap-4">
-                        <div class="flex-1 min-w-[200px] space-y-2">
+                    <form
+                        @submit.prevent="submitBatch"
+                        class="flex flex-wrap items-end gap-4"
+                    >
+                        <div class="min-w-[200px] flex-1 space-y-2">
                             <Label for="batch-name">Batch name</Label>
                             <Input
                                 id="batch-name"
@@ -93,7 +115,10 @@ const formatDate = (iso: string) => iso ? new Date(iso).toLocaleDateString() : '
                         <Layers class="h-5 w-5" />
                         All Batches ({{ batches.length }})
                     </CardTitle>
-                    <CardDescription>Batches used for organizing students and scheduling viva sessions</CardDescription>
+                    <CardDescription
+                        >Batches used for organizing students and scheduling
+                        viva sessions</CardDescription
+                    >
                 </CardHeader>
                 <CardContent>
                     <div class="space-y-4">
@@ -103,16 +128,36 @@ const formatDate = (iso: string) => iso ? new Date(iso).toLocaleDateString() : '
                             class="flex items-center justify-between rounded-lg border p-4 transition-all hover:bg-muted/50"
                         >
                             <div class="flex items-center gap-4">
-                                <div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                                <div
+                                    class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10"
+                                >
                                     <Layers class="h-6 w-6 text-primary" />
                                 </div>
                                 <div>
-                                    <h3 class="font-semibold">{{ batch.name }}</h3>
-                                    <div class="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <h3 class="font-semibold">
+                                        {{ batch.name }}
+                                    </h3>
+                                    <div
+                                        class="flex items-center gap-2 text-sm text-muted-foreground"
+                                    >
                                         <GraduationCap class="h-4 w-4" />
-                                        <span>{{ batch.students_count }} student{{ batch.students_count === 1 ? '' : 's' }}</span>
+                                        <span
+                                            >{{
+                                                batch.students_count
+                                            }}
+                                            student{{
+                                                batch.students_count === 1
+                                                    ? ''
+                                                    : 's'
+                                            }}</span
+                                        >
                                         <span>•</span>
-                                        <span>Created {{ formatDate(batch.created_at) }}</span>
+                                        <span
+                                            >Created
+                                            {{
+                                                formatDate(batch.created_at)
+                                            }}</span
+                                        >
                                     </div>
                                 </div>
                             </div>
@@ -126,11 +171,18 @@ const formatDate = (iso: string) => iso ? new Date(iso).toLocaleDateString() : '
                             </Button>
                         </div>
 
-                        <div v-if="batches.length === 0" class="text-center py-12">
-                            <Layers class="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                        <div
+                            v-if="batches.length === 0"
+                            class="py-12 text-center"
+                        >
+                            <Layers
+                                class="mx-auto mb-4 h-12 w-12 text-muted-foreground"
+                            />
                             <p class="text-muted-foreground">No batches yet</p>
-                            <p class="text-sm text-muted-foreground mt-2">
-                                Add a batch above to group students (e.g. by year or course). Lecturers will select a batch when creating viva sessions.
+                            <p class="mt-2 text-sm text-muted-foreground">
+                                Add a batch above to group students (e.g. by
+                                year or course). Lecturers will select a batch
+                                when creating viva sessions.
                             </p>
                         </div>
                     </div>

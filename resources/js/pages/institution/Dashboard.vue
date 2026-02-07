@@ -1,9 +1,15 @@
 <script setup lang="ts">
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, GraduationCap, UserPlus, Building2 } from 'lucide-vue-next';
+import { Building2, GraduationCap, UserPlus, Users } from 'lucide-vue-next';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -25,56 +31,90 @@ const stats = {
     <Head title="Institution Dashboard" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
+        <div
+            class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4"
+        >
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-bold">Institution Dashboard</h1>
-                    <p class="text-muted-foreground">Manage lecturers, students, and batches</p>
+                    <p class="text-muted-foreground">
+                        Manage lecturers, students, and batches
+                    </p>
                 </div>
             </div>
 
             <!-- Stats Cards -->
             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card>
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">Total Lecturers</CardTitle>
+                    <CardHeader
+                        class="flex flex-row items-center justify-between space-y-0 pb-2"
+                    >
+                        <CardTitle class="text-sm font-medium"
+                            >Total Lecturers</CardTitle
+                        >
                         <Users class="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div class="text-2xl font-bold">{{ stats.totalLecturers }}</div>
-                        <p class="text-xs text-muted-foreground">Active lecturers</p>
+                        <div class="text-2xl font-bold">
+                            {{ stats.totalLecturers }}
+                        </div>
+                        <p class="text-xs text-muted-foreground">
+                            Active lecturers
+                        </p>
                     </CardContent>
                 </Card>
 
                 <Card>
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">Total Students</CardTitle>
+                    <CardHeader
+                        class="flex flex-row items-center justify-between space-y-0 pb-2"
+                    >
+                        <CardTitle class="text-sm font-medium"
+                            >Total Students</CardTitle
+                        >
                         <GraduationCap class="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div class="text-2xl font-bold">{{ stats.totalStudents }}</div>
-                        <p class="text-xs text-muted-foreground">Enrolled students</p>
+                        <div class="text-2xl font-bold">
+                            {{ stats.totalStudents }}
+                        </div>
+                        <p class="text-xs text-muted-foreground">
+                            Enrolled students
+                        </p>
                     </CardContent>
                 </Card>
 
                 <Card>
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">Active Batches</CardTitle>
+                    <CardHeader
+                        class="flex flex-row items-center justify-between space-y-0 pb-2"
+                    >
+                        <CardTitle class="text-sm font-medium"
+                            >Active Batches</CardTitle
+                        >
                         <Building2 class="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div class="text-2xl font-bold">{{ stats.activeBatches }}</div>
-                        <p class="text-xs text-muted-foreground">Current batches</p>
+                        <div class="text-2xl font-bold">
+                            {{ stats.activeBatches }}
+                        </div>
+                        <p class="text-xs text-muted-foreground">
+                            Current batches
+                        </p>
                     </CardContent>
                 </Card>
 
                 <Card>
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">Total Vivas</CardTitle>
+                    <CardHeader
+                        class="flex flex-row items-center justify-between space-y-0 pb-2"
+                    >
+                        <CardTitle class="text-sm font-medium"
+                            >Total Vivas</CardTitle
+                        >
                         <GraduationCap class="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div class="text-2xl font-bold">{{ stats.totalVivas }}</div>
+                        <div class="text-2xl font-bold">
+                            {{ stats.totalVivas }}
+                        </div>
                         <p class="text-xs text-muted-foreground">All time</p>
                     </CardContent>
                 </Card>
@@ -83,7 +123,9 @@ const stats = {
             <!-- Quick Actions -->
             <div class="grid gap-4 md:grid-cols-2">
                 <Link href="/institution/lecturers/add" class="block">
-                    <Card class="cursor-pointer hover:border-primary transition-colors">
+                    <Card
+                        class="cursor-pointer transition-colors hover:border-primary"
+                    >
                         <CardHeader>
                             <CardTitle class="flex items-center gap-2">
                                 <UserPlus class="h-5 w-5" />
@@ -97,7 +139,9 @@ const stats = {
                 </Link>
 
                 <Link href="/institution/students/add" class="block">
-                    <Card class="cursor-pointer hover:border-primary transition-colors">
+                    <Card
+                        class="cursor-pointer transition-colors hover:border-primary"
+                    >
                         <CardHeader>
                             <CardTitle class="flex items-center gap-2">
                                 <UserPlus class="h-5 w-5" />
@@ -111,7 +155,9 @@ const stats = {
                 </Link>
 
                 <Link href="/institution/lecturers" class="block">
-                    <Card class="cursor-pointer hover:border-primary transition-colors">
+                    <Card
+                        class="cursor-pointer transition-colors hover:border-primary"
+                    >
                         <CardHeader>
                             <CardTitle class="flex items-center gap-2">
                                 <Users class="h-5 w-5" />
@@ -125,7 +171,9 @@ const stats = {
                 </Link>
 
                 <Link href="/institution/students" class="block">
-                    <Card class="cursor-pointer hover:border-primary transition-colors">
+                    <Card
+                        class="cursor-pointer transition-colors hover:border-primary"
+                    >
                         <CardHeader>
                             <CardTitle class="flex items-center gap-2">
                                 <GraduationCap class="h-5 w-5" />
@@ -141,4 +189,3 @@ const stats = {
         </div>
     </AppLayout>
 </template>
-

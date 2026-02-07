@@ -1,10 +1,16 @@
 <script setup lang="ts">
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Lock } from 'lucide-vue-next';
 
 const props = defineProps<{
@@ -26,7 +32,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const closeViva = () => {
-    if (!confirm('Close this viva? Students will no longer be able to attend.')) return;
+    if (!confirm('Close this viva? Students will no longer be able to attend.'))
+        return;
     router.post(`/lecturer/vivas/${props.viva.id}/close`);
 };
 </script>
@@ -35,11 +42,13 @@ const closeViva = () => {
     <Head :title="`Viva: ${viva.title}`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
+        <div
+            class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4"
+        >
             <div class="flex items-center justify-between">
                 <Button variant="ghost" size="sm" as-child>
                     <Link href="/lecturer/vivas">
-                        <ArrowLeft class="h-4 w-4 mr-2" />
+                        <ArrowLeft class="mr-2 h-4 w-4" />
                         Back to sessions
                     </Link>
                 </Button>
@@ -49,13 +58,22 @@ const closeViva = () => {
                 <CardHeader>
                     <div class="flex items-center justify-between">
                         <div>
-                            <CardTitle class="text-2xl">{{ viva.title }}</CardTitle>
+                            <CardTitle class="text-2xl">{{
+                                viva.title
+                            }}</CardTitle>
                             <CardDescription class="mt-1">
-                                Batch: {{ viva.batch }} • {{ viva.scheduled_at }}
+                                Batch: {{ viva.batch }} •
+                                {{ viva.scheduled_at }}
                             </CardDescription>
                         </div>
                         <div class="flex items-center gap-2">
-                            <Badge :variant="viva.status === 'upcoming' ? 'default' : 'secondary'">
+                            <Badge
+                                :variant="
+                                    viva.status === 'upcoming'
+                                        ? 'default'
+                                        : 'secondary'
+                                "
+                            >
                                 {{ viva.status }}
                             </Badge>
                             <Button
@@ -64,7 +82,7 @@ const closeViva = () => {
                                 size="sm"
                                 @click="closeViva"
                             >
-                                <Lock class="h-4 w-4 mr-2" />
+                                <Lock class="mr-2 h-4 w-4" />
                                 Close viva
                             </Button>
                         </div>
@@ -72,12 +90,20 @@ const closeViva = () => {
                 </CardHeader>
                 <CardContent class="space-y-4">
                     <div v-if="viva.description">
-                        <h4 class="text-sm font-medium mb-1">Description</h4>
-                        <p class="text-sm text-muted-foreground">{{ viva.description }}</p>
+                        <h4 class="mb-1 text-sm font-medium">Description</h4>
+                        <p class="text-sm text-muted-foreground">
+                            {{ viva.description }}
+                        </p>
                     </div>
                     <div v-if="viva.instructions">
-                        <h4 class="text-sm font-medium mb-1">Instructions for students</h4>
-                        <p class="text-sm text-muted-foreground whitespace-pre-wrap">{{ viva.instructions }}</p>
+                        <h4 class="mb-1 text-sm font-medium">
+                            Instructions for students
+                        </h4>
+                        <p
+                            class="text-sm whitespace-pre-wrap text-muted-foreground"
+                        >
+                            {{ viva.instructions }}
+                        </p>
                     </div>
                 </CardContent>
             </Card>

@@ -14,15 +14,15 @@ import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 import {
-    LayoutGrid,
     BookOpen,
-    GraduationCap,
-    FileText,
-    Plus,
-    Users,
     Building2,
     CreditCard,
+    FileText,
+    GraduationCap,
     Layers,
+    LayoutGrid,
+    Plus,
+    Users,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
