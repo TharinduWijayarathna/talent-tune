@@ -15,17 +15,9 @@ class InstitutionResolverService
             return $institution;
         }
 
-        $host = $request->getHost();
-        $parts = explode('.', $host);
+        $subdomain = $this->extractSubdomain($request->getHost());
 
-        $subdomain = null;
-        if (count($parts) >= 3) {
-            $subdomain = $parts[0];
-        } elseif (count($parts) === 2 && str_ends_with($host, '.test')) {
-            $subdomain = $parts[0];
-        }
-
-        if ($subdomain && ! in_array($subdomain, ['www', 'app', 'talenttune'], true)) {
+        if ($subdomain && ! $this->isReservedSubdomain($subdomain)) {
             return Institution::where('slug', $subdomain)->first();
         }
 
@@ -34,10 +26,9 @@ class InstitutionResolverService
 
     public function resolveActive(Request $request): ?Institution
     {
-        $host = $request->getHost();
-        $subdomain = $this->extractSubdomain($host);
+        $subdomain = $this->extractSubdomain($request->getHost());
 
-        if ($subdomain && ! in_array($subdomain, ['www', 'app', 'talenttune'], true)) {
+        if ($subdomain && ! $this->isReservedSubdomain($subdomain)) {
             return Institution::where('slug', $subdomain)->active()->first();
         }
 
@@ -47,14 +38,20 @@ class InstitutionResolverService
     public function extractSubdomain(string $host): ?string
     {
         $parts = explode('.', $host);
+        $localTld = config('domain.local_tld', '.test');
 
         if (count($parts) >= 3) {
             return $parts[0];
         }
-        if (count($parts) === 2 && str_ends_with($host, '.test')) {
+        if (count($parts) === 2 && $localTld !== '' && str_ends_with($host, $localTld)) {
             return $parts[0];
         }
 
         return null;
+    }
+
+    protected function isReservedSubdomain(string $subdomain): bool
+    {
+        return in_array($subdomain, config('domain.reserved_subdomains', []), true);
     }
 }

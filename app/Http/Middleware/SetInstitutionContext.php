@@ -98,11 +98,12 @@ class SetInstitutionContext
      */
     protected function detectInstitution(Request $request): ?Institution
     {
-        // Method 1: Check subdomain (e.g., university-tech.talenttune.com)
+        // Method 1: Check subdomain (e.g., university-tech.{APP_DOMAIN})
         $host = $request->getHost();
         $subdomain = $this->extractSubdomain($host);
+        $reserved = config('domain.reserved_subdomains', []);
 
-        if ($subdomain && $subdomain !== 'www' && $subdomain !== 'app' && $subdomain !== 'talenttune') {
+        if ($subdomain && ! in_array($subdomain, $reserved, true)) {
             $institution = Institution::where('slug', $subdomain)
                 ->active()
                 ->first();
@@ -151,15 +152,13 @@ class SetInstitutionContext
     protected function extractSubdomain(string $host): ?string
     {
         $parts = explode('.', $host);
+        $localTld = config('domain.local_tld', '.test');
 
-        // If we have more than 2 parts, the first part is likely the subdomain
-        // e.g., university-tech.talenttune.com -> university-tech
         if (count($parts) >= 3) {
             return $parts[0];
         }
 
-        // For local development (e.g., university-tech.test)
-        if (count($parts) === 2 && str_ends_with($host, '.test')) {
+        if (count($parts) === 2 && $localTld !== '' && str_ends_with($host, $localTld)) {
             return $parts[0];
         }
 

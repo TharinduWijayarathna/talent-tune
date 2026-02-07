@@ -130,11 +130,15 @@ class InstitutionService
 
     public function sendActivationEmail(Institution $institution, string $email, string $password, Request $request): void
     {
-        $host = $request->getHost();
-        $parts = explode('.', $host);
-        $baseDomain = str_ends_with($host, '.test')
-            ? (count($parts) >= 2 ? implode('.', array_slice($parts, -2)) : $host)
-            : (count($parts) >= 2 ? implode('.', array_slice($parts, -2)) : $host);
+        $baseDomain = config('domain.domain');
+        if ($baseDomain === null || $baseDomain === '') {
+            $host = $request->getHost();
+            $parts = explode('.', $host);
+            $localTld = config('domain.local_tld', '.test');
+            $baseDomain = ($localTld !== '' && str_ends_with($host, $localTld))
+                ? (count($parts) >= 2 ? implode('.', array_slice($parts, -2)) : $host)
+                : (count($parts) >= 2 ? implode('.', array_slice($parts, -2)) : $host);
+        }
 
         Notification::route('mail', $email)
             ->notify(new InstitutionActivated($institution, $email, $password, $baseDomain));

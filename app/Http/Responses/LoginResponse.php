@@ -40,26 +40,27 @@ class LoginResponse implements LoginResponseContract
         $institution = $user->institution;
 
         if ($institution && $institution->is_active) {
-            // Build subdomain URL
             $host = $request->getHost();
             $parts = explode('.', $host);
+            $localTld = config('domain.local_tld', '.test');
+            $onSubdomain = count($parts) >= 3 || ($localTld !== '' && str_ends_with($host, $localTld));
 
-            // If we're already on a subdomain, stay there and redirect to home (institution landing page)
-            if (count($parts) >= 3 || str_ends_with($host, '.test')) {
-                // Already on subdomain, redirect to home page (institution landing page)
+            if ($onSubdomain) {
                 return $request->wantsJson()
                     ? response()->json(['two_factor' => false, 'redirect' => '/'])
                     : redirect()->intended('/');
-            } else {
-                // Redirect to institution subdomain home page
-                $baseDomain = count($parts) >= 2 ? implode('.', array_slice($parts, -2)) : $host;
-                $scheme = $request->getScheme();
-                $redirectUrl = "{$scheme}://{$institution->slug}.{$baseDomain}/";
-
-                return $request->wantsJson()
-                    ? response()->json(['two_factor' => false, 'redirect' => $redirectUrl])
-                    : redirect($redirectUrl);
             }
+
+            $baseDomain = config('domain.domain');
+            if ($baseDomain === null || $baseDomain === '') {
+                $baseDomain = count($parts) >= 2 ? implode('.', array_slice($parts, -2)) : $host;
+            }
+            $scheme = $request->getScheme();
+            $redirectUrl = "{$scheme}://{$institution->slug}.{$baseDomain}/";
+
+            return $request->wantsJson()
+                ? response()->json(['two_factor' => false, 'redirect' => $redirectUrl])
+                : redirect($redirectUrl);
         }
 
         // No active institution, redirect to home

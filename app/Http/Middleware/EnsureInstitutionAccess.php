@@ -43,16 +43,15 @@ class EnsureInstitutionAccess
             // Try to redirect to their institution
             $userInstitution = $user->institution;
             if ($userInstitution) {
-                $host = $request->getHost();
-                $parts = explode('.', $host);
-
-                if (count($parts) >= 3) {
-                    // Replace subdomain
-                    $baseDomain = implode('.', array_slice($parts, -2));
-                    $newHost = "{$userInstitution->slug}.{$baseDomain}";
-
-                    return redirect()->to("{$request->getScheme()}://{$newHost}{$request->getPathInfo()}");
+                $baseDomain = config('domain.domain');
+                if ($baseDomain === null || $baseDomain === '') {
+                    $host = $request->getHost();
+                    $parts = explode('.', $host);
+                    $baseDomain = count($parts) >= 2 ? implode('.', array_slice($parts, -2)) : $host;
                 }
+                $newHost = "{$userInstitution->slug}.{$baseDomain}";
+
+                return redirect()->to("{$request->getScheme()}://{$newHost}{$request->getPathInfo()}");
             }
 
             return redirect()->route('home');
