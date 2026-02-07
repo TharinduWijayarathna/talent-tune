@@ -66,14 +66,21 @@ class AuthenticatedSessionController extends Controller
     public function store(Request $request)
     {
         try {
-            $credentials = $request->validate([
+            // Normalize empty role so validation passes when logging in from main domain (e.g. admin)
+            $request->merge(['role' => $request->input('role') ?: null]);
+
+            $request->validate([
                 'email' => ['required', 'string', 'email'],
                 'password' => ['required', 'string'],
-                'role' => ['nullable', 'string', 'in:student,lecturer,institution'],
+                'role' => ['nullable', 'string', 'in:student,lecturer,institution,admin'],
             ]);
 
-            // Attempt authentication
-            if (!Auth::attempt($credentials, $request->boolean('remember'))) {
+            // Only pass email and password to Auth::attempt – Laravel uses all credential keys to find the user.
+            // Passing role would look for role=null on main domain and never find admin.
+            if (!Auth::attempt(
+                $request->only('email', 'password'),
+                $request->boolean('remember')
+            )) {
                 throw ValidationException::withMessages([
                     'email' => __('These credentials do not match our records.'),
                 ]);
