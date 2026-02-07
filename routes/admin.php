@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminPaymentController;
 use App\Http\Controllers\Admin\AdminUserController;
-use App\Http\Controllers\InstitutionController;
+use App\Http\Controllers\Application\InstitutionController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 

@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\LecturerController;
+use App\Http\Controllers\Application\LecturerController;
 use App\Http\Middleware\EnsureInstitutionAccess;
 use Illuminate\Support\Facades\Route;
 

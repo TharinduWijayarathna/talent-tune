@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\InstitutionUserController;
+use App\Http\Controllers\Application\InstitutionUserController;
 use App\Http\Middleware\EnsureInstitutionAccess;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;

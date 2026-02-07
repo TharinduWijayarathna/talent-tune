@@ -1,9 +1,9 @@
 <?php
 
+use App\Http\Controllers\Application\DashboardController;
+use App\Http\Controllers\Application\HomeController;
+use App\Http\Controllers\Application\InstitutionController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\InstitutionController;
 use Illuminate\Support\Facades\Route;
 
 /*

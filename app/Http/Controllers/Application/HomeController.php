@@ -1,20 +1,26 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Application;
 
-use App\Models\Institution;
+use App\Http\Controllers\Controller;
+use App\Services\Application\InstitutionResolverService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Laravel\Fortify\Features;
+
 class HomeController extends Controller
 {
+    public function __construct(
+        protected InstitutionResolverService $institutionResolver
+    ) {}
+
     /**
      * Show the appropriate home page: institution pending, institution homepage, or public landing.
      */
     public function index(Request $request): Response
     {
-        $institution = $this->resolveInstitution($request);
+        $institution = $this->institutionResolver->resolve($request);
 
         if ($institution) {
             if (!$institution->is_active) {
@@ -44,33 +50,5 @@ class HomeController extends Controller
         return Inertia::render('home/LandingPage', [
             'canRegister' => Features::enabled(Features::registration()),
         ]);
-    }
-
-    /**
-     * Resolve institution from request attributes (middleware) or from host/subdomain.
-     */
-    protected function resolveInstitution(Request $request): ?Institution
-    {
-        $institution = $request->attributes->get('institution');
-
-        if ($institution instanceof Institution) {
-            return $institution;
-        }
-
-        $host = $request->getHost();
-        $parts = explode('.', $host);
-
-        $subdomain = null;
-        if (count($parts) >= 3) {
-            $subdomain = $parts[0];
-        } elseif (count($parts) === 2 && str_ends_with($host, '.test')) {
-            $subdomain = $parts[0];
-        }
-
-        if ($subdomain && !in_array($subdomain, ['www', 'app', 'talenttune'], true)) {
-            return Institution::where('slug', $subdomain)->first();
-        }
-
-        return null;
     }
 }

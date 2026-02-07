@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\Viva\GeminiController;
-use App\Http\Controllers\Viva\TTSController;
+use App\Http\Controllers\Ai\GeminiController;
+use App\Http\Controllers\Ai\TTSController;
 use Illuminate\Support\Facades\Route;
 
 /*

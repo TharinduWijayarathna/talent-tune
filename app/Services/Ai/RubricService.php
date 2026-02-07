@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Ai;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -48,7 +48,6 @@ class RubricService
             }
 
             $data = $response->json();
-            // Accept common response shapes: { "score": x }, { "rubric_score": x }, { "prediction": x }
             $score = $data['score'] ?? $data['rubric_score'] ?? $data['prediction'] ?? null;
             if ($score !== null && is_numeric($score)) {
                 return ['success' => true, 'score' => (float) $score];
