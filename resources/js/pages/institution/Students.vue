@@ -1,22 +1,28 @@
 <script setup lang="ts">
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import {
-    GraduationCap,
-    UserPlus,
-    Search,
-    Edit,
-    Trash2,
-    Mail,
     Building2,
-    Users
+    Edit,
+    GraduationCap,
+    Mail,
+    Search,
+    Trash2,
+    UserPlus,
+    Users,
 } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { computed, ref } from 'vue';
 
 interface Student {
     id: number;
@@ -44,12 +50,16 @@ const selectedBatch = ref<string>('all');
 const selectedDepartment = ref<string>('all');
 
 const batches = computed(() => {
-    const uniqueBatches = new Set(props.students.map(s => s.batch).filter(Boolean));
+    const uniqueBatches = new Set(
+        props.students.map((s) => s.batch).filter(Boolean),
+    );
     return Array.from(uniqueBatches);
 });
 
 const departments = computed(() => {
-    const uniqueDepts = new Set(props.students.map(s => s.department).filter(Boolean));
+    const uniqueDepts = new Set(
+        props.students.map((s) => s.department).filter(Boolean),
+    );
     return Array.from(uniqueDepts);
 });
 
@@ -58,20 +68,24 @@ const filteredStudents = computed(() => {
 
     if (searchQuery.value) {
         const query = searchQuery.value.toLowerCase();
-        filtered = filtered.filter(student =>
-            student.name.toLowerCase().includes(query) ||
-            student.email.toLowerCase().includes(query) ||
-            (student.student_id && student.student_id.toLowerCase().includes(query)) ||
-            (student.batch && student.batch.toLowerCase().includes(query))
+        filtered = filtered.filter(
+            (student) =>
+                student.name.toLowerCase().includes(query) ||
+                student.email.toLowerCase().includes(query) ||
+                (student.student_id &&
+                    student.student_id.toLowerCase().includes(query)) ||
+                (student.batch && student.batch.toLowerCase().includes(query)),
         );
     }
 
     if (selectedBatch.value !== 'all') {
-        filtered = filtered.filter(s => s.batch === selectedBatch.value);
+        filtered = filtered.filter((s) => s.batch === selectedBatch.value);
     }
 
     if (selectedDepartment.value !== 'all') {
-        filtered = filtered.filter(s => s.department === selectedDepartment.value);
+        filtered = filtered.filter(
+            (s) => s.department === selectedDepartment.value,
+        );
     }
 
     return filtered;
@@ -83,22 +97,27 @@ const handleDelete = (id: number) => {
     }
 };
 
-const formatDate = (iso: string) => iso ? new Date(iso).toLocaleDateString() : '';
+const formatDate = (iso: string) =>
+    iso ? new Date(iso).toLocaleDateString() : '';
 </script>
 
 <template>
     <Head title="Manage Students" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
+        <div
+            class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4"
+        >
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-bold">Manage Students</h1>
-                    <p class="text-muted-foreground">View and manage all students in your institution</p>
+                    <p class="text-muted-foreground">
+                        View and manage all students in your institution
+                    </p>
                 </div>
                 <Button as-child>
                     <Link href="/institution/students/add">
-                        <UserPlus class="h-4 w-4 mr-2" />
+                        <UserPlus class="mr-2 h-4 w-4" />
                         Add Student
                     </Link>
                 </Button>
@@ -109,7 +128,9 @@ const formatDate = (iso: string) => iso ? new Date(iso).toLocaleDateString() : '
                 <CardContent class="pt-6">
                     <div class="grid gap-4 md:grid-cols-3">
                         <div class="relative">
-                            <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Search
+                                class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                            />
                             <Input
                                 v-model="searchQuery"
                                 placeholder="Search by name, email, or student ID..."
@@ -119,10 +140,14 @@ const formatDate = (iso: string) => iso ? new Date(iso).toLocaleDateString() : '
                         <div>
                             <select
                                 v-model="selectedBatch"
-                                class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                                class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                             >
                                 <option value="all">All Batches</option>
-                                <option v-for="batch in batches" :key="batch" :value="batch">
+                                <option
+                                    v-for="batch in batches"
+                                    :key="batch"
+                                    :value="batch"
+                                >
                                     {{ batch }}
                                 </option>
                             </select>
@@ -130,10 +155,14 @@ const formatDate = (iso: string) => iso ? new Date(iso).toLocaleDateString() : '
                         <div>
                             <select
                                 v-model="selectedDepartment"
-                                class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                                class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                             >
                                 <option value="all">All Departments</option>
-                                <option v-for="dept in departments" :key="dept" :value="dept">
+                                <option
+                                    v-for="dept in departments"
+                                    :key="dept"
+                                    :value="dept"
+                                >
                                     {{ dept }}
                                 </option>
                             </select>
@@ -145,8 +174,13 @@ const formatDate = (iso: string) => iso ? new Date(iso).toLocaleDateString() : '
             <!-- Students List -->
             <Card>
                 <CardHeader>
-                    <CardTitle>All Students ({{ filteredStudents.length }})</CardTitle>
-                    <CardDescription>List of all students enrolled in your institution</CardDescription>
+                    <CardTitle
+                        >All Students ({{ filteredStudents.length }})</CardTitle
+                    >
+                    <CardDescription
+                        >List of all students enrolled in your
+                        institution</CardDescription
+                    >
                 </CardHeader>
                 <CardContent>
                     <div class="space-y-4">
@@ -155,43 +189,74 @@ const formatDate = (iso: string) => iso ? new Date(iso).toLocaleDateString() : '
                             :key="student.id"
                             class="flex items-center justify-between rounded-lg border p-4 transition-all hover:bg-muted/50"
                         >
-                            <div class="flex items-center gap-4 flex-1">
-                                <div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                                    <GraduationCap class="h-6 w-6 text-primary" />
+                            <div class="flex flex-1 items-center gap-4">
+                                <div
+                                    class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10"
+                                >
+                                    <GraduationCap
+                                        class="h-6 w-6 text-primary"
+                                    />
                                 </div>
                                 <div class="flex-1 space-y-1">
                                     <div class="flex items-center gap-2">
-                                        <h3 class="font-semibold">{{ student.name }}</h3>
-                                        <Badge variant="default" class="text-xs">
+                                        <h3 class="font-semibold">
+                                            {{ student.name }}
+                                        </h3>
+                                        <Badge
+                                            variant="default"
+                                            class="text-xs"
+                                        >
                                             {{ student.status }}
                                         </Badge>
-                                        <Badge variant="outline" class="text-xs">
+                                        <Badge
+                                            variant="outline"
+                                            class="text-xs"
+                                        >
                                             {{ student.batch }}
                                         </Badge>
                                     </div>
-                                    <div class="flex items-center gap-4 text-sm text-muted-foreground">
+                                    <div
+                                        class="flex items-center gap-4 text-sm text-muted-foreground"
+                                    >
                                         <div class="flex items-center gap-1">
                                             <Mail class="h-4 w-4" />
                                             <span>{{ student.email }}</span>
                                         </div>
                                         <div class="flex items-center gap-1">
                                             <Building2 class="h-4 w-4" />
-                                            <span>{{ student.department }}</span>
+                                            <span>{{
+                                                student.department
+                                            }}</span>
                                         </div>
                                     </div>
-                                    <div class="flex items-center gap-4 text-xs text-muted-foreground">
-                                        <span>Student ID: {{ student.student_id }}</span>
+                                    <div
+                                        class="flex items-center gap-4 text-xs text-muted-foreground"
+                                    >
+                                        <span
+                                            >Student ID:
+                                            {{ student.student_id }}</span
+                                        >
                                         <span>•</span>
-                                        <span>{{ student.completedVivas }} vivas completed</span>
+                                        <span
+                                            >{{ student.completedVivas }} vivas
+                                            completed</span
+                                        >
                                         <span>•</span>
-                                        <span>Joined: {{ formatDate(student.created_at) }}</span>
+                                        <span
+                                            >Joined:
+                                            {{
+                                                formatDate(student.created_at)
+                                            }}</span
+                                        >
                                     </div>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2">
                                 <Button variant="outline" size="sm" as-child>
-                                    <Link :href="`/institution/students/${student.id}/edit`">
-                                        <Edit class="h-4 w-4 mr-2" />
+                                    <Link
+                                        :href="`/institution/students/${student.id}/edit`"
+                                    >
+                                        <Edit class="mr-2 h-4 w-4" />
                                         Edit
                                     </Link>
                                 </Button>
@@ -206,10 +271,17 @@ const formatDate = (iso: string) => iso ? new Date(iso).toLocaleDateString() : '
                             </div>
                         </div>
 
-                        <div v-if="filteredStudents.length === 0" class="text-center py-12">
-                            <Users class="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                            <p class="text-muted-foreground">No students found</p>
-                            <p class="text-sm text-muted-foreground mt-2">
+                        <div
+                            v-if="filteredStudents.length === 0"
+                            class="py-12 text-center"
+                        >
+                            <Users
+                                class="mx-auto mb-4 h-12 w-12 text-muted-foreground"
+                            />
+                            <p class="text-muted-foreground">
+                                No students found
+                            </p>
+                            <p class="mt-2 text-sm text-muted-foreground">
                                 Try adjusting your search or filter criteria
                             </p>
                         </div>
@@ -219,4 +291,3 @@ const formatDate = (iso: string) => iso ? new Date(iso).toLocaleDateString() : '
         </div>
     </AppLayout>
 </template>
-

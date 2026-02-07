@@ -1,12 +1,27 @@
 <script setup lang="ts">
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { CreditCard, Search, Building2, ChevronLeft, ChevronRight, DollarSign, Check, Clock } from 'lucide-vue-next';
+import {
+    Building2,
+    Check,
+    ChevronLeft,
+    ChevronRight,
+    Clock,
+    CreditCard,
+    DollarSign,
+    Search,
+} from 'lucide-vue-next';
 import { ref } from 'vue';
 
 interface InstitutionRef {
@@ -50,7 +65,12 @@ interface PaginatedPayments {
 
 interface Props {
     payments: PaginatedPayments;
-    stats: { total: number; completed: number; pending: number; total_amount: number };
+    stats: {
+        total: number;
+        completed: number;
+        pending: number;
+        total_amount: number;
+    };
     filters: { search?: string; status?: string };
 }
 
@@ -65,11 +85,15 @@ const searchQuery = ref(props.filters.search ?? '');
 const statusFilter = ref(props.filters.status ?? '');
 
 const applyFilters = () => {
-    router.get('/admin/payments', {
-        search: searchQuery.value || undefined,
-        status: statusFilter.value || undefined,
-        page: 1,
-    }, { preserveState: true });
+    router.get(
+        '/admin/payments',
+        {
+            search: searchQuery.value || undefined,
+            status: statusFilter.value || undefined,
+            page: 1,
+        },
+        { preserveState: true },
+    );
 };
 
 function formatAmount(amount: number, currency: string): string {
@@ -80,7 +104,10 @@ function formatAmount(amount: number, currency: string): string {
     }).format(value);
 }
 
-const statusVariant: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+const statusVariant: Record<
+    string,
+    'default' | 'secondary' | 'destructive' | 'outline'
+> = {
     completed: 'default',
     pending: 'secondary',
     failed: 'destructive',
@@ -92,19 +119,27 @@ const statusVariant: Record<string, 'default' | 'secondary' | 'destructive' | 'o
     <Head title="Manage Payments - Admin" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
+        <div
+            class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4"
+        >
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-bold">Payment Management</h1>
-                    <p class="text-muted-foreground">View and manage payments across the platform</p>
+                    <p class="text-muted-foreground">
+                        View and manage payments across the platform
+                    </p>
                 </div>
             </div>
 
             <!-- Stats -->
             <div class="grid gap-4 md:grid-cols-4">
                 <Card>
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">Total Payments</CardTitle>
+                    <CardHeader
+                        class="flex flex-row items-center justify-between space-y-0 pb-2"
+                    >
+                        <CardTitle class="text-sm font-medium"
+                            >Total Payments</CardTitle
+                        >
                         <CreditCard class="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
@@ -112,38 +147,58 @@ const statusVariant: Record<string, 'default' | 'secondary' | 'destructive' | 'o
                     </CardContent>
                 </Card>
                 <Card>
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">Completed</CardTitle>
+                    <CardHeader
+                        class="flex flex-row items-center justify-between space-y-0 pb-2"
+                    >
+                        <CardTitle class="text-sm font-medium"
+                            >Completed</CardTitle
+                        >
                         <Check class="h-4 w-4 text-green-600" />
                     </CardHeader>
                     <CardContent>
-                        <div class="text-2xl font-bold text-green-600">{{ stats.completed }}</div>
+                        <div class="text-2xl font-bold text-green-600">
+                            {{ stats.completed }}
+                        </div>
                     </CardContent>
                 </Card>
                 <Card>
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">Pending</CardTitle>
+                    <CardHeader
+                        class="flex flex-row items-center justify-between space-y-0 pb-2"
+                    >
+                        <CardTitle class="text-sm font-medium"
+                            >Pending</CardTitle
+                        >
                         <Clock class="h-4 w-4 text-yellow-600" />
                     </CardHeader>
                     <CardContent>
-                        <div class="text-2xl font-bold text-yellow-600">{{ stats.pending }}</div>
+                        <div class="text-2xl font-bold text-yellow-600">
+                            {{ stats.pending }}
+                        </div>
                     </CardContent>
                 </Card>
                 <Card>
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">Total Revenue</CardTitle>
+                    <CardHeader
+                        class="flex flex-row items-center justify-between space-y-0 pb-2"
+                    >
+                        <CardTitle class="text-sm font-medium"
+                            >Total Revenue</CardTitle
+                        >
                         <DollarSign class="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div class="text-2xl font-bold">{{ formatAmount(stats.total_amount, 'USD') }}</div>
+                        <div class="text-2xl font-bold">
+                            {{ formatAmount(stats.total_amount, 'USD') }}
+                        </div>
                     </CardContent>
                 </Card>
             </div>
 
             <!-- Filters -->
             <div class="flex flex-wrap items-center gap-4">
-                <div class="relative flex-1 min-w-[200px]">
-                    <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <div class="relative min-w-[200px] flex-1">
+                    <Search
+                        class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground"
+                    />
                     <Input
                         v-model="searchQuery"
                         type="text"
@@ -154,7 +209,7 @@ const statusVariant: Record<string, 'default' | 'secondary' | 'destructive' | 'o
                 </div>
                 <select
                     v-model="statusFilter"
-                    class="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    class="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
                 >
                     <option value="">All statuses</option>
                     <option value="pending">Pending</option>
@@ -169,49 +224,97 @@ const statusVariant: Record<string, 'default' | 'secondary' | 'destructive' | 'o
             <Card>
                 <CardHeader>
                     <CardTitle>Payments</CardTitle>
-                    <CardDescription>Payment history and transactions</CardDescription>
+                    <CardDescription
+                        >Payment history and transactions</CardDescription
+                    >
                 </CardHeader>
                 <CardContent>
                     <div class="space-y-4">
                         <div
                             v-for="payment in payments.data"
                             :key="payment.id"
-                            class="flex items-start justify-between rounded-lg border p-4 hover:bg-muted/50 transition-colors"
+                            class="flex items-start justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
                         >
                             <div class="flex-1 space-y-2">
                                 <div class="flex items-center gap-3">
                                     <div>
-                                        <p class="font-semibold">{{ formatAmount(payment.amount, payment.currency) }}</p>
-                                        <p class="text-sm text-muted-foreground">
+                                        <p class="font-semibold">
+                                            {{
+                                                formatAmount(
+                                                    payment.amount,
+                                                    payment.currency,
+                                                )
+                                            }}
+                                        </p>
+                                        <p
+                                            class="text-sm text-muted-foreground"
+                                        >
                                             {{ payment.gateway ?? '—' }}
-                                            <span v-if="payment.external_id" class="ml-2">{{ payment.external_id }}</span>
+                                            <span
+                                                v-if="payment.external_id"
+                                                class="ml-2"
+                                                >{{ payment.external_id }}</span
+                                            >
                                         </p>
                                     </div>
-                                    <Badge :variant="statusVariant[payment.status] ?? 'secondary'">
+                                    <Badge
+                                        :variant="
+                                            statusVariant[payment.status] ??
+                                            'secondary'
+                                        "
+                                    >
                                         {{ payment.status }}
                                     </Badge>
                                 </div>
-                                <div v-if="payment.institution" class="flex items-center gap-2 text-sm text-muted-foreground">
+                                <div
+                                    v-if="payment.institution"
+                                    class="flex items-center gap-2 text-sm text-muted-foreground"
+                                >
                                     <Building2 class="h-4 w-4" />
                                     {{ payment.institution.name }}
                                 </div>
-                                <div class="flex gap-4 text-xs text-muted-foreground">
-                                    <span>Created {{ new Date(payment.created_at).toLocaleString() }}</span>
-                                    <span v-if="payment.paid_at">Paid {{ new Date(payment.paid_at).toLocaleString() }}</span>
+                                <div
+                                    class="flex gap-4 text-xs text-muted-foreground"
+                                >
+                                    <span
+                                        >Created
+                                        {{
+                                            new Date(
+                                                payment.created_at,
+                                            ).toLocaleString()
+                                        }}</span
+                                    >
+                                    <span v-if="payment.paid_at"
+                                        >Paid
+                                        {{
+                                            new Date(
+                                                payment.paid_at,
+                                            ).toLocaleString()
+                                        }}</span
+                                    >
                                 </div>
                             </div>
                         </div>
 
-                        <div v-if="payments.data.length === 0" class="text-center py-12 text-muted-foreground">
-                            <CreditCard class="h-12 w-12 mx-auto mb-4 opacity-50" />
+                        <div
+                            v-if="payments.data.length === 0"
+                            class="py-12 text-center text-muted-foreground"
+                        >
+                            <CreditCard
+                                class="mx-auto mb-4 h-12 w-12 opacity-50"
+                            />
                             <p>No payments found.</p>
                         </div>
                     </div>
 
                     <!-- Pagination -->
-                    <div v-if="payments.last_page > 1" class="flex items-center justify-between mt-6 pt-4 border-t">
+                    <div
+                        v-if="payments.last_page > 1"
+                        class="mt-6 flex items-center justify-between border-t pt-4"
+                    >
                         <p class="text-sm text-muted-foreground">
-                            Page {{ payments.current_page }} of {{ payments.last_page }}
+                            Page {{ payments.current_page }} of
+                            {{ payments.last_page }}
                         </p>
                         <div class="flex gap-2">
                             <Button
@@ -221,7 +324,7 @@ const statusVariant: Record<string, 'default' | 'secondary' | 'destructive' | 'o
                                 as-child
                             >
                                 <Link :href="payments.prev_page_url">
-                                    <ChevronLeft class="h-4 w-4 mr-1" />
+                                    <ChevronLeft class="mr-1 h-4 w-4" />
                                     Previous
                                 </Link>
                             </Button>
@@ -233,7 +336,7 @@ const statusVariant: Record<string, 'default' | 'secondary' | 'destructive' | 'o
                             >
                                 <Link :href="payments.next_page_url">
                                     Next
-                                    <ChevronRight class="h-4 w-4 ml-1" />
+                                    <ChevronRight class="ml-1 h-4 w-4" />
                                 </Link>
                             </Button>
                         </div>

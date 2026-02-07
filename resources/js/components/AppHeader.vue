@@ -151,9 +151,18 @@ const rightNavItems: NavItem[] = [
                 </div>
 
                 <Link :href="dashboard()" class="flex items-center gap-x-2">
-                    <img v-if="institutionLogo" :src="institutionLogo" :alt="institutionName" class="h-8 w-8 rounded" />
+                    <img
+                        v-if="institutionLogo"
+                        :src="institutionLogo"
+                        :alt="institutionName"
+                        class="h-8 w-8 rounded"
+                    />
                     <AppLogo v-else />
-                    <span v-if="institution" class="text-sm font-semibold hidden sm:inline-block">{{ institutionName }}</span>
+                    <span
+                        v-if="institution"
+                        class="hidden text-sm font-semibold sm:inline-block"
+                        >{{ institutionName }}</span
+                    >
                 </Link>
 
                 <!-- Desktop Menu -->

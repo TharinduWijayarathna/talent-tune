@@ -11,8 +11,10 @@ template = template.replace(/\${PORT}/g, port);
 
 // Replace ${SERVER_NAME} if provided
 if (process.env.SERVER_NAME) {
-  template = template.replace(/server_name _;/g, `server_name ${process.env.SERVER_NAME};`);
+    template = template.replace(
+        /server_name _;/g,
+        `server_name ${process.env.SERVER_NAME};`,
+    );
 }
 
 writeFileSync(outputPath, template);
-

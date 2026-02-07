@@ -1,15 +1,28 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
-import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/vue3';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Mic, MicOff, Volume2, Play, Square, Upload, FileText } from 'lucide-vue-next';
-import { ref, onMounted, onUnmounted, computed } from 'vue';
-import { usePage } from '@inertiajs/vue3';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { type BreadcrumbItem } from '@/types';
+import { Head, usePage } from '@inertiajs/vue3';
+import {
+    FileText,
+    Mic,
+    MicOff,
+    Play,
+    Square,
+    Upload,
+    Volume2,
+} from 'lucide-vue-next';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 const props = defineProps<{
     viva?: {
@@ -67,10 +80,23 @@ const speechRecognition: any = ref(null);
 const recognitionActive = ref(false);
 const isLoadingQuestions = ref(false);
 const questionIndex = ref(0);
-const answers = ref<Array<{question: string, answer: string, evaluation?: { score_1_10: number; feedback: string; correctPoints?: string[]; improvements?: string[] } }>>([]);
+const answers = ref<
+    Array<{
+        question: string;
+        answer: string;
+        evaluation?: {
+            score_1_10: number;
+            feedback: string;
+            correctPoints?: string[];
+            improvements?: string[];
+        };
+    }>
+>([]);
 const currentEvaluation = ref<any>(null);
 const showEvaluation = ref(false);
-const conversationHistory = ref<Array<{examiner: string, student: string}>>([]);
+const conversationHistory = ref<Array<{ examiner: string; student: string }>>(
+    [],
+);
 const isProcessingAnswer = ref(false);
 
 const page = usePage();
@@ -80,7 +106,9 @@ const csrfToken = computed(() => (page.props as any).csrfToken || '');
 const documentFile = ref<File | null>(null);
 const documentInputRef = ref<HTMLInputElement | null>(null);
 const isUploadingDocument = ref(false);
-const uploadedDocumentPath = ref<string | null>(props.submission?.document_path || null);
+const uploadedDocumentPath = ref<string | null>(
+    props.submission?.document_path || null,
+);
 const documentUploaded = ref(!!props.submission?.document_path);
 
 let timerInterval: ReturnType<typeof setInterval> | null = null;
@@ -98,7 +126,11 @@ const handleDocumentSelect = (event: Event) => {
             return;
         }
         // Check file type
-        const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+        const allowedTypes = [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ];
         if (!allowedTypes.includes(file.type)) {
             alert('Invalid file type. Please upload PDF or Word document.');
             return;
@@ -118,18 +150,23 @@ const uploadDocument = async () => {
         const formData = new FormData();
         formData.append('document', documentFile.value);
 
-        const response = await fetch(`/student/vivas/${vivaSession.value.id}/upload-document`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': csrfToken.value,
-                'X-Requested-With': 'XMLHttpRequest',
+        const response = await fetch(
+            `/student/vivas/${vivaSession.value.id}/upload-document`,
+            {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken.value,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'same-origin',
+                body: formData,
             },
-            credentials: 'same-origin',
-            body: formData,
-        });
+        );
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: 'Failed to upload document' }));
+            const errorData = await response
+                .json()
+                .catch(() => ({ error: 'Failed to upload document' }));
             throw new Error(errorData.error || 'Failed to upload document');
         }
 
@@ -140,7 +177,9 @@ const uploadDocument = async () => {
         if (documentInputRef.value) {
             documentInputRef.value.value = '';
         }
-        alert('Document uploaded successfully! You can now start the viva session.');
+        alert(
+            'Document uploaded successfully! You can now start the viva session.',
+        );
     } catch (error: any) {
         alert(`Error uploading document: ${error.message}`);
     } finally {
@@ -169,7 +208,9 @@ const generateQuestions = async () => {
             body: JSON.stringify({
                 vivaId: vivaSession.value.id,
                 topic: vivaSession.value.title,
-                description: (vivaSession.value.description || vivaSession.value.title) + ' viva session',
+                description:
+                    (vivaSession.value.description || vivaSession.value.title) +
+                    ' viva session',
                 numQuestions: 5,
                 difficulty: 'intermediate',
                 studentDocumentPath: uploadedDocumentPath.value,
@@ -177,7 +218,9 @@ const generateQuestions = async () => {
         });
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: 'Failed to generate questions' }));
+            const errorData = await response
+                .json()
+                .catch(() => ({ error: 'Failed to generate questions' }));
             throw new Error(errorData.error || 'Failed to generate questions');
         }
 
@@ -188,16 +231,18 @@ const generateQuestions = async () => {
             throw new Error('No questions generated');
         }
 
-    questionIndex.value = 0;
-    currentQuestion.value = questions.value[0];
-    answers.value = [];
-    conversationHistory.value = [];
-    finalAnswer = '';
-    answer.value = '';
+        questionIndex.value = 0;
+        currentQuestion.value = questions.value[0];
+        answers.value = [];
+        conversationHistory.value = [];
+        finalAnswer = '';
+        answer.value = '';
 
-    return true;
+        return true;
     } catch (error: any) {
-        alert(`Error generating questions: ${error.message}\n\nPlease try again or contact support.`);
+        alert(
+            `Error generating questions: ${error.message}\n\nPlease try again or contact support.`,
+        );
         return false;
     } finally {
         isLoadingQuestions.value = false;
@@ -273,7 +318,7 @@ const speakQuestion = async (question: string) => {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': csrfToken.value,
                 'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'audio/wav',
+                Accept: 'audio/wav',
             },
             credentials: 'same-origin', // Important: include cookies for CSRF
             body: JSON.stringify({
@@ -289,10 +334,14 @@ const speakQuestion = async (question: string) => {
         });
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+            const errorData = await response
+                .json()
+                .catch(() => ({ error: 'Unknown error' }));
 
             // Extract user-friendly error message
-            const errorMessage = errorData.error || `Failed to generate speech: ${response.status} ${response.statusText}`;
+            const errorMessage =
+                errorData.error ||
+                `Failed to generate speech: ${response.status} ${response.statusText}`;
 
             throw new Error(errorMessage);
         }
@@ -356,15 +405,18 @@ const speakQuestion = async (question: string) => {
 
         // Play the audio
         await audio.play();
-
     } catch (error: any) {
         isListening.value = false;
         isSpeaking.value = false;
 
         // Show detailed error to user
         const errorMsg = error.message || 'Unknown error';
-        const is403Error = errorMsg.includes('403') || errorMsg.includes('access denied') || errorMsg.includes('blocked');
-        const isVertexAIError = errorMsg.includes('Vertex AI') || errorMsg.includes('aiplatform');
+        const is403Error =
+            errorMsg.includes('403') ||
+            errorMsg.includes('access denied') ||
+            errorMsg.includes('blocked');
+        const isVertexAIError =
+            errorMsg.includes('Vertex AI') || errorMsg.includes('aiplatform');
 
         if (is403Error && isVertexAIError) {
             // Extract activation URL from error if available
@@ -381,9 +433,13 @@ const speakQuestion = async (question: string) => {
 
             alert(message);
         } else if (is403Error) {
-            alert(`Google TTS API Access Denied\n\n${errorMsg}\n\nTo fix this:\n1. Go to Google Cloud Console\n2. Enable "Cloud Text-to-Speech API"\n3. Enable "Vertex AI API" (required for Gemini models)\n4. Ensure your API key has the correct permissions\n5. Check that billing is enabled for your project\n\nYou can still read the question and type your answer.`);
+            alert(
+                `Google TTS API Access Denied\n\n${errorMsg}\n\nTo fix this:\n1. Go to Google Cloud Console\n2. Enable "Cloud Text-to-Speech API"\n3. Enable "Vertex AI API" (required for Gemini models)\n4. Ensure your API key has the correct permissions\n5. Check that billing is enabled for your project\n\nYou can still read the question and type your answer.`,
+            );
         } else {
-            alert(`Error generating speech: ${errorMsg}\n\nPlease check:\n1. Google TTS API key is configured in .env\n2. API key has proper permissions\n3. Check browser console for details\n\nYou can still read the question and type your answer.`);
+            alert(
+                `Error generating speech: ${errorMsg}\n\nPlease check:\n1. Google TTS API key is configured in .env\n2. API key has proper permissions\n3. Check browser console for details\n\nYou can still read the question and type your answer.`,
+            );
         }
 
         // Don't use fallback - just allow manual input
@@ -398,7 +454,9 @@ const speakQuestion = async (question: string) => {
 // Initialize Web Speech Recognition API with continuous mode
 const initializeSpeechRecognition = () => {
     // Check if browser supports speech recognition
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SpeechRecognition =
+        (window as any).SpeechRecognition ||
+        (window as any).webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
         return null;
@@ -448,11 +506,20 @@ const initializeSpeechRecognition = () => {
 
         // Only set timer if we have some content and AI is not speaking
         // Wait 5 seconds of silence before processing the answer
-        if ((interimTranscript.trim() || finalTranscript.trim()) && !isSpeaking.value && sessionActive.value) {
+        if (
+            (interimTranscript.trim() || finalTranscript.trim()) &&
+            !isSpeaking.value &&
+            sessionActive.value
+        ) {
             silenceTimer = setTimeout(() => {
                 // Student stopped speaking for 5 seconds - process the answer
                 // Double-check conditions before processing
-                if (finalAnswer.trim() && !isProcessingAnswer.value && !isSpeaking.value && sessionActive.value) {
+                if (
+                    finalAnswer.trim() &&
+                    !isProcessingAnswer.value &&
+                    !isSpeaking.value &&
+                    sessionActive.value
+                ) {
                     processAnswer();
                 }
             }, 5000); // Wait 5 seconds of silence before processing
@@ -478,10 +545,18 @@ const initializeSpeechRecognition = () => {
 
     recognition.onend = () => {
         // Auto-restart ONLY if AI is not speaking and session is active
-        if (sessionActive.value && !isSpeaking.value && !isProcessingAnswer.value) {
+        if (
+            sessionActive.value &&
+            !isSpeaking.value &&
+            !isProcessingAnswer.value
+        ) {
             setTimeout(() => {
                 // Double-check AI is still not speaking before restarting
-                if (sessionActive.value && !isSpeaking.value && !isProcessingAnswer.value) {
+                if (
+                    sessionActive.value &&
+                    !isSpeaking.value &&
+                    !isProcessingAnswer.value
+                ) {
                     try {
                         recognition.start();
                     } catch {
@@ -557,7 +632,9 @@ const evaluateAnswer = async (question: string, answerText: string) => {
         });
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: 'Failed to evaluate answer' }));
+            const errorData = await response
+                .json()
+                .catch(() => ({ error: 'Failed to evaluate answer' }));
             throw new Error(errorData.error || 'Failed to evaluate answer');
         }
 
@@ -566,7 +643,8 @@ const evaluateAnswer = async (question: string, answerText: string) => {
     } catch {
         return {
             score_1_10: 5,
-            feedback: 'Could not evaluate answer automatically. Please review manually.',
+            feedback:
+                'Could not evaluate answer automatically. Please review manually.',
             correctPoints: [],
             improvements: [],
         };
@@ -585,7 +663,12 @@ const evaluateAndMoveOn = async (answerText: string, isSkipped: boolean) => {
     isProcessingAnswer.value = true;
 
     // Evaluate answer using Gemini AI (only if not skipped). score_1_10 is stored, not shown to user.
-    let evaluation: { score_1_10: number; feedback: string; correctPoints?: string[]; improvements?: string[] };
+    let evaluation: {
+        score_1_10: number;
+        feedback: string;
+        correctPoints?: string[];
+        improvements?: string[];
+    };
     const isLastQuestion = questionIndex.value >= questions.value.length - 1;
     const skipFeedbackMessage = isLastQuestion
         ? "That's okay — no problem at all. That was the last question. We're all done."
@@ -662,8 +745,11 @@ const completeAndShowRubric = async () => {
         });
         const data = await response.json().catch(() => ({}));
         if (response.ok && data.success) {
-            const rubricScore = data.rubric_score != null ? data.rubric_score : '—';
-            alert(`Viva session completed!\n\nYour answers have been saved.${data.rubric_from_service ? `\n\nRubric-based score: ${rubricScore}` : '\n\nScore has been recorded based on your answers.'}`);
+            const rubricScore =
+                data.rubric_score != null ? data.rubric_score : '—';
+            alert(
+                `Viva session completed!\n\nYour answers have been saved.${data.rubric_from_service ? `\n\nRubric-based score: ${rubricScore}` : '\n\nScore has been recorded based on your answers.'}`,
+            );
         } else {
             alert('Viva session completed. Your answers have been saved.');
         }
@@ -692,12 +778,26 @@ const moveToNextQuestion = async () => {
 // Check if answer indicates skip / don't know (client-side)
 const isSkipAnswer = (text: string): boolean => {
     const n = text.trim().toLowerCase();
-    return ['i don\'t know', 'i do not know', 'don\'t know', 'skip', 'pass', 'idk', 'no answer', 'not sure'].some((p) => n.includes(p));
+    return [
+        "i don't know",
+        'i do not know',
+        "don't know",
+        'skip',
+        'pass',
+        'idk',
+        'no answer',
+        'not sure',
+    ].some((p) => n.includes(p));
 };
 
 // Process student's answer: evaluate once (mark 1-10), no follow-up questions, then move on.
 const processAnswer = async () => {
-    if (!currentQuestion.value || !finalAnswer.trim() || isProcessingAnswer.value || isSpeaking.value) {
+    if (
+        !currentQuestion.value ||
+        !finalAnswer.trim() ||
+        isProcessingAnswer.value ||
+        isSpeaking.value
+    ) {
         return;
     }
 
@@ -753,11 +853,16 @@ onUnmounted(() => {
     <Head title="Attend Viva" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
+        <div
+            class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4"
+        >
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-bold">{{ vivaSession.title }}</h1>
-                    <p class="text-muted-foreground">{{ vivaSession.lecturer }} • {{ vivaSession.scheduled_at }}</p>
+                    <p class="text-muted-foreground">
+                        {{ vivaSession.lecturer }} •
+                        {{ vivaSession.scheduled_at }}
+                    </p>
                 </div>
                 <Badge v-if="sessionActive" variant="default" class="text-sm">
                     Session Active
@@ -768,7 +873,10 @@ onUnmounted(() => {
             <Card v-if="!documentUploaded" class="mb-6">
                 <CardHeader>
                     <CardTitle>Upload Your Document</CardTitle>
-                    <CardDescription>Please upload your document before starting the viva session</CardDescription>
+                    <CardDescription
+                        >Please upload your document before starting the viva
+                        session</CardDescription
+                    >
                 </CardHeader>
                 <CardContent class="space-y-4">
                     <div class="space-y-2">
@@ -786,13 +894,16 @@ onUnmounted(() => {
                                 @click="uploadDocument"
                                 :disabled="!documentFile || isUploadingDocument"
                             >
-                                <Upload class="h-4 w-4 mr-2" />
-                                <span v-if="isUploadingDocument">Uploading...</span>
+                                <Upload class="mr-2 h-4 w-4" />
+                                <span v-if="isUploadingDocument"
+                                    >Uploading...</span
+                                >
                                 <span v-else>Upload</span>
                             </Button>
                         </div>
                         <p class="text-xs text-muted-foreground">
-                            Maximum file size: 10MB. Supported formats: PDF, DOC, DOCX
+                            Maximum file size: 10MB. Supported formats: PDF,
+                            DOC, DOCX
                         </p>
                     </div>
                 </CardContent>
@@ -803,7 +914,9 @@ onUnmounted(() => {
                 <CardContent class="pt-6">
                     <div class="flex items-center gap-2 text-green-600">
                         <FileText class="h-5 w-5" />
-                        <span class="font-medium">Document uploaded successfully</span>
+                        <span class="font-medium"
+                            >Document uploaded successfully</span
+                        >
                     </div>
                 </CardContent>
             </Card>
@@ -813,7 +926,10 @@ onUnmounted(() => {
                 <Card class="md:col-span-2">
                     <CardHeader>
                         <CardTitle>Voice Agent</CardTitle>
-                        <CardDescription>Listen to questions and provide your answers</CardDescription>
+                        <CardDescription
+                            >Listen to questions and provide your
+                            answers</CardDescription
+                        >
                     </CardHeader>
                     <CardContent class="space-y-6">
                         <!-- Voice Status -->
@@ -821,51 +937,108 @@ onUnmounted(() => {
                             <div
                                 class="relative flex h-32 w-32 items-center justify-center rounded-full border-4 transition-all"
                                 :class="{
-                                    'border-primary bg-primary/10 animate-pulse': isListening || isSpeaking,
-                                    'border-muted': !isListening && !isRecording && !isSpeaking,
-                                    'border-green-500 bg-green-500/10': isRecording && !isListening && !isSpeaking,
+                                    'animate-pulse border-primary bg-primary/10':
+                                        isListening || isSpeaking,
+                                    'border-muted':
+                                        !isListening &&
+                                        !isRecording &&
+                                        !isSpeaking,
+                                    'border-green-500 bg-green-500/10':
+                                        isRecording &&
+                                        !isListening &&
+                                        !isSpeaking,
                                 }"
                             >
                                 <div
                                     v-if="isListening || isSpeaking"
                                     class="flex items-center justify-center"
                                 >
-                                    <Volume2 class="h-12 w-12 text-primary animate-pulse" />
+                                    <Volume2
+                                        class="h-12 w-12 animate-pulse text-primary"
+                                    />
                                 </div>
                                 <div
                                     v-else-if="isRecording"
                                     class="flex items-center justify-center"
                                 >
-                                    <Mic class="h-12 w-12 text-green-500 animate-pulse" />
+                                    <Mic
+                                        class="h-12 w-12 animate-pulse text-green-500"
+                                    />
                                 </div>
                                 <div
                                     v-else
                                     class="flex items-center justify-center"
                                 >
-                                    <MicOff class="h-12 w-12 text-muted-foreground" />
+                                    <MicOff
+                                        class="h-12 w-12 text-muted-foreground"
+                                    />
                                 </div>
                             </div>
                         </div>
 
                         <!-- Evaluation Result: mark 1-10 and feedback -->
-                        <div v-if="showEvaluation && currentEvaluation" class="rounded-lg border-2 border-primary bg-primary/5 p-4 space-y-3">
+                        <div
+                            v-if="showEvaluation && currentEvaluation"
+                            class="space-y-3 rounded-lg border-2 border-primary bg-primary/5 p-4"
+                        >
                             <div class="flex items-center justify-between">
-                                <div class="text-sm font-medium">Answer Evaluation</div>
-                                <Badge variant="secondary" class="text-sm">Mark: {{ currentEvaluation.score_1_10 }}/10</Badge>
+                                <div class="text-sm font-medium">
+                                    Answer Evaluation
+                                </div>
+                                <Badge variant="secondary" class="text-sm"
+                                    >Mark:
+                                    {{ currentEvaluation.score_1_10 }}/10</Badge
+                                >
                             </div>
                             <div class="text-sm text-muted-foreground">
                                 {{ currentEvaluation.feedback }}
                             </div>
-                            <div v-if="currentEvaluation.correctPoints && currentEvaluation.correctPoints.length > 0" class="space-y-1">
-                                <div class="text-xs font-medium text-green-600">✓ Correct Points:</div>
-                                <ul class="text-xs text-muted-foreground list-disc list-inside space-y-0.5">
-                                    <li v-for="(point, idx) in currentEvaluation.correctPoints" :key="idx">{{ point }}</li>
+                            <div
+                                v-if="
+                                    currentEvaluation.correctPoints &&
+                                    currentEvaluation.correctPoints.length > 0
+                                "
+                                class="space-y-1"
+                            >
+                                <div class="text-xs font-medium text-green-600">
+                                    ✓ Correct Points:
+                                </div>
+                                <ul
+                                    class="list-inside list-disc space-y-0.5 text-xs text-muted-foreground"
+                                >
+                                    <li
+                                        v-for="(
+                                            point, idx
+                                        ) in currentEvaluation.correctPoints"
+                                        :key="idx"
+                                    >
+                                        {{ point }}
+                                    </li>
                                 </ul>
                             </div>
-                            <div v-if="currentEvaluation.improvements && currentEvaluation.improvements.length > 0" class="space-y-1">
-                                <div class="text-xs font-medium text-orange-600">⚠ Areas for Improvement:</div>
-                                <ul class="text-xs text-muted-foreground list-disc list-inside space-y-0.5">
-                                    <li v-for="(improvement, idx) in currentEvaluation.improvements" :key="idx">{{ improvement }}</li>
+                            <div
+                                v-if="
+                                    currentEvaluation.improvements &&
+                                    currentEvaluation.improvements.length > 0
+                                "
+                                class="space-y-1"
+                            >
+                                <div
+                                    class="text-xs font-medium text-orange-600"
+                                >
+                                    ⚠ Areas for Improvement:
+                                </div>
+                                <ul
+                                    class="list-inside list-disc space-y-0.5 text-xs text-muted-foreground"
+                                >
+                                    <li
+                                        v-for="(
+                                            improvement, idx
+                                        ) in currentEvaluation.improvements"
+                                        :key="idx"
+                                    >
+                                        {{ improvement }}
+                                    </li>
                                 </ul>
                             </div>
                         </div>
@@ -873,29 +1046,51 @@ onUnmounted(() => {
                         <!-- Current Question -->
                         <div v-if="currentQuestion" class="space-y-4">
                             <div class="rounded-lg bg-muted p-4">
-                                <div class="text-sm font-medium mb-2">Current Question:</div>
+                                <div class="mb-2 text-sm font-medium">
+                                    Current Question:
+                                </div>
                                 <div class="text-lg">{{ currentQuestion }}</div>
                             </div>
 
                             <div class="space-y-2">
                                 <div class="flex items-center justify-between">
-                                    <label class="text-sm font-medium">Your Answer:</label>
-                                    <div v-if="isRecording" class="flex items-center gap-2 text-xs text-green-600">
-                                        <div class="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
+                                    <label class="text-sm font-medium"
+                                        >Your Answer:</label
+                                    >
+                                    <div
+                                        v-if="isRecording"
+                                        class="flex items-center gap-2 text-xs text-green-600"
+                                    >
+                                        <div
+                                            class="h-2 w-2 animate-pulse rounded-full bg-green-500"
+                                        ></div>
                                         Recording...
                                     </div>
                                 </div>
                                 <textarea
                                     v-model="answer"
-                                    class="w-full min-h-[120px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                    class="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
                                     placeholder="Type or speak your answer here... (Speech recognition will automatically transcribe your voice)"
                                     :disabled="isSpeaking"
                                 />
                                 <p class="text-xs text-muted-foreground">
-                                    <span v-if="isSpeaking">Please wait while the examiner is speaking...</span>
-                                    <span v-else-if="isProcessingAnswer">Processing your answer...</span>
-                                    <span v-else-if="isRecording">Speak your answer now. The system will automatically detect when you finish speaking.</span>
-                                    <span v-else>The AI examiner is listening. Speak naturally and your answer will be processed automatically.</span>
+                                    <span v-if="isSpeaking"
+                                        >Please wait while the examiner is
+                                        speaking...</span
+                                    >
+                                    <span v-else-if="isProcessingAnswer"
+                                        >Processing your answer...</span
+                                    >
+                                    <span v-else-if="isRecording"
+                                        >Speak your answer now. The system will
+                                        automatically detect when you finish
+                                        speaking.</span
+                                    >
+                                    <span v-else
+                                        >The AI examiner is listening. Speak
+                                        naturally and your answer will be
+                                        processed automatically.</span
+                                    >
                                 </p>
                             </div>
 
@@ -903,40 +1098,72 @@ onUnmounted(() => {
                             <div class="flex gap-2">
                                 <Button
                                     @click="processAnswer"
-                                    :disabled="!answer.trim() || !sessionActive || showEvaluation || isProcessingAnswer || isSpeaking"
+                                    :disabled="
+                                        !answer.trim() ||
+                                        !sessionActive ||
+                                        showEvaluation ||
+                                        isProcessingAnswer ||
+                                        isSpeaking
+                                    "
                                     class="flex-1"
                                     variant="outline"
                                 >
-                                    <span v-if="showEvaluation">Evaluating...</span>
-                                    <span v-else-if="isProcessingAnswer">Processing...</span>
+                                    <span v-if="showEvaluation"
+                                        >Evaluating...</span
+                                    >
+                                    <span v-else-if="isProcessingAnswer"
+                                        >Processing...</span
+                                    >
                                     <span v-else>Process Answer (Manual)</span>
                                 </Button>
                             </div>
-                            <p class="text-xs text-muted-foreground text-center mt-2">
-                                💡 The system automatically processes your answer when you stop speaking. Use the button above only if needed.
+                            <p
+                                class="mt-2 text-center text-xs text-muted-foreground"
+                            >
+                                💡 The system automatically processes your
+                                answer when you stop speaking. Use the button
+                                above only if needed.
                             </p>
                         </div>
 
-                        <div v-else-if="isLoadingQuestions" class="text-center text-muted-foreground py-8">
+                        <div
+                            v-else-if="isLoadingQuestions"
+                            class="py-8 text-center text-muted-foreground"
+                        >
                             <p>Generating questions using AI...</p>
                         </div>
 
-                        <div v-else class="text-center text-muted-foreground py-8">
-                            <p v-if="!documentUploaded">Please upload your document first</p>
-                            <p v-else>Click "Start Session" to begin the viva</p>
+                        <div
+                            v-else
+                            class="py-8 text-center text-muted-foreground"
+                        >
+                            <p v-if="!documentUploaded">
+                                Please upload your document first
+                            </p>
+                            <p v-else>
+                                Click "Start Session" to begin the viva
+                            </p>
                         </div>
 
                         <!-- Session Controls -->
-                        <div class="flex items-center justify-center gap-4 pt-4 border-t">
+                        <div
+                            class="flex items-center justify-center gap-4 border-t pt-4"
+                        >
                             <Button
                                 v-if="!sessionActive"
                                 @click="startSession"
                                 size="lg"
-                                :disabled="isLoadingQuestions || !documentUploaded"
+                                :disabled="
+                                    isLoadingQuestions || !documentUploaded
+                                "
                             >
-                                <Play class="h-4 w-4 mr-2" />
-                                <span v-if="isLoadingQuestions">Generating Questions...</span>
-                                <span v-else-if="!documentUploaded">Upload Document First</span>
+                                <Play class="mr-2 h-4 w-4" />
+                                <span v-if="isLoadingQuestions"
+                                    >Generating Questions...</span
+                                >
+                                <span v-else-if="!documentUploaded"
+                                    >Upload Document First</span
+                                >
                                 <span v-else>Start Session</span>
                             </Button>
                             <Button
@@ -945,7 +1172,7 @@ onUnmounted(() => {
                                 variant="destructive"
                                 size="lg"
                             >
-                                <Square class="h-4 w-4 mr-2" />
+                                <Square class="mr-2 h-4 w-4" />
                                 End Session
                             </Button>
                         </div>
@@ -959,44 +1186,66 @@ onUnmounted(() => {
                     </CardHeader>
                     <CardContent class="space-y-4">
                         <div>
-                            <div class="text-sm font-medium mb-1">Time Elapsed</div>
-                            <div class="text-2xl font-bold">{{ formatTime(timeElapsed) }}</div>
+                            <div class="mb-1 text-sm font-medium">
+                                Time Elapsed
+                            </div>
+                            <div class="text-2xl font-bold">
+                                {{ formatTime(timeElapsed) }}
+                            </div>
                         </div>
 
                         <div>
-                            <div class="text-sm font-medium mb-1">Questions</div>
+                            <div class="mb-1 text-sm font-medium">
+                                Questions
+                            </div>
                             <div class="text-2xl font-bold">
                                 {{ questionIndex + 1 }}/{{ questions.length }}
                             </div>
                         </div>
 
                         <div class="space-y-2">
-                            <div class="text-sm font-medium">Question Progress</div>
+                            <div class="text-sm font-medium">
+                                Question Progress
+                            </div>
                             <div class="space-y-1">
                                 <div
                                     v-for="(question, index) in questions"
                                     :key="index"
-                                    class="text-xs p-2 rounded border"
+                                    class="rounded border p-2 text-xs"
                                     :class="{
-                                        'bg-primary/10 border-primary': index === questionIndex,
+                                        'border-primary bg-primary/10':
+                                            index === questionIndex,
                                         'bg-muted': questionIndex > index,
                                         'opacity-50': questionIndex < index,
                                     }"
                                 >
-                                    Q{{ index + 1 }}: {{ question.substring(0, 40) }}...
+                                    Q{{ index + 1 }}:
+                                    {{ question.substring(0, 40) }}...
                                 </div>
                             </div>
                         </div>
 
-                        <div class="pt-4 border-t space-y-2">
+                        <div class="space-y-2 border-t pt-4">
                             <div class="text-xs text-muted-foreground">
                                 <strong>Instructions:</strong>
                             </div>
-                            <ul class="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+                            <ul
+                                class="list-inside list-disc space-y-1 text-xs text-muted-foreground"
+                            >
                                 <li>Listen carefully to each question</li>
-                                <li>Speak your answer naturally — the system will detect when you finish and give a mark 1–10</li>
-                                <li>If you don't know, say "I don't know" or "Skip" and the system will move on</li>
-                                <li>After 5 answers, your rubric grade is calculated from the 5 marks</li>
+                                <li>
+                                    Speak your answer naturally — the system
+                                    will detect when you finish and give a mark
+                                    1–10
+                                </li>
+                                <li>
+                                    If you don't know, say "I don't know" or
+                                    "Skip" and the system will move on
+                                </li>
+                                <li>
+                                    After 5 answers, your rubric grade is
+                                    calculated from the 5 marks
+                                </li>
                             </ul>
                         </div>
                     </CardContent>
@@ -1005,4 +1254,3 @@ onUnmounted(() => {
         </div>
     </AppLayout>
 </template>
-
