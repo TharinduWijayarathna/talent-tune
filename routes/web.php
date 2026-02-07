@@ -154,6 +154,9 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
     Route::get('institutions', [App\Http\Controllers\InstitutionController::class, 'index'])->name('admin.institutions');
     Route::patch('institutions/{institution}/status', [App\Http\Controllers\InstitutionController::class, 'updateStatus'])->name('admin.institutions.status');
     Route::delete('institutions/{institution}', [App\Http\Controllers\InstitutionController::class, 'destroy'])->name('admin.institutions.destroy');
+
+    Route::get('users', [App\Http\Controllers\Admin\AdminUserController::class, 'index'])->name('admin.users');
+    Route::get('payments', [App\Http\Controllers\Admin\AdminPaymentController::class, 'index'])->name('admin.payments');
 });
 
 // Viva TTS API Route

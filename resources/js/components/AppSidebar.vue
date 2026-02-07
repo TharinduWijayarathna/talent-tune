@@ -22,8 +22,8 @@ import {
     FileText,
     Plus,
     Users,
-    Shield,
     Building2,
+    CreditCard,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
@@ -112,9 +112,14 @@ const mainNavItems = computed<NavItem[]>(() => {
                 icon: Building2,
             },
             {
-                title: 'Monitor',
-                href: '/admin/dashboard',
-                icon: Shield,
+                title: 'Users',
+                href: '/admin/users',
+                icon: Users,
+            },
+            {
+                title: 'Payments',
+                href: '/admin/payments',
+                icon: CreditCard,
             },
         ];
     }
