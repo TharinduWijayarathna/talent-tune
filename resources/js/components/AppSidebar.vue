@@ -24,6 +24,7 @@ import {
     Users,
     Building2,
     CreditCard,
+    Layers,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
@@ -85,6 +86,11 @@ const mainNavItems = computed<NavItem[]>(() => {
                 title: 'Dashboard',
                 href: '/institution/dashboard',
                 icon: LayoutGrid,
+            },
+            {
+                title: 'Batches',
+                href: '/institution/batches',
+                icon: Layers,
             },
             {
                 title: 'Lecturers',

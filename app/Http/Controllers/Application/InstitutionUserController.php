@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Application;
 
 use App\Http\Controllers\Controller;
+use App\Models\Batch;
 use App\Models\Institution;
 use App\Models\User;
 use App\Services\Application\AuthRedirectService;
@@ -81,10 +82,17 @@ class InstitutionUserController extends Controller
 
     public function createStudent(Request $request)
     {
-        $this->institution($request);
-        $this->authorizeInstitution($request->user(), $request->attributes->get('institution'));
+        $institution = $this->institution($request);
+        $this->authorizeInstitution($request->user(), $institution);
 
-        return Inertia::render('institution/AddStudent');
+        $batches = Batch::where('institution_id', $institution->id)
+            ->orderBy('name')
+            ->pluck('name')
+            ->toArray();
+
+        return Inertia::render('institution/AddStudent', [
+            'batches' => $batches,
+        ]);
     }
 
     public function storeStudent(Request $request)
@@ -153,6 +161,11 @@ class InstitutionUserController extends Controller
 
         $student = $this->institutionUserService->getStudentForEdit($institution, $id);
 
+        $batches = Batch::where('institution_id', $institution->id)
+            ->orderBy('name')
+            ->pluck('name')
+            ->toArray();
+
         return Inertia::render('institution/EditStudent', [
             'studentId' => $student->id,
             'student' => [
@@ -163,6 +176,7 @@ class InstitutionUserController extends Controller
                 'batch' => $student->batch,
                 'department' => $student->department,
             ],
+            'batches' => $batches,
         ]);
     }
 

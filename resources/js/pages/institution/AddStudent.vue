@@ -14,6 +14,10 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Add Student', href: '/institution/students/add' },
 ];
 
+const props = defineProps<{
+    batches?: string[];
+}>();
+
 const form = useForm({
     name: '',
     email: '',
@@ -84,10 +88,20 @@ const submitForm = () => {
                             </div>
                             <div class="space-y-2">
                                 <Label for="batch">Batch</Label>
-                                <Input
+                                <select
+                                    v-if="props.batches && props.batches.length > 0"
                                     id="batch"
                                     v-model="form.batch"
-                                    placeholder="CS-2024"
+                                    class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                                >
+                                    <option value="">Select batch</option>
+                                    <option v-for="b in props.batches" :key="b" :value="b">{{ b }}</option>
+                                </select>
+                                <Input
+                                    v-else
+                                    id="batch"
+                                    v-model="form.batch"
+                                    placeholder="e.g. CS-2024 (create batches in Batches section first)"
                                 />
                                 <InputError :message="form.errors.batch" />
                             </div>

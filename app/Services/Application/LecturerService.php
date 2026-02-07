@@ -2,6 +2,7 @@
 
 namespace App\Services\Application;
 
+use App\Models\Batch;
 use App\Models\Institution;
 use App\Models\User;
 use App\Models\Viva;
@@ -87,8 +88,20 @@ class LecturerService
             ->all();
     }
 
+    /**
+     * Get batch names for the institution (from Batch model; fallback to distinct student batches).
+     */
     public function getBatchesForInstitution(Institution $institution): array
     {
+        $fromBatches = Batch::where('institution_id', $institution->id)
+            ->orderBy('name')
+            ->pluck('name')
+            ->toArray();
+
+        if (!empty($fromBatches)) {
+            return $fromBatches;
+        }
+
         return User::forInstitution($institution->id)
             ->where('role', 'student')
             ->whereNotNull('batch')
