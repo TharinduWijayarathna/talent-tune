@@ -22,7 +22,6 @@ class GeminiController extends Controller
             'vivaId' => 'nullable|integer|exists:vivas,id',
             'topic' => 'required|string|max:200',
             'description' => 'nullable|string|max:1000',
-            'numQuestions' => 'nullable|integer|min:1|max:20',
             'difficulty' => 'nullable|string|in:beginner,intermediate,advanced',
             'studentDocumentPath' => 'nullable|string',
         ]);
@@ -31,7 +30,7 @@ class GeminiController extends Controller
             $request->input('vivaId'),
             $request->input('topic'),
             $request->input('description', ''),
-            $request->input('numQuestions', 5),
+            5, // always 5 questions for rubric
             $request->input('difficulty', 'intermediate'),
             $request->input('studentDocumentPath')
         );

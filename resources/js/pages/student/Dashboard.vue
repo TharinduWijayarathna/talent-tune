@@ -4,7 +4,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { GraduationCap, Calendar, Award, BookOpen } from 'lucide-vue-next';
+import { GraduationCap, Calendar, BookOpen } from 'lucide-vue-next';
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
@@ -12,7 +12,6 @@ const props = defineProps<{
     stats?: {
         upcomingVivas: number;
         completedVivas: number;
-        averageMarks: number;
         totalSessions: number;
     };
     upcomingVivas?: Array<{
@@ -34,7 +33,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 const stats = computed(() => props.stats ?? {
     upcomingVivas: 0,
     completedVivas: 0,
-    averageMarks: 0,
     totalSessions: 0,
 });
 
@@ -54,7 +52,7 @@ const upcomingVivas = computed(() => props.upcomingVivas ?? []);
             </div>
 
             <!-- Stats Cards -->
-            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <Card>
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle class="text-sm font-medium">Upcoming Vivas</CardTitle>
@@ -74,17 +72,6 @@ const upcomingVivas = computed(() => props.upcomingVivas ?? []);
                     <CardContent>
                         <div class="text-2xl font-bold">{{ stats.completedVivas }}</div>
                         <p class="text-xs text-muted-foreground">Finished sessions</p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">Average Marks</CardTitle>
-                        <Award class="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div class="text-2xl font-bold">{{ stats.averageMarks }}%</div>
-                        <p class="text-xs text-muted-foreground">Overall performance</p>
                     </CardContent>
                 </Card>
 
@@ -146,20 +133,6 @@ const upcomingVivas = computed(() => props.upcomingVivas ?? []);
                             </CardTitle>
                             <CardDescription>
                                 Browse all available viva sessions
-                            </CardDescription>
-                        </CardHeader>
-                    </Card>
-                </Link>
-
-                <Link href="/student/marks" class="block">
-                    <Card class="cursor-pointer hover:border-primary transition-colors">
-                        <CardHeader>
-                            <CardTitle class="flex items-center gap-2">
-                                <Award class="h-5 w-5" />
-                                View Marks
-                            </CardTitle>
-                            <CardDescription>
-                                Check your viva session marks and performance
                             </CardDescription>
                         </CardHeader>
                     </Card>

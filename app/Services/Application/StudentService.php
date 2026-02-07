@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Viva;
 use App\Models\VivaStudentSubmission;
 use App\Services\Ai\RubricService;
+use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
@@ -56,13 +57,10 @@ class StudentService
         $completedSubmissions = VivaStudentSubmission::where('student_id', $user->id)
             ->where('status', 'completed');
         $completedCount = $completedSubmissions->count();
-        $totalScoreSum = (clone $completedSubmissions)->sum('total_score');
-        $averageMarks = $completedCount > 0 ? (int) round($totalScoreSum / $completedCount) : 0;
 
         $stats = [
             'upcomingVivas' => $upcomingCount,
             'completedVivas' => $completedCount,
-            'averageMarks' => $averageMarks,
             'totalSessions' => $totalSessions,
         ];
 
@@ -92,13 +90,16 @@ class StudentService
             ->get()
             ->keyBy('viva_id');
 
-        $now = now();
+        // Compare in UTC: stored scheduled_at is in UTC
+        $nowUtc = now()->utc();
 
-        return $vivas->map(function (Viva $viva) use ($submissionScores, $now) {
+        return $vivas->map(function (Viva $viva) use ($submissionScores, $nowUtc) {
             $submission = $submissionScores->get($viva->id);
             $marks = $submission && $submission->status === 'completed' ? $submission->total_score : null;
 
-            $scheduledReached = $viva->scheduled_at->lte($now);
+            $rawScheduled = $viva->getRawOriginal('scheduled_at');
+            $scheduledAtUtc = $rawScheduled ? Carbon::parse($rawScheduled, 'UTC') : $viva->scheduled_at->copy()->utc();
+            $scheduledReached = $scheduledAtUtc->lte($nowUtc);
             $notClosed = $viva->status !== 'completed';
             $can_attend = $scheduledReached && $notClosed;
 
@@ -108,7 +109,7 @@ class StudentService
                 'description' => $viva->description,
                 'date' => $viva->scheduled_at->format('Y-m-d'),
                 'time' => $viva->scheduled_at->format('g:i A'),
-                'scheduled_at' => $viva->scheduled_at->toIso8601String(),
+                'scheduled_at' => $scheduledAtUtc->toIso8601String(),
                 'lecturer' => $viva->lecturer->name,
                 'status' => $viva->status,
                 'batch' => $viva->batch,
@@ -134,8 +135,10 @@ class StudentService
             abort(403, 'This viva has been closed by the lecturer. You can no longer attend.');
         }
 
-        if ($viva->scheduled_at->isFuture()) {
-            abort(403, 'This viva opens on ' . $viva->scheduled_at->format('M j, Y \a\t g:i A') . '. You cannot attend before the scheduled date and time.');
+        $rawScheduled = $viva->getRawOriginal('scheduled_at');
+        $scheduledAtUtc = $rawScheduled ? Carbon::parse($rawScheduled, 'UTC') : $viva->scheduled_at->copy()->utc();
+        if ($scheduledAtUtc->isFuture()) {
+            abort(403, 'This viva opens on ' . $scheduledAtUtc->format('M j, Y \a\t g:i A') . ' UTC. You cannot attend before the scheduled date and time.');
         }
 
         $submission = VivaStudentSubmission::firstOrCreate(
@@ -226,10 +229,5 @@ class StudentService
             'rubric_score' => $submission->total_score,
             'rubric_from_service' => $rubric['success'],
         ];
-    }
-
-    public function getMarks(Institution $institution, User $user): array
-    {
-        return [];
     }
 }

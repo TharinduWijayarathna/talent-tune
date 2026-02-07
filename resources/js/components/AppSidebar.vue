@@ -17,7 +17,6 @@ import { Link, usePage } from '@inertiajs/vue3';
 import {
     LayoutGrid,
     BookOpen,
-    Award,
     GraduationCap,
     FileText,
     Plus,
@@ -51,11 +50,6 @@ const mainNavItems = computed<NavItem[]>(() => {
                 title: 'Viva Sessions',
                 href: '/student/vivas',
                 icon: BookOpen,
-            },
-            {
-                title: 'Marks',
-                href: '/student/marks',
-                icon: Award,
             },
         ];
     }

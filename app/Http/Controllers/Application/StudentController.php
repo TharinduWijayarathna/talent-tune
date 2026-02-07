@@ -122,17 +122,4 @@ class StudentController extends Controller
 
         return response()->json($result);
     }
-
-    public function marks(Request $request)
-    {
-        $institution = $this->institution($request);
-        $this->authorizeStudent($request);
-        $user = $request->user();
-
-        $marks = $this->studentService->getMarks($institution, $user);
-
-        return Inertia::render('student/Marks', [
-            'marks' => $marks,
-        ]);
-    }
 }

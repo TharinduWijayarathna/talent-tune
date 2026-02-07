@@ -39,10 +39,29 @@ const getStatusBadge = (viva: { status: string; can_attend?: boolean }) => {
     return 'outline';
 };
 
+// Format scheduled_at (ISO) in user's local time for display
+const formatScheduledLocal = (viva: { date?: string; time?: string; scheduled_at?: string }) => {
+    if (viva.scheduled_at) {
+        try {
+            const d = new Date(viva.scheduled_at);
+            if (!Number.isNaN(d.getTime())) {
+                return {
+                    date: d.toLocaleDateString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit' }),
+                    time: d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: true }),
+                };
+            }
+        } catch {
+            // fallback
+        }
+    }
+    return { date: viva.date ?? '', time: viva.time ?? '' };
+};
+
 const attendLabel = (viva: { status: string; can_attend?: boolean; date?: string; time?: string; scheduled_at?: string }) => {
     if (viva.status === 'completed') return 'Closed by lecturer';
     if (viva.can_attend) return 'Attend Viva';
-    return `Opens on ${viva.date} at ${viva.time}`;
+    const { date, time } = formatScheduledLocal(viva);
+    return `Opens on ${date} at ${time}`;
 };
 </script>
 
@@ -85,11 +104,11 @@ const attendLabel = (viva: { status: string; can_attend?: boolean; date?: string
                             <div class="grid gap-4 md:grid-cols-2">
                                 <div class="flex items-center gap-2 text-sm text-muted-foreground">
                                     <Calendar class="h-4 w-4" />
-                                    <span>{{ viva.date }}</span>
+                                    <span>{{ formatScheduledLocal(viva).date }}</span>
                                 </div>
                                 <div class="flex items-center gap-2 text-sm text-muted-foreground">
                                     <Clock class="h-4 w-4" />
-                                    <span>{{ viva.time }}</span>
+                                    <span>{{ formatScheduledLocal(viva).time }}</span>
                                 </div>
                                 <div class="flex items-center gap-2 text-sm text-muted-foreground">
                                     <User class="h-4 w-4" />

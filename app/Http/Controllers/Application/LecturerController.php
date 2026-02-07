@@ -93,6 +93,7 @@ class LecturerController extends Controller
             'batch' => ['required', 'string'],
             'date' => ['required', 'date'],
             'time' => ['required', 'string'],
+            'timezone' => ['nullable', 'string', 'max:50'],
             'instructions' => ['nullable', 'string'],
             'lecture_materials' => ['nullable', 'array'],
             'lecture_materials.*' => ['file', 'mimes:pdf,doc,docx,ppt,pptx', 'max:10240'],

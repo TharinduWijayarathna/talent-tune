@@ -130,11 +130,17 @@ class LecturerService
             $validated['description'] ?? null
         );
 
+        // Parse scheduled time in lecturer's timezone so "6:30 PM" means their local time, then store as UTC
+        $tz = !empty($validated['timezone']) && in_array($validated['timezone'], timezone_identifiers_list(), true)
+            ? $validated['timezone']
+            : config('app.timezone');
+        $scheduledAt = Carbon::parse($validated['date'] . ' ' . $validated['time'], $tz)->utc();
+
         return Viva::create([
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
             'batch' => $validated['batch'],
-            'scheduled_at' => Carbon::parse($validated['date'] . ' ' . $validated['time']),
+            'scheduled_at' => $scheduledAt,
             'instructions' => $validated['instructions'] ?? null,
             'lecture_materials' => $storedFiles,
             'viva_background' => $processedData['background'],

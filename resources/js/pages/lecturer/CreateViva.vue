@@ -81,6 +81,12 @@ const submitForm = () => {
     formData.append('date', form.date);
     formData.append('time', form.time);
     formData.append('instructions', form.instructions || '');
+    // Send lecturer's timezone so scheduled time is stored correctly (then compared in UTC)
+    try {
+        formData.append('timezone', Intl.DateTimeFormat().resolvedOptions().timeZone || '');
+    } catch {
+        formData.append('timezone', '');
+    }
     
     // Add files
     uploadedFiles.value.forEach((fileItem, index) => {

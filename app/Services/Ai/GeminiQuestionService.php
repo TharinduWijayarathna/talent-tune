@@ -22,14 +22,17 @@ class GeminiQuestionService
         return "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={$apiKey}";
     }
 
+    private const VIVA_QUESTION_COUNT = 5;
+
     public function generateQuestions(
         ?int $vivaId,
         string $topic,
         string $description = '',
-        int $numQuestions = 5,
+        int $numQuestions = self::VIVA_QUESTION_COUNT,
         string $difficulty = 'intermediate',
         ?string $studentDocumentPath = null
     ): array {
+        $numQuestions = min(self::VIVA_QUESTION_COUNT, max(1, $numQuestions));
         if (!$this->getApiKey()) {
             return ['error' => 'Gemini API key not configured', 'code' => 500];
         }
@@ -92,6 +95,7 @@ class GeminiQuestionService
         if (preg_match('/\[.*\]/s', $text, $matches)) {
             $questions = json_decode($matches[0], true);
             if (json_last_error() === JSON_ERROR_NONE && is_array($questions)) {
+                $questions = array_slice($questions, 0, $numQuestions);
                 return ['questions' => $questions, 'count' => count($questions)];
             }
         }

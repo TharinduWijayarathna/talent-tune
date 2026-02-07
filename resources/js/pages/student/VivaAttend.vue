@@ -72,7 +72,6 @@ const currentEvaluation = ref<any>(null);
 const showEvaluation = ref(false);
 const conversationHistory = ref<Array<{examiner: string, student: string}>>([]);
 const isProcessingAnswer = ref(false);
-const currentConversationResponse = ref<string | null>(null);
 
 const page = usePage();
 const csrfToken = computed(() => (page.props as any).csrfToken || '');
@@ -221,7 +220,6 @@ const startSession = async () => {
     finalAnswer = '';
     answer.value = '';
     isProcessingAnswer.value = false;
-    currentConversationResponse.value = null;
 
     // Start timer
     timerInterval = setInterval(() => {
@@ -589,10 +587,12 @@ const evaluateAndMoveOn = async (answerText: string, isSkipped: boolean) => {
 
     // Evaluate answer using Gemini AI (only if not skipped). score_1_10 is stored, not shown to user.
     let evaluation: { score_1_10: number; feedback: string; correctPoints?: string[]; improvements?: string[] };
+    const skipFeedbackMessage = "That's okay — no problem at all. Let's move on to the next question.";
+
     if (isSkipped) {
         evaluation = {
             score_1_10: 1,
-            feedback: 'Question was skipped or student indicated they do not know the answer.',
+            feedback: skipFeedbackMessage,
             correctPoints: [],
             improvements: [],
         };
@@ -614,6 +614,13 @@ const evaluateAndMoveOn = async (answerText: string, isSkipped: boolean) => {
     conversationHistory.value = [];
     finalAnswer = '';
     answer.value = '';
+
+    // When user said "don't know", speak the supportive message via TTS
+    if (isSkipped) {
+        speakQuestion(skipFeedbackMessage).catch(() => {
+            // If TTS fails, we still move on after the delay
+        });
+    }
 
     // Move to next question after showing evaluation
     setTimeout(() => {
@@ -680,105 +687,30 @@ const moveToNextQuestion = async () => {
     }
 };
 
-// Generate conversational response using AI
-const generateConversationalResponse = async (question: string, studentAnswer: string): Promise<any> => {
-    try {
-        const response = await fetch('/api/viva/conversation/response', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken.value,
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-            credentials: 'same-origin',
-            body: JSON.stringify({
-                question: question,
-                studentAnswer: studentAnswer,
-                topic: vivaSession.value.title,
-                conversationHistory: conversationHistory.value,
-                attemptNumber: conversationHistory.value.length + 1,
-            }),
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: 'Failed to generate response' }));
-            throw new Error(errorData.error || 'Failed to generate conversational response');
-        }
-
-        return await response.json();
-    } catch (error: any) {
-        // Fallback response
-        const normalized = studentAnswer.trim().toLowerCase();
-        const isSkip = normalized.includes("don't know") || normalized.includes("skip") || normalized.includes("pass") || normalized.includes("idk");
-        const isValid = studentAnswer.trim().length >= 10 && !isSkip;
-
-        return {
-            response: isSkip
-                ? 'Thank you. Let\'s move on to the next question.'
-                : (isValid
-                    ? 'Thank you for your answer. Let\'s move to the next question.'
-                    : 'Could you please elaborate on that? I need a bit more detail.'),
-            shouldContinue: !isSkip && !isValid,
-            isSkipped: isSkip,
-        };
-    }
+// Check if answer indicates skip / don't know (client-side)
+const isSkipAnswer = (text: string): boolean => {
+    const n = text.trim().toLowerCase();
+    return ['i don\'t know', 'i do not know', 'don\'t know', 'skip', 'pass', 'idk', 'no answer', 'not sure'].some((p) => n.includes(p));
 };
 
-// Process student's answer automatically
+// Process student's answer: evaluate once (mark 1-10), no follow-up questions, then move on.
 const processAnswer = async () => {
-    // Don't process if AI is speaking or already processing
     if (!currentQuestion.value || !finalAnswer.trim() || isProcessingAnswer.value || isSpeaking.value) {
         return;
     }
 
-    // Clear any pending silence timer
     if (silenceTimer) {
         clearTimeout(silenceTimer);
         silenceTimer = null;
     }
 
-    isProcessingAnswer.value = true;
     const answerText = finalAnswer.trim();
-
-    // Stop recording while processing
     if (speechRecognition.value && recognitionActive.value) {
         speechRecognition.value.stop();
     }
 
-    // Generate conversational response from AI examiner
-    const conversationResult = await generateConversationalResponse(currentQuestion.value, answerText);
-
-    // Add to conversation history
-    conversationHistory.value.push({
-        examiner: currentQuestion.value,
-        student: answerText,
-    });
-
-    // Speak the AI examiner's response
-    currentConversationResponse.value = conversationResult.response;
-    await speakQuestion(conversationResult.response);
-
-    // Clear the response display
-    currentConversationResponse.value = null;
-
-    // Check if we should continue or move to next question
-    if (conversationResult.isSkipped || !conversationResult.shouldContinue) {
-        // Student said they don't know or answer is satisfactory - evaluate and move on
-        await evaluateAndMoveOn(answerText, conversationResult.isSkipped);
-    } else {
-        // Need more information - continue conversation
-        // Add examiner's follow-up to history
-        conversationHistory.value.push({
-            examiner: conversationResult.response,
-            student: '',
-        });
-
-        // Restart recording for next answer
-        isProcessingAnswer.value = false;
-        finalAnswer = '';
-        answer.value = '';
-        startRecording();
-    }
+    const skipped = isSkipAnswer(answerText);
+    await evaluateAndMoveOn(answerText, skipped);
 };
 
 const formatTime = (seconds: number) => {
@@ -913,9 +845,12 @@ onUnmounted(() => {
                             </div>
                         </div>
 
-                        <!-- Evaluation Result (score 1-10 is not shown to user, only feedback) -->
+                        <!-- Evaluation Result: mark 1-10 and feedback -->
                         <div v-if="showEvaluation && currentEvaluation" class="rounded-lg border-2 border-primary bg-primary/5 p-4 space-y-3">
-                            <div class="text-sm font-medium">Answer Evaluation</div>
+                            <div class="flex items-center justify-between">
+                                <div class="text-sm font-medium">Answer Evaluation</div>
+                                <Badge variant="secondary" class="text-sm">Mark: {{ currentEvaluation.score_1_10 }}/10</Badge>
+                            </div>
                             <div class="text-sm text-muted-foreground">
                                 {{ currentEvaluation.feedback }}
                             </div>
@@ -938,12 +873,6 @@ onUnmounted(() => {
                             <div class="rounded-lg bg-muted p-4">
                                 <div class="text-sm font-medium mb-2">Current Question:</div>
                                 <div class="text-lg">{{ currentQuestion }}</div>
-                            </div>
-
-                            <!-- AI Examiner Response -->
-                            <div v-if="currentConversationResponse" class="rounded-lg border-2 border-blue-500 bg-blue-50 dark:bg-blue-950/20 p-4">
-                                <div class="text-sm font-medium text-blue-700 dark:text-blue-400 mb-1">AI Examiner:</div>
-                                <div class="text-sm text-blue-600 dark:text-blue-300">{{ currentConversationResponse }}</div>
                             </div>
 
                             <div class="space-y-2">
@@ -1062,11 +991,10 @@ onUnmounted(() => {
                                 <strong>Instructions:</strong>
                             </div>
                             <ul class="text-xs text-muted-foreground space-y-1 list-disc list-inside">
-                                <li>Listen carefully to each question from the AI examiner</li>
-                                <li>Speak your answer naturally - the system will automatically detect when you finish</li>
-                                <li>If you don't know, simply say "I don't know" and the examiner will move on</li>
-                                <li>The AI examiner will ask follow-up questions if your answer needs more detail</li>
-                                <li>This is a conversational viva - respond naturally as you would to a real examiner</li>
+                                <li>Listen carefully to each question</li>
+                                <li>Speak your answer naturally — the system will detect when you finish and give a mark 1–10</li>
+                                <li>If you don't know, say "I don't know" or "Skip" and the system will move on</li>
+                                <li>After 5 answers, your rubric grade is calculated from the 5 marks</li>
                             </ul>
                         </div>
                     </CardContent>
