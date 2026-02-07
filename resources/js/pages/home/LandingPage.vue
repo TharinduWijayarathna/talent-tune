@@ -10,7 +10,6 @@ import {
   Brain, 
   Clock, 
   BarChart3,
-  CheckCircle2,
   ArrowRight,
   Sparkles,
   Shield,
@@ -22,7 +21,6 @@ import {
   Award,
   FileText,
   MessageSquare,
-  PlayCircle,
   ChevronDown
 } from 'lucide-vue-next'
 import { login } from '@/routes'

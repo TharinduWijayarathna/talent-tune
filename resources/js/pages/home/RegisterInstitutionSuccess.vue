@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { GraduationCap, CheckCircle2, Clock, Mail } from 'lucide-vue-next'
 import { useDomain } from '@/composables/useDomain'
 
@@ -13,7 +13,7 @@ interface Props {
     }
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 const { baseDomain } = useDomain()
 </script>
 

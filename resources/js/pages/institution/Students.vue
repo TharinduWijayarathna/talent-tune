@@ -14,7 +14,6 @@ import {
     Trash2,
     Mail,
     Building2,
-    User,
     Users
 } from 'lucide-vue-next';
 import { ref, computed } from 'vue';

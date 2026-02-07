@@ -5,7 +5,7 @@ import { Head } from '@inertiajs/vue3';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Mic, MicOff, Volume2, Pause, Play, Square, Upload, FileText, X } from 'lucide-vue-next';
+import { Mic, MicOff, Volume2, Play, Square, Upload, FileText } from 'lucide-vue-next';
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { Input } from '@/components/ui/input';
@@ -293,7 +293,6 @@ const speakQuestion = async (question: string) => {
 
             // Extract user-friendly error message
             const errorMessage = errorData.error || `Failed to generate speech: ${response.status} ${response.statusText}`;
-            const errorCode = errorData.code || response.status;
 
             throw new Error(errorMessage);
         }
@@ -302,7 +301,7 @@ const speakQuestion = async (question: string) => {
         const contentType = response.headers.get('content-type');
 
         if (!contentType || !contentType.includes('audio')) {
-            const errorText = await response.text();
+            await response.text();
             throw new Error('Server did not return audio content');
         }
 
@@ -485,7 +484,7 @@ const initializeSpeechRecognition = () => {
                 if (sessionActive.value && !isSpeaking.value && !isProcessingAnswer.value) {
                     try {
                         recognition.start();
-                    } catch (e) {
+                    } catch {
                         // Recognition might already be running
                     }
                 }
@@ -516,7 +515,7 @@ const startRecording = () => {
                 speechRecognition.value.start();
                 isRecording.value = true;
             }
-        } catch (error) {
+        } catch {
             // If recognition is already running, that's fine
             console.log('Recognition already active');
         }
@@ -564,7 +563,7 @@ const evaluateAnswer = async (question: string, answerText: string) => {
 
         const evaluation = await response.json();
         return evaluation;
-    } catch (error: any) {
+    } catch {
         return {
             score_1_10: 5,
             feedback: 'Could not evaluate answer automatically. Please review manually.',

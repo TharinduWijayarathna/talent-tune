@@ -2,7 +2,7 @@
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import { useInstitution } from '@/composables/useInstitution';
 
-const { institution, institutionLogo, institutionName } = useInstitution();
+const { institutionLogo, institutionName } = useInstitution();
 </script>
 
 <template>

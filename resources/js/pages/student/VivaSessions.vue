@@ -5,7 +5,7 @@ import { Head } from '@inertiajs/vue3';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, User, FileText, Link as LinkIcon } from 'lucide-vue-next';
+import { Calendar, Clock, User, FileText } from 'lucide-vue-next';
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
