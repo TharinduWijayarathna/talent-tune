@@ -72,9 +72,13 @@ class StripeSubscriptionService
         }
     }
 
-    public function activateFromCheckoutSession(string $sessionId): ?Institution
+    /**
+     * Activate institution after successful payment. Uses session metadata; falls back to $institutionFromRoute when provided (e.g. from success URL).
+     */
+    public function activateFromCheckoutSession(string $sessionId, ?Institution $institutionFromRoute = null): ?Institution
     {
         if (! $this->stripe) {
+            Log::warning('Stripe activateFromCheckoutSession: Stripe not configured');
             return null;
         }
         try {
@@ -83,21 +87,38 @@ class StripeSubscriptionService
             Log::warning('Stripe retrieve session failed', ['session_id' => $sessionId, 'error' => $e->getMessage()]);
             return null;
         }
-        if ($session->payment_status !== 'paid' || ! $session->subscription) {
+
+        if ($session->payment_status !== 'paid') {
+            Log::info('Stripe session not paid yet', ['session_id' => $sessionId, 'payment_status' => $session->payment_status]);
             return null;
         }
-        $institutionId = $session->metadata->institution_id ?? null;
-        if (! $institutionId) {
-            return null;
+
+        $institutionId = null;
+        if ($session->metadata !== null) {
+            $meta = $session->metadata;
+            $institutionId = is_array($meta) ? ($meta['institution_id'] ?? null) : ($meta->institution_id ?? null);
+            if ($institutionId !== null && ! is_scalar($institutionId)) {
+                $institutionId = (string) $institutionId;
+            }
         }
-        $institution = Institution::find($institutionId);
+
+        $institution = null;
+        if ($institutionId) {
+            $institution = Institution::find($institutionId);
+        }
+        if (! $institution && $institutionFromRoute) {
+            $institution = $institutionFromRoute;
+        }
         if (! $institution) {
+            Log::warning('Stripe activateFromCheckoutSession: no institution found', ['session_id' => $sessionId, 'metadata_institution_id' => $institutionId]);
             return null;
         }
+
         if ($institution->subscription_status === 'active') {
             return $institution;
         }
-        $subscriptionId = is_string($session->subscription) ? $session->subscription : $session->subscription->id;
+
+        $subscriptionId = $session->subscription ? (is_string($session->subscription) ? $session->subscription : $session->subscription->id) : null;
         $institution->update([
             'stripe_subscription_id' => $subscriptionId,
             'subscription_status' => 'active',
@@ -113,6 +134,7 @@ class StripeSubscriptionService
                 'metadata' => ['subscription_id' => $subscriptionId],
             ]
         );
+        Log::info('Institution subscription activated', ['institution_id' => $institution->id, 'session_id' => $sessionId]);
         return $institution;
     }
 }

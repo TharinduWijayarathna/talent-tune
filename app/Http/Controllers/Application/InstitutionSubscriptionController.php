@@ -42,10 +42,8 @@ class InstitutionSubscriptionController extends Controller
         if ($institution->subscription_status === 'active') {
             return redirect()->route('institution.dashboard');
         }
-        $successUrl = URL::route('subscription.success', [
-            'institution' => $institution->slug,
-            'session_id' => '{CHECKOUT_SESSION_ID}',
-        ]);
+        $baseSuccessUrl = URL::route('subscription.success', ['institution' => $institution->slug]);
+        $successUrl = $baseSuccessUrl . '?session_id={CHECKOUT_SESSION_ID}';
         $cancelUrl = URL::route('institution.complete-subscription');
         $url = $this->stripeService->createCheckoutSession($institution, $successUrl, $cancelUrl);
         if (! $url) {

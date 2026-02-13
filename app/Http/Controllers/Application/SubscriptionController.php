@@ -46,10 +46,8 @@ class SubscriptionController extends Controller
             abort(403, 'This payment link is invalid or has expired.');
         }
         $institution = Institution::findOrFail($validated['institution_id']);
-        $successUrl = URL::route('subscription.success', [
-            'institution' => $institution->slug,
-            'session_id' => '{CHECKOUT_SESSION_ID}',
-        ]);
+        $baseSuccessUrl = URL::route('subscription.success', ['institution' => $institution->slug]);
+        $successUrl = $baseSuccessUrl . '?session_id={CHECKOUT_SESSION_ID}';
         $cancelUrl = URL::route('subscription.show', ['institution' => $institution->slug])
             . ($request->getQueryString() ? '?' . $request->getQueryString() : '');
         $url = $this->stripeService->createCheckoutSession($institution, $successUrl, $cancelUrl);
@@ -65,10 +63,17 @@ class SubscriptionController extends Controller
         if (! $sessionId) {
             return redirect()->route('home')->with('error', 'Invalid success link.');
         }
-        $this->stripeService->activateFromCheckoutSession($sessionId);
+        $activated = $this->stripeService->activateFromCheckoutSession($sessionId, $institution);
+        if (! $activated) {
+            $institution->refresh();
+            if ($institution->subscription_status === 'active') {
+                $activated = $institution;
+            }
+        }
         $baseDomain = config('domain.domain') ?: parse_url(config('app.url'), PHP_URL_HOST);
         $scheme = request()->getScheme();
-        return redirect()->away("{$scheme}://{$institution->slug}.{$baseDomain}/institution/dashboard")
-            ->with('success', 'Payment complete. Your workspace is now active.');
+        $dashboardUrl = "{$scheme}://{$institution->slug}.{$baseDomain}/institution/dashboard";
+        return redirect()->away($dashboardUrl)
+            ->with('success', $activated ? 'Payment complete. Your workspace is now active.' : 'Thank you for your payment.');
     }
 }
