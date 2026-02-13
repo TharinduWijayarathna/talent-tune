@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useDomain } from '@/composables/useDomain';
 import { Head, Link } from '@inertiajs/vue3';
 import { CheckCircle2, Clock, GraduationCap, Mail } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 interface Props {
     institution: {
@@ -13,8 +14,16 @@ interface Props {
     };
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 const { baseDomain } = useDomain();
+
+const workspaceLoginUrl = computed(() => {
+    const slug = props.institution?.slug;
+    const domain = baseDomain.value;
+    if (!slug || !domain) return '/login';
+    const protocol = typeof window !== 'undefined' ? window.location.protocol : 'https:';
+    return `${protocol}//${slug}.${domain}/login`;
+});
 </script>
 
 <template>
@@ -135,9 +144,9 @@ const { baseDomain } = useDomain();
                                             Back to Home
                                         </Button>
                                     </Link>
-                                    <Link href="/login">
-                                        <Button> Sign In </Button>
-                                    </Link>
+                                    <a :href="workspaceLoginUrl">
+                                        <Button>Sign In (your workspace)</Button>
+                                    </a>
                                 </div>
                             </div>
                         </CardContent>

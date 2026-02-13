@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 
 class InstitutionService
@@ -61,6 +62,7 @@ class InstitutionService
                 'phone' => $institution->phone ?? ($institution->settings['phone'] ?? null),
                 'address' => $institution->address ?? ($institution->settings['address'] ?? null),
                 'is_active' => $institution->is_active,
+                'subscription_status' => $institution->subscription_status,
                 'created_at' => $institution->created_at->toISOString(),
             ];
         })->all();
@@ -140,7 +142,13 @@ class InstitutionService
                 : (count($parts) >= 2 ? implode('.', array_slice($parts, -2)) : $host);
         }
 
+        $paymentUrl = URL::temporarySignedRoute(
+            'subscription.show',
+            now()->addDays(7),
+            ['institution' => $institution->slug]
+        );
+
         Notification::route('mail', $email)
-            ->notify(new InstitutionActivated($institution, $email, $password, $baseDomain));
+            ->notify(new InstitutionActivated($institution, $email, $password, $baseDomain, $paymentUrl));
     }
 }

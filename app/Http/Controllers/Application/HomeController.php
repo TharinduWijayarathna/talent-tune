@@ -35,6 +35,16 @@ class HomeController extends Controller
                 ]);
             }
 
+            if ($institution->subscription_status !== 'active') {
+                return Inertia::render('home/InstitutionPaymentRequired', [
+                    'institution' => [
+                        'name' => $institution->name,
+                        'slug' => $institution->slug,
+                        'login_url' => url('/login'),
+                    ],
+                ]);
+            }
+
             return Inertia::render('home/HomePage', [
                 'canRegister' => Features::enabled(Features::registration()),
                 'institution' => [

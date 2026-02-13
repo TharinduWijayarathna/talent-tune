@@ -23,6 +23,14 @@ class AuthRedirectService
             return '/';
         }
 
+        $baseDomain = $this->getBaseDomainFromRequest($request);
+        $scheme = $request->getScheme();
+        $baseUrl = "{$scheme}://{$institution->slug}.{$baseDomain}";
+
+        if ($institution->subscription_status !== 'active') {
+            return $baseUrl . '/institution/complete-subscription';
+        }
+
         $host = $request->getHost();
         $subdomain = $this->institutionResolver->extractSubdomain($host);
 
@@ -30,10 +38,7 @@ class AuthRedirectService
             return '/';
         }
 
-        $baseDomain = $this->getBaseDomainFromRequest($request);
-        $scheme = $request->getScheme();
-
-        return "{$scheme}://{$institution->slug}.{$baseDomain}/";
+        return $baseUrl . '/';
     }
 
     /**
