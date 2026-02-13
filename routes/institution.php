@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\Application\BatchController;
+use App\Http\Controllers\Application\InstitutionSubscriptionController;
 use App\Http\Controllers\Application\InstitutionUserController;
 use App\Http\Middleware\EnsureInstitutionAccess;
+use App\Http\Middleware\EnsureSubscriptionActive;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -12,6 +14,10 @@ use Inertia\Inertia;
 |--------------------------------------------------------------------------
 */
 Route::prefix('institution')->middleware(['auth', 'verified', EnsureInstitutionAccess::class])->group(function () {
+    Route::get('complete-subscription', [InstitutionSubscriptionController::class, 'show'])->name('institution.complete-subscription');
+    Route::post('complete-subscription/checkout', [InstitutionSubscriptionController::class, 'checkout'])->name('institution.complete-subscription.checkout');
+
+    Route::middleware(EnsureSubscriptionActive::class)->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('institution/Dashboard');
     })->name('institution.dashboard');
@@ -33,4 +39,5 @@ Route::prefix('institution')->middleware(['auth', 'verified', EnsureInstitutionA
     Route::get('students/{id}/edit', [InstitutionUserController::class, 'editStudent'])->name('institution.students.edit');
     Route::put('students/{id}', [InstitutionUserController::class, 'updateStudent'])->name('institution.students.update');
     Route::delete('students/{id}', [InstitutionUserController::class, 'destroyStudent'])->name('institution.students.destroy');
+    });
 });

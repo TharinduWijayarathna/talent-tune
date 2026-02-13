@@ -28,6 +28,11 @@ Route::prefix('register-institution')->group(function () {
     Route::get('/success/{id}', [InstitutionController::class, 'success'])->name('register-institution.success');
 });
 
+use App\Http\Controllers\Application\SubscriptionController;
+Route::get('subscribe/{institution}', [SubscriptionController::class, 'show'])->name('subscription.show');
+Route::post('subscribe/{institution}/checkout', [SubscriptionController::class, 'checkout'])->name('subscription.checkout');
+Route::get('subscribe/{institution}/success', [SubscriptionController::class, 'success'])->name('subscription.success');
+
 Route::get('dashboard', [DashboardController::class, 'redirect'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');

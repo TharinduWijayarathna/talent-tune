@@ -27,6 +27,9 @@ class Institution extends Model
         'contact_person',
         'phone',
         'address',
+        'stripe_customer_id',
+        'stripe_subscription_id',
+        'subscription_status',
     ];
 
     /**
