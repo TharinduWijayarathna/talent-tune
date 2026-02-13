@@ -24,6 +24,7 @@ class InstitutionSubscriptionController extends Controller
         if ($institution->subscription_status === 'active') {
             return redirect()->route('institution.dashboard');
         }
+
         return Inertia::render('institution/CompleteSubscription', [
             'institution' => [
                 'id' => $institution->id,
@@ -43,12 +44,13 @@ class InstitutionSubscriptionController extends Controller
             return redirect()->route('institution.dashboard');
         }
         $baseSuccessUrl = URL::route('subscription.success', ['institution' => $institution->slug]);
-        $successUrl = $baseSuccessUrl . '?session_id={CHECKOUT_SESSION_ID}';
+        $successUrl = $baseSuccessUrl.'?session_id={CHECKOUT_SESSION_ID}';
         $cancelUrl = URL::route('institution.complete-subscription');
         $url = $this->stripeService->createCheckoutSession($institution, $successUrl, $cancelUrl);
         if (! $url) {
             return back()->with('error', 'Unable to start checkout. Please try again or contact support.');
         }
+
         return redirect()->away($url);
     }
 }
