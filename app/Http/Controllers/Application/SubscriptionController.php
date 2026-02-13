@@ -23,9 +23,11 @@ class SubscriptionController extends Controller
         }
         if ($institution->subscription_status === 'active') {
             $baseDomain = config('domain.domain');
+
             return redirect()->away("https://{$institution->slug}.{$baseDomain}/institution/dashboard")
                 ->with('info', 'Your subscription is already active.');
         }
+
         return Inertia::render('home/SubscribeInstitution', [
             'institution' => [
                 'id' => $institution->id,
@@ -33,7 +35,7 @@ class SubscriptionController extends Controller
                 'slug' => $institution->slug,
             ],
             'checkoutUrl' => route('subscription.checkout', ['institution' => $institution->slug])
-                . ($request->getQueryString() ? '?' . $request->getQueryString() : ''),
+                .($request->getQueryString() ? '?'.$request->getQueryString() : ''),
         ]);
     }
 
@@ -47,13 +49,14 @@ class SubscriptionController extends Controller
         }
         $institution = Institution::findOrFail($validated['institution_id']);
         $baseSuccessUrl = URL::route('subscription.success', ['institution' => $institution->slug]);
-        $successUrl = $baseSuccessUrl . '?session_id={CHECKOUT_SESSION_ID}';
+        $successUrl = $baseSuccessUrl.'?session_id={CHECKOUT_SESSION_ID}';
         $cancelUrl = URL::route('subscription.show', ['institution' => $institution->slug])
-            . ($request->getQueryString() ? '?' . $request->getQueryString() : '');
+            .($request->getQueryString() ? '?'.$request->getQueryString() : '');
         $url = $this->stripeService->createCheckoutSession($institution, $successUrl, $cancelUrl);
         if (! $url) {
             return back()->with('error', 'Unable to start checkout. Please try again or contact support.');
         }
+
         return redirect()->away($url);
     }
 
@@ -73,6 +76,7 @@ class SubscriptionController extends Controller
         $baseDomain = config('domain.domain') ?: parse_url(config('app.url'), PHP_URL_HOST);
         $scheme = request()->getScheme();
         $dashboardUrl = "{$scheme}://{$institution->slug}.{$baseDomain}/institution/dashboard";
+
         return redirect()->away($dashboardUrl)
             ->with('success', $activated ? 'Payment complete. Your workspace is now active.' : 'Thank you for your payment.');
     }

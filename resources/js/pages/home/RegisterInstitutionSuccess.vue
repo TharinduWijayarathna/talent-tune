@@ -21,7 +21,8 @@ const workspaceLoginUrl = computed(() => {
     const slug = props.institution?.slug;
     const domain = baseDomain.value;
     if (!slug || !domain) return '/login';
-    const protocol = typeof window !== 'undefined' ? window.location.protocol : 'https:';
+    const protocol =
+        typeof window !== 'undefined' ? window.location.protocol : 'https:';
     return `${protocol}//${slug}.${domain}/login`;
 });
 </script>
@@ -145,7 +146,9 @@ const workspaceLoginUrl = computed(() => {
                                         </Button>
                                     </Link>
                                     <a :href="workspaceLoginUrl">
-                                        <Button>Sign In (your workspace)</Button>
+                                        <Button
+                                            >Sign In (your workspace)</Button
+                                        >
                                     </a>
                                 </div>
                             </div>

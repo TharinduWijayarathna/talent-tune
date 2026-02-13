@@ -28,7 +28,7 @@ class AuthRedirectService
         $baseUrl = "{$scheme}://{$institution->slug}.{$baseDomain}";
 
         if ($institution->subscription_status !== 'active') {
-            return $baseUrl . '/institution/complete-subscription';
+            return $baseUrl.'/institution/complete-subscription';
         }
 
         $host = $request->getHost();
@@ -38,7 +38,7 @@ class AuthRedirectService
             return '/';
         }
 
-        return $baseUrl . '/';
+        return $baseUrl.'/';
     }
 
     /**

@@ -26,6 +26,7 @@ class EnsureSubscriptionActive
         if (! $institution || $institution->subscription_status === 'active') {
             return $next($request);
         }
+
         return redirect()->route('institution.complete-subscription');
     }
 }

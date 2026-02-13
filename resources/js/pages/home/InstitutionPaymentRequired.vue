@@ -15,7 +15,9 @@ interface Props {
 const props = defineProps<Props>();
 const page = usePage();
 const baseDomain = (page.props as { baseDomain?: string }).baseDomain ?? '';
-const loginUrl = props.institution.login_url || `https://${props.institution.slug}.${baseDomain}/login`;
+const loginUrl =
+    props.institution.login_url ||
+    `https://${props.institution.slug}.${baseDomain}/login`;
 </script>
 
 <template>
@@ -29,7 +31,9 @@ const loginUrl = props.institution.login_url || `https://${props.institution.slu
                 <div class="flex h-16 items-center justify-between">
                     <div class="flex items-center gap-2">
                         <GraduationCap class="h-6 w-6 text-primary" />
-                        <span class="text-xl font-bold">{{ institution.name }}</span>
+                        <span class="text-xl font-bold">{{
+                            institution.name
+                        }}</span>
                     </div>
                 </div>
             </div>
@@ -46,15 +50,24 @@ const loginUrl = props.institution.login_url || `https://${props.institution.slu
                                 >
                                     <CreditCard class="h-8 w-8 text-primary" />
                                 </div>
-                                <h1 class="mb-4 text-3xl font-bold tracking-tight">
+                                <h1
+                                    class="mb-4 text-3xl font-bold tracking-tight"
+                                >
                                     Payment needs to be completed
                                 </h1>
                                 <p class="mb-8 text-lg text-muted-foreground">
-                                    <strong>{{ institution.name }}</strong> has been activated. The institution admin must log in and complete the subscription payment before the workspace can be used.
+                                    <strong>{{ institution.name }}</strong> has
+                                    been activated. The institution admin must
+                                    log in and complete the subscription payment
+                                    before the workspace can be used.
                                 </p>
-                                <div class="mb-8 rounded-lg bg-muted p-6 text-left">
+                                <div
+                                    class="mb-8 rounded-lg bg-muted p-6 text-left"
+                                >
                                     <p class="text-sm text-muted-foreground">
-                                        After payment is completed, the dashboard and all features will be available.
+                                        After payment is completed, the
+                                        dashboard and all features will be
+                                        available.
                                     </p>
                                 </div>
                                 <a :href="loginUrl">

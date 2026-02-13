@@ -40,7 +40,9 @@ const submit = () => {
 <template>
     <Head title="Complete your subscription - TalentTune" />
     <div class="min-h-screen bg-background">
-        <nav class="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <nav
+            class="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+        >
             <div class="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex h-16 items-center justify-between">
                     <Link href="/" class="flex items-center gap-2">
@@ -56,23 +58,47 @@ const submit = () => {
                     <Card>
                         <CardContent class="pt-12 pb-12">
                             <div class="text-center">
-                                <div class="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                                <div
+                                    class="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10"
+                                >
                                     <CreditCard class="h-8 w-8 text-primary" />
                                 </div>
-                                <h1 class="mb-2 text-2xl font-bold tracking-tight">Complete your subscription</h1>
+                                <h1
+                                    class="mb-2 text-2xl font-bold tracking-tight"
+                                >
+                                    Complete your subscription
+                                </h1>
                                 <p class="mb-8 text-muted-foreground">
-                                    <strong>{{ institution.name }}</strong> – complete your monthly subscription to activate the workspace.
+                                    <strong>{{ institution.name }}</strong> –
+                                    complete your monthly subscription to
+                                    activate the workspace.
                                 </p>
                                 <p class="mb-6 text-sm text-muted-foreground">
-                                    You will be redirected to Stripe to pay securely.
+                                    You will be redirected to Stripe to pay
+                                    securely.
                                 </p>
-                                <Button size="lg" :disabled="submitting" @click="submit">
-                                    <Loader2 v-if="submitting" class="mr-2 h-4 w-4 animate-spin" />
+                                <Button
+                                    size="lg"
+                                    :disabled="submitting"
+                                    @click="submit"
+                                >
+                                    <Loader2
+                                        v-if="submitting"
+                                        class="mr-2 h-4 w-4 animate-spin"
+                                    />
                                     <CreditCard v-else class="mr-2 h-4 w-4" />
-                                    {{ submitting ? 'Redirecting...' : 'Pay with Stripe' }}
+                                    {{
+                                        submitting
+                                            ? 'Redirecting...'
+                                            : 'Pay with Stripe'
+                                    }}
                                 </Button>
                                 <div class="mt-8">
-                                    <Link href="/" class="text-sm text-muted-foreground hover:underline">Back to home</Link>
+                                    <Link
+                                        href="/"
+                                        class="text-sm text-muted-foreground hover:underline"
+                                        >Back to home</Link
+                                    >
                                 </div>
                             </div>
                         </CardContent>

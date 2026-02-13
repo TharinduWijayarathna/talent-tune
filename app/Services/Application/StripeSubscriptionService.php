@@ -5,7 +5,6 @@ namespace App\Services\Application;
 use App\Models\Institution;
 use App\Models\Payment;
 use Illuminate\Support\Facades\Log;
-use Stripe\Checkout\Session as StripeSession;
 use Stripe\StripeClient;
 
 class StripeSubscriptionService
@@ -37,9 +36,11 @@ class StripeSubscriptionService
                 'metadata' => ['institution_id' => (string) $institution->id],
             ]);
             $institution->update(['stripe_customer_id' => $customer->id]);
+
             return $customer->id;
         } catch (\Throwable $e) {
             Log::error('Stripe create customer failed', ['institution_id' => $institution->id, 'error' => $e->getMessage()]);
+
             return null;
         }
     }
@@ -49,6 +50,7 @@ class StripeSubscriptionService
         $priceId = config('stripe.price_id');
         if (! $this->stripe || ! $priceId) {
             Log::warning('Stripe not configured: missing secret or STRIPE_PRICE_ID');
+
             return null;
         }
         $customerId = $this->getOrCreateCustomer($institution);
@@ -65,9 +67,11 @@ class StripeSubscriptionService
                 'metadata' => ['institution_id' => (string) $institution->id],
                 'subscription_data' => ['metadata' => ['institution_id' => (string) $institution->id]],
             ]);
+
             return $session->url;
         } catch (\Throwable $e) {
             Log::error('Stripe create checkout session failed', ['institution_id' => $institution->id, 'error' => $e->getMessage()]);
+
             return null;
         }
     }
@@ -79,17 +83,20 @@ class StripeSubscriptionService
     {
         if (! $this->stripe) {
             Log::warning('Stripe activateFromCheckoutSession: Stripe not configured');
+
             return null;
         }
         try {
             $session = $this->stripe->checkout->sessions->retrieve($sessionId, ['expand' => ['subscription']]);
         } catch (\Throwable $e) {
             Log::warning('Stripe retrieve session failed', ['session_id' => $sessionId, 'error' => $e->getMessage()]);
+
             return null;
         }
 
         if ($session->payment_status !== 'paid') {
             Log::info('Stripe session not paid yet', ['session_id' => $sessionId, 'payment_status' => $session->payment_status]);
+
             return null;
         }
 
@@ -111,6 +118,7 @@ class StripeSubscriptionService
         }
         if (! $institution) {
             Log::warning('Stripe activateFromCheckoutSession: no institution found', ['session_id' => $sessionId, 'metadata_institution_id' => $institutionId]);
+
             return null;
         }
 
@@ -135,6 +143,7 @@ class StripeSubscriptionService
             ]
         );
         Log::info('Institution subscription activated', ['institution_id' => $institution->id, 'session_id' => $sessionId]);
+
         return $institution;
     }
 }
