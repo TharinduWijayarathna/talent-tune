@@ -50,6 +50,28 @@ class InstitutionService
         return $slug;
     }
 
+    /**
+     * Update institution details (admin only). Slug is not changed.
+     */
+    public function update(Institution $institution, array $data): void
+    {
+        $institution->update([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'contact_person' => $data['contact_person'],
+            'phone' => $data['phone'] ?? null,
+            'address' => $data['address'] ?? null,
+            'primary_color' => $data['primary_color'] ?? $institution->primary_color,
+            'is_active' => $data['is_active'] ?? $institution->is_active,
+            'settings' => array_merge($institution->settings ?? [], [
+                'email' => $data['email'],
+                'contact_person' => $data['contact_person'],
+                'phone' => $data['phone'] ?? null,
+                'address' => $data['address'] ?? null,
+            ]),
+        ]);
+    }
+
     public function getListForAdmin(): array
     {
         return Institution::latest()->get()->map(function (Institution $institution) {

@@ -15,6 +15,8 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
     Route::get('institutions', [InstitutionController::class, 'index'])->name('admin.institutions');
+    Route::get('institutions/{institution}/edit', [InstitutionController::class, 'edit'])->name('admin.institutions.edit');
+    Route::put('institutions/{institution}', [InstitutionController::class, 'update'])->name('admin.institutions.update');
     Route::patch('institutions/{institution}/status', [InstitutionController::class, 'updateStatus'])->name('admin.institutions.status');
     Route::delete('institutions/{institution}', [InstitutionController::class, 'destroy'])->name('admin.institutions.destroy');
 
