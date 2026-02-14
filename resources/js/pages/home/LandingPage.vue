@@ -116,15 +116,13 @@ onMounted(() => {
         >
             <div class="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex h-16 items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <GraduationCap
-                            class="h-6 w-6 animate-pulse text-primary"
+                    <Link href="/" class="flex items-center gap-2">
+                        <img
+                            src="/images/logo.png"
+                            alt="TalentTune"
+                            class="h-9 w-auto object-contain"
                         />
-                        <span
-                            class="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-xl font-bold text-transparent"
-                            >TalentTune</span
-                        >
-                    </div>
+                    </Link>
                     <div class="flex items-center gap-4">
                         <Link
                             :href="'/register-institution'"
@@ -683,8 +681,11 @@ onMounted(() => {
                 <div class="grid gap-8 md:grid-cols-4">
                     <div class="md:col-span-2">
                         <div class="mb-4 flex items-center gap-2">
-                            <GraduationCap class="h-6 w-6 text-primary" />
-                            <span class="text-xl font-bold">TalentTune</span>
+                            <img
+                                src="/images/logo.png"
+                                alt="TalentTune"
+                                class="h-8 w-auto object-contain"
+                            />
                         </div>
                         <p class="mb-4 max-w-md text-sm text-muted-foreground">
                             AI-powered viva management SaaS platform designed to

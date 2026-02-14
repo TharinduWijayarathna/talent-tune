@@ -154,8 +154,11 @@ const mainNavItems = computed<NavItem[]>(() => {
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
-                        <Link :href="mainNavItems[0]?.href || dashboard()">
-                            <AppLogo />
+                        <Link
+                            :href="mainNavItems[0]?.href || dashboard()"
+                            class="flex w-full items-center justify-center"
+                        >
+                            <AppLogo sidebar />
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>

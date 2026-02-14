@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import type { Institution } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ArrowRight, Building2, GraduationCap, Search } from 'lucide-vue-next';
+import { ArrowRight, Building2, Search } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 interface Props {
@@ -62,10 +62,13 @@ const selectInstitution = (institution: Institution) => {
         >
             <div class="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex h-16 items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <GraduationCap class="h-6 w-6 text-primary" />
-                        <span class="text-xl font-bold">TalentTune</span>
-                    </div>
+                    <Link href="/" class="flex items-center gap-2">
+                        <img
+                            src="/images/logo.png"
+                            alt="TalentTune"
+                            class="h-9 w-auto object-contain"
+                        />
+                    </Link>
                     <div class="flex items-center gap-4">
                         <Link
                             :href="'/login'"
