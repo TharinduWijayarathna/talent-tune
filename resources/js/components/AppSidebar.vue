@@ -111,9 +111,23 @@ const mainNavItems = computed<NavItem[]>(() => {
                 icon: Building2,
             },
             {
-                title: 'Users',
-                href: '/admin/users',
+                title: 'User Management',
+                href: '/admin/users/students',
                 icon: Users,
+                children: [
+                    {
+                        title: 'Admin Management',
+                        href: '/admin/users/institution-admins',
+                    },
+                    {
+                        title: 'Student Management',
+                        href: '/admin/users/students',
+                    },
+                    {
+                        title: 'Lecturer Management',
+                        href: '/admin/users/lecturers',
+                    },
+                ],
             },
             {
                 title: 'Payments',

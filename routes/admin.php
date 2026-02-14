@@ -19,5 +19,8 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
     Route::delete('institutions/{institution}', [InstitutionController::class, 'destroy'])->name('admin.institutions.destroy');
 
     Route::get('users', [AdminUserController::class, 'index'])->name('admin.users');
+    Route::get('users/institution-admins', [AdminUserController::class, 'institutionAdmins'])->name('admin.users.institution-admins');
+    Route::get('users/students', [AdminUserController::class, 'students'])->name('admin.users.students');
+    Route::get('users/lecturers', [AdminUserController::class, 'lecturers'])->name('admin.users.lecturers');
     Route::get('payments', [AdminPaymentController::class, 'index'])->name('admin.payments');
 });
