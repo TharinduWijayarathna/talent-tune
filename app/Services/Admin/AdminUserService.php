@@ -71,4 +71,32 @@ class AdminUserService
             'filters' => $filters,
         ];
     }
+
+    /**
+     * Update a user (admin only). Password is only updated if provided.
+     */
+    public function updateUser(User $user, array $data): void
+    {
+        $fillable = [
+            'name',
+            'email',
+            'role',
+            'institution_id',
+            'student_id',
+            'employee_id',
+            'batch',
+            'department',
+        ];
+
+        $update = array_intersect_key($data, array_flip($fillable));
+        if (isset($data['institution_id']) && $data['institution_id'] === '') {
+            $update['institution_id'] = null;
+        }
+
+        if (! empty($data['password'] ?? null)) {
+            $update['password'] = $data['password'];
+        }
+
+        $user->update($update);
+    }
 }

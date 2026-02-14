@@ -17,6 +17,7 @@ import {
     ChevronLeft,
     ChevronRight,
     Mail,
+    Pencil,
     Search,
     Users,
 } from 'lucide-vue-next';
@@ -274,6 +275,14 @@ const roleLabels: Record<string, string> = {
                                     }}
                                 </div>
                             </div>
+                            <Button variant="outline" size="sm" as-child>
+                                <Link
+                                    :href="`/admin/users/${user.id}/edit?return=${section}`"
+                                >
+                                    <Pencil class="mr-1 h-4 w-4" />
+                                    Edit
+                                </Link>
+                            </Button>
                         </div>
 
                         <div
