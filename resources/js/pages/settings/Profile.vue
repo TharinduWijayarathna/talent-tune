@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// Theme: application uses light mode only. Theme change (light/dark) has been removed from profile/settings; dark mode is disabled.
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import { edit } from '@/routes/profile';
 import { send } from '@/routes/verification';

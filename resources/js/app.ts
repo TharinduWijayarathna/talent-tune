@@ -25,5 +25,5 @@ createInertiaApp({
     },
 });
 
-// This will set light / dark mode on page load...
+// Theme: light mode only. Dark mode has been removed.
 initializeTheme();
