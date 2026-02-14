@@ -1,10 +1,10 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminPaymentController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Application\InstitutionController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
@@ -12,9 +12,7 @@ use Inertia\Inertia;
 |--------------------------------------------------------------------------
 */
 Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('admin/Dashboard');
-    })->name('admin.dashboard');
+    Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
     Route::get('institutions', [InstitutionController::class, 'index'])->name('admin.institutions');
     Route::patch('institutions/{institution}/status', [InstitutionController::class, 'updateStatus'])->name('admin.institutions.status');
