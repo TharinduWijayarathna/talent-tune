@@ -10,11 +10,18 @@ export interface BreadcrumbItem {
     href: string;
 }
 
+export interface NavSubItem {
+    title: string;
+    href: NonNullable<InertiaLinkProps['href']>;
+}
+
 export interface NavItem {
     title: string;
     href: NonNullable<InertiaLinkProps['href']>;
     icon?: LucideIcon;
     isActive?: boolean;
+    /** When set, renders a collapsible group with sub-links instead of a single link. */
+    children?: NavSubItem[];
 }
 
 export interface Institution {

@@ -10,7 +10,7 @@ import {
 import { dashboard, login } from '@/routes';
 import type { Institution } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { ArrowRight, CheckCircle2, GraduationCap } from 'lucide-vue-next';
+import { ArrowRight, CheckCircle2 } from 'lucide-vue-next';
 import { computed, onMounted, watch } from 'vue';
 
 interface Props {
@@ -77,16 +77,13 @@ const applyInstitutionColor = () => {
                             v-if="institutionLogo"
                             :src="institutionLogo"
                             :alt="institutionName"
-                            class="h-8 w-8 rounded"
+                            class="h-8 w-8 rounded object-contain"
                         />
-                        <GraduationCap
+                        <img
                             v-else
-                            :class="
-                                institutionColor
-                                    ? 'institution-primary'
-                                    : 'text-primary'
-                            "
-                            class="h-6 w-6"
+                            src="/images/logo.png"
+                            alt="TalentTune"
+                            class="h-8 w-8 object-contain"
                         />
                         <span class="text-xl font-bold">{{
                             institutionName

@@ -1,24 +1,44 @@
 <script setup lang="ts">
-import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import { useInstitution } from '@/composables/useInstitution';
 
 const { institutionLogo, institutionName } = useInstitution();
+
+const appLogoUrl = '/images/logo.png';
+
+withDefaults(
+    defineProps<{
+        /** When true, show only the logo at full width (no text). Used in sidebar. */
+        sidebar?: boolean;
+    }>(),
+    { sidebar: false },
+);
 </script>
 
 <template>
-    <div
+    <img
         v-if="!institutionLogo"
-        class="flex aspect-square size-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground"
-    >
-        <AppLogoIcon class="size-5 fill-current text-white dark:text-black" />
-    </div>
+        :src="appLogoUrl"
+        alt="TalentTune"
+        :class="
+            sidebar
+                ? 'h-auto max-h-10 w-full max-w-full object-contain'
+                : 'h-8 w-8 object-contain'
+        "
+    />
     <img
         v-else
         :src="institutionLogo"
         :alt="institutionName"
-        class="h-8 w-8 rounded"
+        :class="
+            sidebar
+                ? 'h-auto max-h-10 w-full max-w-full object-contain rounded'
+                : 'h-8 w-8 rounded object-contain'
+        "
     />
-    <div class="ml-1 grid flex-1 text-left text-sm">
+    <div
+        v-if="!sidebar"
+        class="ml-1 grid flex-1 text-left text-sm"
+    >
         <span class="mb-0.5 truncate leading-tight font-semibold">{{
             institutionName
         }}</span>

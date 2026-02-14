@@ -27,46 +27,27 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-// Mock data
-const stats = {
-    totalInstitutions: 5,
-    totalLecturers: 125,
-    totalStudents: 2500,
-    activeVivas: 45,
-    completedVivas: 320,
-    totalUsers: 2630,
-};
+interface DashboardStats {
+    totalInstitutions: number;
+    totalLecturers: number;
+    totalStudents: number;
+    activeVivas: number;
+    completedVivas: number;
+    totalUsers: number;
+}
 
-const recentActivity = [
-    {
-        id: 1,
-        type: 'viva_created',
-        message: 'New viva session created by Dr. Smith',
-        time: '2 hours ago',
-        institution: 'University A',
-    },
-    {
-        id: 2,
-        type: 'student_added',
-        message: '50 new students added to CS-2024 batch',
-        time: '5 hours ago',
-        institution: 'University B',
-    },
-    {
-        id: 3,
-        type: 'lecturer_added',
-        message: 'New lecturer registered: Dr. Johnson',
-        time: '1 day ago',
-        institution: 'University A',
-    },
-    {
-        id: 4,
-        type: 'viva_completed',
-        message: 'Database Systems viva completed',
-        time: '1 day ago',
-        institution: 'University C',
-    },
-];
+interface RecentActivityItem {
+    id: string;
+    type: string;
+    message: string;
+    time: string;
+    institution: string;
+}
+
+defineProps<{
+    stats: DashboardStats;
+    recentActivity: RecentActivityItem[];
+}>();
 </script>
 
 <template>
@@ -284,9 +265,14 @@ const recentActivity = [
                         <Button variant="outline" class="w-full justify-start">
                             System Settings
                         </Button>
-                        <Button variant="outline" class="w-full justify-start">
-                            User Management
-                        </Button>
+                        <Link href="/admin/users">
+                            <Button
+                                variant="outline"
+                                class="w-full justify-start"
+                            >
+                                User Management
+                            </Button>
+                        </Link>
                         <Button variant="outline" class="w-full justify-start">
                             Reports & Analytics
                         </Button>

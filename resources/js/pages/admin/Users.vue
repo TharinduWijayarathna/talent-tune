@@ -17,10 +17,11 @@ import {
     ChevronLeft,
     ChevronRight,
     Mail,
+    Pencil,
     Search,
     Users,
 } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 interface InstitutionRef {
     id: number;
@@ -63,31 +64,64 @@ interface PaginatedUsers {
     links: PaginatorLink[];
 }
 
-interface Props {
-    users: PaginatedUsers;
-    filters: { search?: string; role?: string };
+type UserManagementSection = 'institution_admins' | 'students' | 'lecturers';
+
+interface InstitutionOption {
+    id: number;
+    name: string;
+    slug: string;
 }
 
-const props = defineProps<Props>();
+interface Props {
+    users: PaginatedUsers;
+    filters: { search?: string; role?: string; institution_id?: string };
+    institutions: InstitutionOption[];
+    section: UserManagementSection;
+}
 
-const breadcrumbs: BreadcrumbItem[] = [
+const props = withDefaults(defineProps<Props>(), {
+    section: 'students',
+    institutions: () => [],
+});
+
+const sectionConfig: Record<
+    UserManagementSection,
+    { title: string; description: string; route: string }
+> = {
+    institution_admins: {
+        title: 'Institution Admin Management',
+        description: 'Manage institution admins by institution',
+        route: '/admin/users/institution-admins',
+    },
+    students: {
+        title: 'Institutional Student Management',
+        description: 'Manage students by institution',
+        route: '/admin/users/students',
+    },
+    lecturers: {
+        title: 'Institutional Lecturer Management',
+        description: 'Manage lecturers by institution',
+        route: '/admin/users/lecturers',
+    },
+};
+
+const currentSection = computed(() => sectionConfig[props.section]);
+
+const breadcrumbs = computed<BreadcrumbItem[]>(() => [
     { title: 'Dashboard', href: '/admin/dashboard' },
-    { title: 'Users', href: '/admin/users' },
-];
+    { title: 'User Management', href: '/admin/users/students' },
+    { title: currentSection.value.title, href: currentSection.value.route },
+]);
 
 const searchQuery = ref(props.filters.search ?? '');
-const roleFilter = ref(props.filters.role ?? '');
+const institutionFilter = ref(props.filters.institution_id ?? '');
 
 const applyFilters = () => {
-    router.get(
-        '/admin/users',
-        {
-            search: searchQuery.value || undefined,
-            role: roleFilter.value || undefined,
-            page: 1,
-        },
-        { preserveState: true },
-    );
+    router.get(currentSection.value.route, {
+        search: searchQuery.value || undefined,
+        institution_id: institutionFilter.value || undefined,
+        page: 1,
+    }, { preserveState: true });
 };
 
 const roleLabels: Record<string, string> = {
@@ -99,7 +133,7 @@ const roleLabels: Record<string, string> = {
 </script>
 
 <template>
-    <Head title="Manage Users - Admin" />
+    <Head :title="`${currentSection.title} - Admin`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div
@@ -107,9 +141,9 @@ const roleLabels: Record<string, string> = {
         >
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-2xl font-bold">User Management</h1>
+                    <h1 class="text-2xl font-bold">{{ currentSection.title }}</h1>
                     <p class="text-muted-foreground">
-                        Manage all users across the platform
+                        {{ currentSection.description }}
                     </p>
                 </div>
             </div>
@@ -161,14 +195,17 @@ const roleLabels: Record<string, string> = {
                     />
                 </div>
                 <select
-                    v-model="roleFilter"
+                    v-model="institutionFilter"
                     class="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
                 >
-                    <option value="">All roles</option>
-                    <option value="student">Student</option>
-                    <option value="lecturer">Lecturer</option>
-                    <option value="institution">Institution</option>
-                    <option value="admin">Admin</option>
+                    <option value="">All institutions</option>
+                    <option
+                        v-for="inst in institutions"
+                        :key="inst.id"
+                        :value="String(inst.id)"
+                    >
+                        {{ inst.name }}
+                    </option>
                 </select>
                 <Button @click="applyFilters">Apply</Button>
             </div>
@@ -177,10 +214,9 @@ const roleLabels: Record<string, string> = {
             <Card>
                 <CardHeader>
                     <CardTitle>Users</CardTitle>
-                    <CardDescription
-                        >All registered users (students, lecturers,
-                        institutions)</CardDescription
-                    >
+                    <CardDescription>
+                        {{ currentSection.title }} — filter by institution
+                    </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div class="space-y-4">
@@ -239,6 +275,14 @@ const roleLabels: Record<string, string> = {
                                     }}
                                 </div>
                             </div>
+                            <Button variant="outline" size="sm" as-child>
+                                <Link
+                                    :href="`/admin/users/${user.id}/edit?return=${section}`"
+                                >
+                                    <Pencil class="mr-1 h-4 w-4" />
+                                    Edit
+                                </Link>
+                            </Button>
                         </div>
 
                         <div

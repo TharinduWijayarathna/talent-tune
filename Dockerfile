@@ -6,7 +6,7 @@ WORKDIR /app
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=UTC
-ENV PHP_VERSION=8.2
+ENV PHP_VERSION=8.3
 ENV NODE_VERSION=22
 
 # Set timezone
@@ -28,12 +28,12 @@ RUN apt-get update && apt-get upgrade -y && \
         /etc/apt/sources.list.d/ppa_ondrej_php.list && \
     apt-get update && \
     apt-get install -y \
-        php8.2-fpm php8.2-cli php8.2-dev \
-        php8.2-pgsql php8.2-sqlite3 php8.2-gd \
-        php8.2-curl php8.2-mysql php8.2-mbstring \
-        php8.2-xml php8.2-zip php8.2-bcmath \
-        php8.2-intl php8.2-readline php8.2-dom \
-        php8.2-redis php8.2-pcov && \
+        php8.3-fpm php8.3-cli php8.3-dev \
+        php8.3-pgsql php8.3-sqlite3 php8.3-gd \
+        php8.3-curl php8.3-mysql php8.3-mbstring \
+        php8.3-xml php8.3-zip php8.3-bcmath \
+        php8.3-intl php8.3-readline php8.3-dom \
+        php8.3-redis php8.3-pcov && \
     curl -sLS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --filename=composer && \
     curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
     echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_VERSION.x nodistro main" > /etc/apt/sources.list.d/nodesource.list && \
@@ -45,12 +45,12 @@ RUN apt-get update && apt-get upgrade -y && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Configure PHP
-RUN echo "post_max_size = 100M" > /etc/php/8.2/fpm/conf.d/99-custom.ini && \
-    echo "upload_max_filesize = 100M" >> /etc/php/8.2/fpm/conf.d/99-custom.ini && \
-    echo "variables_order = EGPCS" >> /etc/php/8.2/fpm/conf.d/99-custom.ini && \
-    echo "post_max_size = 100M" > /etc/php/8.2/cli/conf.d/99-custom.ini && \
-    echo "upload_max_filesize = 100M" >> /etc/php/8.2/cli/conf.d/99-custom.ini && \
-    echo "variables_order = EGPCS" >> /etc/php/8.2/cli/conf.d/99-custom.ini
+RUN echo "post_max_size = 100M" > /etc/php/8.3/fpm/conf.d/99-custom.ini && \
+    echo "upload_max_filesize = 100M" >> /etc/php/8.3/fpm/conf.d/99-custom.ini && \
+    echo "variables_order = EGPCS" >> /etc/php/8.3/fpm/conf.d/99-custom.ini && \
+    echo "post_max_size = 100M" > /etc/php/8.3/cli/conf.d/99-custom.ini && \
+    echo "upload_max_filesize = 100M" >> /etc/php/8.3/cli/conf.d/99-custom.ini && \
+    echo "variables_order = EGPCS" >> /etc/php/8.3/cli/conf.d/99-custom.ini
 
 # Copy application files
 COPY --chown=www-data:www-data . .

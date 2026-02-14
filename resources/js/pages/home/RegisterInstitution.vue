@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ArrowRight, Building2, GraduationCap } from 'lucide-vue-next';
+import { ArrowRight, Building2 } from 'lucide-vue-next';
 
 const form = useForm({
     name: '',
@@ -44,8 +44,11 @@ const submit = () => {
             <div class="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex h-16 items-center justify-between">
                     <Link href="/" class="flex items-center gap-2">
-                        <GraduationCap class="h-6 w-6 text-primary" />
-                        <span class="text-xl font-bold">TalentTune</span>
+                        <img
+                            src="/images/logo.png"
+                            alt="TalentTune"
+                            class="h-9 w-auto object-contain"
+                        />
                     </Link>
                     <div class="flex items-center gap-4">
                         <Link

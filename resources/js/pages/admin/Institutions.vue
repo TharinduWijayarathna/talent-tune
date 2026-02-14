@@ -12,12 +12,13 @@ import { Input } from '@/components/ui/input';
 import { useDomain } from '@/composables/useDomain';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, router } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import {
     Building2,
     Check,
     Mail,
     MapPin,
+    Pencil,
     Phone,
     Search,
     Trash2,
@@ -279,6 +280,18 @@ const activeCount = computed(
                                             : 'Pending'
                                     }}
                                 </Badge>
+
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    as-child
+                                >
+                                    <Link
+                                        :href="`/admin/institutions/${institution.slug}/edit`"
+                                    >
+                                        <Pencil class="h-4 w-4" />
+                                    </Link>
+                                </Button>
 
                                 <Button
                                     @click="toggleStatus(institution)"

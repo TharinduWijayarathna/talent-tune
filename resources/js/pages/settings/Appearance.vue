@@ -24,8 +24,8 @@ const breadcrumbItems: BreadcrumbItem[] = [
         <SettingsLayout>
             <div class="space-y-6">
                 <HeadingSmall
-                    title="Appearance settings"
-                    description="Update your account's appearance settings"
+                    title="Appearance"
+                    description="This application uses light mode only. Theme change (light/dark) has been disabled; dark mode is not available."
                 />
                 <AppearanceTabs />
             </div>

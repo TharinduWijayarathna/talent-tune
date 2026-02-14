@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Card, CardContent } from '@/components/ui/card';
 import { Head, usePage } from '@inertiajs/vue3';
-import { CheckCircle2, Clock, GraduationCap, Mail } from 'lucide-vue-next';
+import { CheckCircle2, Clock, Mail } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 interface Props {
@@ -35,12 +35,13 @@ const institutionName = computed(
         >
             <div class="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex h-16 items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <GraduationCap class="h-6 w-6 text-primary" />
-                        <span class="text-xl font-bold">{{
-                            institutionName
-                        }}</span>
-                    </div>
+                    <Link href="/" class="flex items-center gap-2">
+                        <img
+                            src="/images/logo.png"
+                            alt="TalentTune"
+                            class="h-9 w-auto object-contain"
+                        />
+                    </Link>
                 </div>
             </div>
         </nav>
