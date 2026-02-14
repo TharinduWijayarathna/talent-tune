@@ -70,13 +70,37 @@ const submitForm = () => {
         name: form.name,
         email: form.email,
         role: form.role,
-        institution_id: form.institution_id === '' ? null : Number(form.institution_id),
-        student_id: form.student_id || null,
-        employee_id: form.employee_id || null,
-        batch: form.batch || null,
-        department: form.department || null,
         return_section: form.return_section,
     };
+    // Institution: only for non-admin roles
+    if (showInstitution.value) {
+        payload.institution_id =
+            form.institution_id === '' ? null : Number(form.institution_id);
+    } else {
+        payload.institution_id = null;
+    }
+    // Role-specific fields only
+    if (form.role === 'student') {
+        payload.student_id = form.student_id || null;
+        payload.batch = form.batch || null;
+        payload.department = form.department || null;
+        payload.employee_id = null;
+    } else if (form.role === 'lecturer') {
+        payload.employee_id = form.employee_id || null;
+        payload.department = form.department || null;
+        payload.student_id = null;
+        payload.batch = null;
+    } else if (form.role === 'institution') {
+        payload.student_id = null;
+        payload.employee_id = null;
+        payload.batch = null;
+        payload.department = null;
+    } else {
+        payload.student_id = null;
+        payload.employee_id = null;
+        payload.batch = null;
+        payload.department = null;
+    }
     if (form.password) {
         payload.password = form.password;
         payload.password_confirmation = form.password_confirmation;
@@ -90,6 +114,16 @@ const roleOptions = [
     { value: 'institution', label: 'Institution' },
     { value: 'admin', label: 'Admin' },
 ];
+
+// Fields shown per role: institution is for student, lecturer, institution only
+const showInstitution = computed(() =>
+    ['student', 'lecturer', 'institution'].includes(form.role),
+);
+const showStudentFields = computed(() => form.role === 'student');
+const showLecturerFields = computed(() => form.role === 'lecturer');
+const showDepartment = computed(() =>
+    ['student', 'lecturer'].includes(form.role),
+);
 </script>
 
 <template>
@@ -112,7 +146,7 @@ const roleOptions = [
                 <CardHeader>
                     <CardTitle>User Information</CardTitle>
                     <CardDescription>
-                        Update the details of the user. Leave password blank to keep the current password.
+                        Update the details of the user. Fields shown depend on the selected role. Leave password blank to keep the current password.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -141,46 +175,51 @@ const roleOptions = [
                             </div>
                         </div>
 
-                        <div class="grid gap-4 md:grid-cols-2">
-                            <div class="space-y-2">
-                                <Label for="role">Role *</Label>
-                                <select
-                                    id="role"
-                                    v-model="form.role"
-                                    required
-                                    class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+                        <div class="space-y-2">
+                            <Label for="role">Role *</Label>
+                            <select
+                                id="role"
+                                v-model="form.role"
+                                required
+                                class="flex h-9 w-full max-w-xs rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+                            >
+                                <option
+                                    v-for="opt in roleOptions"
+                                    :key="opt.value"
+                                    :value="opt.value"
                                 >
-                                    <option
-                                        v-for="opt in roleOptions"
-                                        :key="opt.value"
-                                        :value="opt.value"
-                                    >
-                                        {{ opt.label }}
-                                    </option>
-                                </select>
-                                <InputError :message="form.errors.role" />
-                            </div>
-                            <div class="space-y-2">
-                                <Label for="institution_id">Institution</Label>
-                                <select
-                                    id="institution_id"
-                                    v-model="form.institution_id"
-                                    class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
-                                >
-                                    <option value="">No institution</option>
-                                    <option
-                                        v-for="inst in institutions"
-                                        :key="inst.id"
-                                        :value="String(inst.id)"
-                                    >
-                                        {{ inst.name }}
-                                    </option>
-                                </select>
-                                <InputError :message="form.errors.institution_id" />
-                            </div>
+                                    {{ opt.label }}
+                                </option>
+                            </select>
+                            <InputError :message="form.errors.role" />
                         </div>
 
-                        <div class="grid gap-4 md:grid-cols-2">
+                        <!-- Institution: for student, lecturer, institution roles only -->
+                        <div v-if="showInstitution" class="space-y-2">
+                            <Label for="institution_id">Institution *</Label>
+                            <select
+                                id="institution_id"
+                                v-model="form.institution_id"
+                                required
+                                class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+                            >
+                                <option value="">Select institution</option>
+                                <option
+                                    v-for="inst in institutions"
+                                    :key="inst.id"
+                                    :value="String(inst.id)"
+                                >
+                                    {{ inst.name }}
+                                </option>
+                            </select>
+                            <InputError :message="form.errors.institution_id" />
+                        </div>
+
+                        <!-- Student-only: Student ID, Batch -->
+                        <div
+                            v-if="showStudentFields"
+                            class="grid gap-4 md:grid-cols-2"
+                        >
                             <div class="space-y-2">
                                 <Label for="student_id">Student ID</Label>
                                 <Input
@@ -191,18 +230,6 @@ const roleOptions = [
                                 <InputError :message="form.errors.student_id" />
                             </div>
                             <div class="space-y-2">
-                                <Label for="employee_id">Employee ID</Label>
-                                <Input
-                                    id="employee_id"
-                                    v-model="form.employee_id"
-                                    placeholder="e.g. EMP001"
-                                />
-                                <InputError :message="form.errors.employee_id" />
-                            </div>
-                        </div>
-
-                        <div class="grid gap-4 md:grid-cols-2">
-                            <div class="space-y-2">
                                 <Label for="batch">Batch</Label>
                                 <Input
                                     id="batch"
@@ -211,15 +238,28 @@ const roleOptions = [
                                 />
                                 <InputError :message="form.errors.batch" />
                             </div>
-                            <div class="space-y-2">
-                                <Label for="department">Department</Label>
-                                <Input
-                                    id="department"
-                                    v-model="form.department"
-                                    placeholder="e.g. Computer Science"
-                                />
-                                <InputError :message="form.errors.department" />
-                            </div>
+                        </div>
+
+                        <!-- Lecturer-only: Employee ID -->
+                        <div v-if="showLecturerFields" class="space-y-2">
+                            <Label for="employee_id">Employee ID</Label>
+                            <Input
+                                id="employee_id"
+                                v-model="form.employee_id"
+                                placeholder="e.g. EMP001"
+                            />
+                            <InputError :message="form.errors.employee_id" />
+                        </div>
+
+                        <!-- Department: for student and lecturer -->
+                        <div v-if="showDepartment" class="space-y-2">
+                            <Label for="department">Department</Label>
+                            <Input
+                                id="department"
+                                v-model="form.department"
+                                placeholder="e.g. Computer Science"
+                            />
+                            <InputError :message="form.errors.department" />
                         </div>
 
                         <div class="border-t pt-4 space-y-4">
