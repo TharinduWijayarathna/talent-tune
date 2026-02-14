@@ -44,10 +44,9 @@ storage/framework/views/*
 bootstrap/cache/*
 !bootstrap/cache/.gitkeep
 
-# Testing
+# Testing (keep tests/ so CI can run php artisan test)
 .phpunit.result.cache
 coverage
-tests
 
 # Environment
 .env
