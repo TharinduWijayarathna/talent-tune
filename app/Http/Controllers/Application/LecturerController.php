@@ -114,6 +114,7 @@ class LecturerController extends Controller
         $user = $request->user();
 
         $viva = $this->lecturerService->getVivaForShow($institution, $user, $id);
+        $submissions = $this->lecturerService->getVivaSubmissionsForShow($institution, $user, $id);
 
         return Inertia::render('lecturer/ShowViva', [
             'viva' => [
@@ -125,6 +126,7 @@ class LecturerController extends Controller
                 'instructions' => $viva->instructions,
                 'status' => $viva->status,
             ],
+            'submissions' => $submissions,
         ]);
     }
 
