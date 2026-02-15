@@ -1,15 +1,7 @@
 <script setup lang="ts">
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/vue3';
@@ -17,7 +9,6 @@ import {
     FileText,
     Mic,
     MicOff,
-    Play,
     Square,
     Upload,
     Volume2,
@@ -299,117 +290,109 @@ const stopSession = () => {
     }
 };
 
-// Google Cloud Text-to-Speech API Integration
-const speakQuestion = async (question: string) => {
-    // Stop recording before AI starts speaking
+// Google Cloud Text-to-Speech: speak text and return a Promise that resolves when playback ends (so we can chain TTS without overlap).
+// When startRecordingWhenDone is false, we do not start recording in onended (used for feedback before moving to next question).
+const speakAndWait = (
+    text: string,
+    startRecordingWhenDone: boolean = false,
+): Promise<void> => {
     if (speechRecognition.value && recognitionActive.value) {
         speechRecognition.value.stop();
     }
-
     isListening.value = true;
     isSpeaking.value = true;
 
-    try {
-        // Call backend endpoint that uses Google Cloud TTS API
-        // The backend will handle the Google TTS API call and return audio
-        const response = await fetch('/api/viva/tts', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken.value,
-                'X-Requested-With': 'XMLHttpRequest',
-                Accept: 'audio/wav',
-            },
-            credentials: 'same-origin', // Important: include cookies for CSRF
-            body: JSON.stringify({
-                text: question,
-                languageCode: 'en-us',
-                voiceName: 'Achernar',
-                modelName: 'gemini-2.5-flash-lite-preview-tts',
-                prompt: 'Read aloud in a warm, welcoming tone.',
-                audioEncoding: 'LINEAR16',
-                speakingRate: 1,
-                pitch: 0,
-            }),
+    return fetch('/api/viva/tts', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken.value,
+            'X-Requested-With': 'XMLHttpRequest',
+            Accept: 'audio/wav',
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+            text,
+            languageCode: 'en-us',
+            voiceName: 'Achernar',
+            modelName: 'gemini-2.5-flash-lite-preview-tts',
+            prompt: 'Read aloud in a warm, welcoming tone.',
+            audioEncoding: 'LINEAR16',
+            speakingRate: 1,
+            pitch: 0,
+        }),
+    })
+        .then(async (response) => {
+            if (!response.ok) {
+                const errorData = await response
+                    .json()
+                    .catch(() => ({ error: 'Unknown error' }));
+                throw new Error(
+                    errorData.error ||
+                        `Failed to generate speech: ${response.status} ${response.statusText}`,
+                );
+            }
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('audio')) {
+                await response.text();
+                throw new Error('Server did not return audio content');
+            }
+            const audioBlob = await response.blob();
+            if (audioBlob.size === 0) {
+                throw new Error('Received empty audio file');
+            }
+            const audioUrl = URL.createObjectURL(audioBlob);
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+            const audio = new Audio(audioUrl);
+            currentAudio = audio;
+
+            return new Promise<void>((resolve, reject) => {
+                audio.onplay = () => {
+                    isListening.value = true;
+                    isSpeaking.value = true;
+                    if (speechRecognition.value && recognitionActive.value) {
+                        speechRecognition.value.stop();
+                    }
+                };
+                audio.onended = () => {
+                    isListening.value = false;
+                    isSpeaking.value = false;
+                    URL.revokeObjectURL(audioUrl);
+                    currentAudio = null;
+                    if (
+                        startRecordingWhenDone &&
+                        sessionActive.value &&
+                        !isProcessingAnswer.value
+                    ) {
+                        startRecording();
+                    }
+                    resolve();
+                };
+                audio.onerror = () => {
+                    isListening.value = false;
+                    isSpeaking.value = false;
+                    URL.revokeObjectURL(audioUrl);
+                    currentAudio = null;
+                    reject(new Error('Error playing audio'));
+                };
+                audio.play().catch(reject);
+            });
+        })
+        .catch((error: any) => {
+            isListening.value = false;
+            isSpeaking.value = false;
+            throw error;
         });
+};
 
-        if (!response.ok) {
-            const errorData = await response
-                .json()
-                .catch(() => ({ error: 'Unknown error' }));
-
-            // Extract user-friendly error message
-            const errorMessage =
-                errorData.error ||
-                `Failed to generate speech: ${response.status} ${response.statusText}`;
-
-            throw new Error(errorMessage);
-        }
-
-        // Check if response is actually audio
-        const contentType = response.headers.get('content-type');
-
-        if (!contentType || !contentType.includes('audio')) {
-            await response.text();
-            throw new Error('Server did not return audio content');
-        }
-
-        // Get audio blob from response
-        const audioBlob = await response.blob();
-
-        if (audioBlob.size === 0) {
-            throw new Error('Received empty audio file');
-        }
-
-        const audioUrl = URL.createObjectURL(audioBlob);
-
-        // Stop any currently playing audio
-        if (currentAudio) {
-            currentAudio.pause();
-            currentAudio = null;
-        }
-
-        // Create audio element and play
-        const audio = new Audio(audioUrl);
-        currentAudio = audio;
-
-        audio.onplay = () => {
-            isListening.value = true;
-            isSpeaking.value = true;
-            // Stop recording when AI starts speaking to prevent capturing AI's voice
-            if (speechRecognition.value && recognitionActive.value) {
-                speechRecognition.value.stop();
-            }
-        };
-
-        audio.onended = () => {
-            isListening.value = false;
-            isSpeaking.value = false;
-            // Clean up the object URL
-            URL.revokeObjectURL(audioUrl);
-            currentAudio = null;
-            // Start recording after question/prompt is spoken (if session is active and not processing)
-            if (sessionActive.value && !isProcessingAnswer.value) {
-                startRecording();
-            }
-        };
-
-        audio.onerror = () => {
-            isListening.value = false;
-            isSpeaking.value = false;
-            URL.revokeObjectURL(audioUrl);
-            currentAudio = null;
-            alert('Error playing audio. Please try again.');
-            startRecording(); // Allow manual input
-        };
-
-        // Play the audio
-        await audio.play();
+// Speak question and start recording when playback ends.
+const speakQuestion = async (question: string) => {
+    try {
+        await speakAndWait(question, true);
     } catch (error: any) {
-        isListening.value = false;
-        isSpeaking.value = false;
-
-        // Show detailed error to user
         const errorMsg = error.message || 'Unknown error';
         const is403Error =
             errorMsg.includes('403') ||
@@ -419,18 +402,13 @@ const speakQuestion = async (question: string) => {
             errorMsg.includes('Vertex AI') || errorMsg.includes('aiplatform');
 
         if (is403Error && isVertexAIError) {
-            // Extract activation URL from error if available
             const urlMatch = errorMsg.match(/https:\/\/[^\s]+/);
             const activationUrl = urlMatch ? urlMatch[0] : null;
-
             let message = `Vertex AI API Required\n\n${errorMsg}\n\nTo fix this:\n1. Go to Google Cloud Console\n2. Enable "Vertex AI API" (required for Gemini TTS model)\n3. Also enable "Cloud Text-to-Speech API"\n4. Wait a few minutes for changes to propagate\n5. Ensure billing is enabled`;
-
             if (activationUrl) {
                 message += `\n\nOr click here to enable directly:\n${activationUrl}`;
             }
-
             message += `\n\nYou can still read the question and type your answer.`;
-
             alert(message);
         } else if (is403Error) {
             alert(
@@ -441,9 +419,6 @@ const speakQuestion = async (question: string) => {
                 `Error generating speech: ${errorMsg}\n\nPlease check:\n1. Google TTS API key is configured in .env\n2. API key has proper permissions\n3. Check browser console for details\n\nYou can still read the question and type your answer.`,
             );
         }
-
-        // Don't use fallback - just allow manual input
-        // User can still type their answer
         startRecording();
     }
 };
@@ -700,17 +675,25 @@ const evaluateAndMoveOn = async (answerText: string, isSkipped: boolean) => {
     finalAnswer = '';
     answer.value = '';
 
-    // When user said "don't know", speak the supportive message via TTS (no "next question" on last question)
-    if (isSkipped) {
-        speakQuestion(skipFeedbackMessage).catch(() => {
-            // If TTS fails, we still move on after the delay
-        });
-    }
+    // Build message to speak: for skip use supportive message; for answer tell whether wrong or acceptable, then move on (or "we're done" on last question).
+    const score = evaluation.score_1_10 ?? 5;
+    const acceptableThreshold = 6;
+    const nextPhrase = isLastQuestion
+        ? " We're all done."
+        : " Let's move to the next question.";
+    const feedbackToSpeak = isSkipped
+        ? skipFeedbackMessage
+        : score >= acceptableThreshold
+          ? `That's acceptable, well done.${nextPhrase}`
+          : `That's not quite right.${nextPhrase}`;
 
-    // Move to next question after showing evaluation
-    setTimeout(() => {
-        moveToNextQuestion();
-    }, 3000);
+    // Speak feedback via TTS and only move to next question after playback completes (no overlap).
+    try {
+        await speakAndWait(feedbackToSpeak, false);
+    } catch {
+        // If TTS fails, still move on after a short delay
+    }
+    moveToNextQuestion();
 };
 
 // Complete viva submission: send 5 answers with score_1_10 to backend; backend calls Python rubric service and returns rubric score.
@@ -853,404 +836,306 @@ onUnmounted(() => {
     <Head title="Attend Viva" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div
-            class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4"
-        >
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-2xl font-bold">{{ vivaSession.title }}</h1>
-                    <p class="text-muted-foreground">
-                        {{ vivaSession.lecturer }} •
-                        {{ vivaSession.scheduled_at }}
+        <div class="viva-voice-agent flex min-h-[calc(100vh-8rem)] flex-col">
+            <!-- Minimal top bar -->
+            <header
+                class="flex shrink-0 items-center justify-between border-b bg-background/95 px-4 py-3 backdrop-blur"
+            >
+                <div class="flex items-center gap-3">
+                    <h1 class="text-lg font-semibold tracking-tight">
+                        {{ vivaSession.title }}
+                    </h1>
+                    <span
+                        v-if="sessionActive"
+                        class="flex items-center gap-1.5 text-xs text-muted-foreground"
+                    >
+                        <span
+                            class="h-1.5 w-1.5 rounded-full bg-emerald-500"
+                        ></span>
+                        Live
+                    </span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <template v-if="sessionActive">
+                        <span
+                            class="font-mono text-sm tabular-nums text-muted-foreground"
+                        >
+                            {{ formatTime(timeElapsed) }}
+                        </span>
+                        <span class="text-sm text-muted-foreground">
+                            {{ questionIndex + 1 }}/{{ questions.length }}
+                        </span>
+                        <Button
+                            @click="stopSession"
+                            variant="ghost"
+                            size="sm"
+                            class="text-muted-foreground hover:text-destructive"
+                        >
+                            <Square class="mr-1.5 h-4 w-4" />
+                            End
+                        </Button>
+                    </template>
+                </div>
+            </header>
+
+            <!-- Document upload gate (shown when no document) -->
+            <div
+                v-if="!documentUploaded"
+                class="flex flex-1 flex-col items-center justify-center gap-6 px-4 py-12"
+            >
+                <div
+                    class="flex h-20 w-20 items-center justify-center rounded-full bg-muted"
+                >
+                    <FileText class="h-10 w-10 text-muted-foreground" />
+                </div>
+                <div class="max-w-sm text-center">
+                    <h2 class="text-lg font-medium">Upload your document</h2>
+                    <p class="mt-1 text-sm text-muted-foreground">
+                        PDF or Word, max 10MB. Required before starting the
+                        viva.
                     </p>
                 </div>
-                <Badge v-if="sessionActive" variant="default" class="text-sm">
-                    Session Active
-                </Badge>
+                <div class="flex w-full max-w-sm flex-col gap-2">
+                    <Input
+                        ref="documentInputRef"
+                        id="document"
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        @change="handleDocumentSelect"
+                        class="cursor-pointer"
+                    />
+                    <Button
+                        @click="uploadDocument"
+                        :disabled="!documentFile || isUploadingDocument"
+                    >
+                        <Upload class="mr-2 h-4 w-4" />
+                        {{ isUploadingDocument ? 'Uploading...' : 'Upload' }}
+                    </Button>
+                </div>
             </div>
 
-            <!-- Document Upload Section -->
-            <Card v-if="!documentUploaded" class="mb-6">
-                <CardHeader>
-                    <CardTitle>Upload Your Document</CardTitle>
-                    <CardDescription
-                        >Please upload your document before starting the viva
-                        session</CardDescription
+            <!-- Ready to start (document uploaded, session not started) -->
+            <div
+                v-else-if="!sessionActive"
+                class="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-12"
+            >
+                <div
+                    class="flex max-w-md flex-col items-center gap-6 rounded-2xl border bg-card p-8 text-center shadow-sm"
+                >
+                    <div
+                        class="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10"
                     >
-                </CardHeader>
-                <CardContent class="space-y-4">
+                        <Mic class="h-8 w-8 text-primary" />
+                    </div>
                     <div class="space-y-2">
-                        <Label for="document">Document (PDF or Word)</Label>
-                        <div class="flex gap-4">
-                            <Input
-                                ref="documentInputRef"
-                                id="document"
-                                type="file"
-                                accept=".pdf,.doc,.docx"
-                                @change="handleDocumentSelect"
-                                class="flex-1"
-                            />
-                            <Button
-                                @click="uploadDocument"
-                                :disabled="!documentFile || isUploadingDocument"
-                            >
-                                <Upload class="mr-2 h-4 w-4" />
-                                <span v-if="isUploadingDocument"
-                                    >Uploading...</span
-                                >
-                                <span v-else>Upload</span>
-                            </Button>
-                        </div>
-                        <p class="text-xs text-muted-foreground">
-                            Maximum file size: 10MB. Supported formats: PDF,
-                            DOC, DOCX
+                        <h2 class="text-xl font-semibold">
+                            Ready for your viva
+                        </h2>
+                        <p class="text-sm text-muted-foreground">
+                            Your document is uploaded. You’ll get 5 questions
+                            and can answer by voice. Say “I don’t know” or
+                            “Skip” to move on.
                         </p>
                     </div>
-                </CardContent>
-            </Card>
-
-            <!-- Document Uploaded Confirmation -->
-            <Card v-else class="mb-6 border-green-500">
-                <CardContent class="pt-6">
-                    <div class="flex items-center gap-2 text-green-600">
-                        <FileText class="h-5 w-5" />
-                        <span class="font-medium"
-                            >Document uploaded successfully</span
+                    <ul
+                        class="w-full space-y-2 text-left text-sm text-muted-foreground"
+                    >
+                        <li class="flex items-center gap-2">
+                            <span
+                                class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium"
+                                >1</span
+                            >
+                            Listen to each question (read aloud)
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span
+                                class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium"
+                                >2</span
+                            >
+                            Speak your answer — we’ll detect when you finish
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span
+                                class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium"
+                                >3</span
+                            >
+                            Get feedback and move to the next question
+                        </li>
+                    </ul>
+                    <Button
+                        size="lg"
+                        class="w-full"
+                        :disabled="isLoadingQuestions"
+                        @click="startSession"
+                    >
+                        <Mic class="mr-2 h-5 w-5" />
+                        <span v-if="isLoadingQuestions"
+                            >Generating questions...</span
                         >
-                    </div>
-                </CardContent>
-            </Card>
-
-            <div class="grid gap-6 md:grid-cols-3">
-                <!-- Voice Agent UI -->
-                <Card class="md:col-span-2">
-                    <CardHeader>
-                        <CardTitle>Voice Agent</CardTitle>
-                        <CardDescription
-                            >Listen to questions and provide your
-                            answers</CardDescription
-                        >
-                    </CardHeader>
-                    <CardContent class="space-y-6">
-                        <!-- Voice Status -->
-                        <div class="flex items-center justify-center">
-                            <div
-                                class="relative flex h-32 w-32 items-center justify-center rounded-full border-4 transition-all"
-                                :class="{
-                                    'animate-pulse border-primary bg-primary/10':
-                                        isListening || isSpeaking,
-                                    'border-muted':
-                                        !isListening &&
-                                        !isRecording &&
-                                        !isSpeaking,
-                                    'border-green-500 bg-green-500/10':
-                                        isRecording &&
-                                        !isListening &&
-                                        !isSpeaking,
-                                }"
-                            >
-                                <div
-                                    v-if="isListening || isSpeaking"
-                                    class="flex items-center justify-center"
-                                >
-                                    <Volume2
-                                        class="h-12 w-12 animate-pulse text-primary"
-                                    />
-                                </div>
-                                <div
-                                    v-else-if="isRecording"
-                                    class="flex items-center justify-center"
-                                >
-                                    <Mic
-                                        class="h-12 w-12 animate-pulse text-green-500"
-                                    />
-                                </div>
-                                <div
-                                    v-else
-                                    class="flex items-center justify-center"
-                                >
-                                    <MicOff
-                                        class="h-12 w-12 text-muted-foreground"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Evaluation Result: mark 1-10 and feedback -->
-                        <div
-                            v-if="showEvaluation && currentEvaluation"
-                            class="space-y-3 rounded-lg border-2 border-primary bg-primary/5 p-4"
-                        >
-                            <div class="flex items-center justify-between">
-                                <div class="text-sm font-medium">
-                                    Answer Evaluation
-                                </div>
-                                <Badge variant="secondary" class="text-sm"
-                                    >Mark:
-                                    {{ currentEvaluation.score_1_10 }}/10</Badge
-                                >
-                            </div>
-                            <div class="text-sm text-muted-foreground">
-                                {{ currentEvaluation.feedback }}
-                            </div>
-                            <div
-                                v-if="
-                                    currentEvaluation.correctPoints &&
-                                    currentEvaluation.correctPoints.length > 0
-                                "
-                                class="space-y-1"
-                            >
-                                <div class="text-xs font-medium text-green-600">
-                                    ✓ Correct Points:
-                                </div>
-                                <ul
-                                    class="list-inside list-disc space-y-0.5 text-xs text-muted-foreground"
-                                >
-                                    <li
-                                        v-for="(
-                                            point, idx
-                                        ) in currentEvaluation.correctPoints"
-                                        :key="idx"
-                                    >
-                                        {{ point }}
-                                    </li>
-                                </ul>
-                            </div>
-                            <div
-                                v-if="
-                                    currentEvaluation.improvements &&
-                                    currentEvaluation.improvements.length > 0
-                                "
-                                class="space-y-1"
-                            >
-                                <div
-                                    class="text-xs font-medium text-orange-600"
-                                >
-                                    ⚠ Areas for Improvement:
-                                </div>
-                                <ul
-                                    class="list-inside list-disc space-y-0.5 text-xs text-muted-foreground"
-                                >
-                                    <li
-                                        v-for="(
-                                            improvement, idx
-                                        ) in currentEvaluation.improvements"
-                                        :key="idx"
-                                    >
-                                        {{ improvement }}
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <!-- Current Question -->
-                        <div v-if="currentQuestion" class="space-y-4">
-                            <div class="rounded-lg bg-muted p-4">
-                                <div class="mb-2 text-sm font-medium">
-                                    Current Question:
-                                </div>
-                                <div class="text-lg">{{ currentQuestion }}</div>
-                            </div>
-
-                            <div class="space-y-2">
-                                <div class="flex items-center justify-between">
-                                    <label class="text-sm font-medium"
-                                        >Your Answer:</label
-                                    >
-                                    <div
-                                        v-if="isRecording"
-                                        class="flex items-center gap-2 text-xs text-green-600"
-                                    >
-                                        <div
-                                            class="h-2 w-2 animate-pulse rounded-full bg-green-500"
-                                        ></div>
-                                        Recording...
-                                    </div>
-                                </div>
-                                <textarea
-                                    v-model="answer"
-                                    class="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
-                                    placeholder="Type or speak your answer here... (Speech recognition will automatically transcribe your voice)"
-                                    :disabled="isSpeaking"
-                                />
-                                <p class="text-xs text-muted-foreground">
-                                    <span v-if="isSpeaking"
-                                        >Please wait while the examiner is
-                                        speaking...</span
-                                    >
-                                    <span v-else-if="isProcessingAnswer"
-                                        >Processing your answer...</span
-                                    >
-                                    <span v-else-if="isRecording"
-                                        >Speak your answer now. The system will
-                                        automatically detect when you finish
-                                        speaking.</span
-                                    >
-                                    <span v-else
-                                        >The AI examiner is listening. Speak
-                                        naturally and your answer will be
-                                        processed automatically.</span
-                                    >
-                                </p>
-                            </div>
-
-                            <!-- Manual controls (optional fallback) -->
-                            <div class="flex gap-2">
-                                <Button
-                                    @click="processAnswer"
-                                    :disabled="
-                                        !answer.trim() ||
-                                        !sessionActive ||
-                                        showEvaluation ||
-                                        isProcessingAnswer ||
-                                        isSpeaking
-                                    "
-                                    class="flex-1"
-                                    variant="outline"
-                                >
-                                    <span v-if="showEvaluation"
-                                        >Evaluating...</span
-                                    >
-                                    <span v-else-if="isProcessingAnswer"
-                                        >Processing...</span
-                                    >
-                                    <span v-else>Process Answer (Manual)</span>
-                                </Button>
-                            </div>
-                            <p
-                                class="mt-2 text-center text-xs text-muted-foreground"
-                            >
-                                💡 The system automatically processes your
-                                answer when you stop speaking. Use the button
-                                above only if needed.
-                            </p>
-                        </div>
-
-                        <div
-                            v-else-if="isLoadingQuestions"
-                            class="py-8 text-center text-muted-foreground"
-                        >
-                            <p>Generating questions using AI...</p>
-                        </div>
-
-                        <div
-                            v-else
-                            class="py-8 text-center text-muted-foreground"
-                        >
-                            <p v-if="!documentUploaded">
-                                Please upload your document first
-                            </p>
-                            <p v-else>
-                                Click "Start Session" to begin the viva
-                            </p>
-                        </div>
-
-                        <!-- Session Controls -->
-                        <div
-                            class="flex items-center justify-center gap-4 border-t pt-4"
-                        >
-                            <Button
-                                v-if="!sessionActive"
-                                @click="startSession"
-                                size="lg"
-                                :disabled="
-                                    isLoadingQuestions || !documentUploaded
-                                "
-                            >
-                                <Play class="mr-2 h-4 w-4" />
-                                <span v-if="isLoadingQuestions"
-                                    >Generating Questions...</span
-                                >
-                                <span v-else-if="!documentUploaded"
-                                    >Upload Document First</span
-                                >
-                                <span v-else>Start Session</span>
-                            </Button>
-                            <Button
-                                v-else
-                                @click="stopSession"
-                                variant="destructive"
-                                size="lg"
-                            >
-                                <Square class="mr-2 h-4 w-4" />
-                                End Session
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <!-- Session Info -->
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Session Info</CardTitle>
-                    </CardHeader>
-                    <CardContent class="space-y-4">
-                        <div>
-                            <div class="mb-1 text-sm font-medium">
-                                Time Elapsed
-                            </div>
-                            <div class="text-2xl font-bold">
-                                {{ formatTime(timeElapsed) }}
-                            </div>
-                        </div>
-
-                        <div>
-                            <div class="mb-1 text-sm font-medium">
-                                Questions
-                            </div>
-                            <div class="text-2xl font-bold">
-                                {{ questionIndex + 1 }}/{{ questions.length }}
-                            </div>
-                        </div>
-
-                        <div class="space-y-2">
-                            <div class="text-sm font-medium">
-                                Question Progress
-                            </div>
-                            <div class="space-y-1">
-                                <div
-                                    v-for="(question, index) in questions"
-                                    :key="index"
-                                    class="rounded border p-2 text-xs"
-                                    :class="{
-                                        'border-primary bg-primary/10':
-                                            index === questionIndex,
-                                        'bg-muted': questionIndex > index,
-                                        'opacity-50': questionIndex < index,
-                                    }"
-                                >
-                                    Q{{ index + 1 }}:
-                                    {{ question.substring(0, 40) }}...
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="space-y-2 border-t pt-4">
-                            <div class="text-xs text-muted-foreground">
-                                <strong>Instructions:</strong>
-                            </div>
-                            <ul
-                                class="list-inside list-disc space-y-1 text-xs text-muted-foreground"
-                            >
-                                <li>Listen carefully to each question</li>
-                                <li>
-                                    Speak your answer naturally — the system
-                                    will detect when you finish and give a mark
-                                    1–10
-                                </li>
-                                <li>
-                                    If you don't know, say "I don't know" or
-                                    "Skip" and the system will move on
-                                </li>
-                                <li>
-                                    After 5 answers, your rubric grade is
-                                    calculated from the 5 marks
-                                </li>
-                            </ul>
-                        </div>
-                    </CardContent>
-                </Card>
+                        <span v-else>Start viva</span>
+                    </Button>
+                </div>
             </div>
+
+            <!-- Voice agent main view (session active) -->
+            <template v-else>
+                <!-- Center: orb + status -->
+                <div
+                    class="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-8"
+                >
+                    <div
+                        class="viva-orb"
+                        :class="{
+                            'viva-orb--speaking': isSpeaking || isListening,
+                            'viva-orb--listening': isRecording && !isSpeaking && !isListening,
+                            'viva-orb--idle':
+                                !isRecording && !isSpeaking && !isListening,
+                        }"
+                    >
+                        <Volume2
+                            v-if="isSpeaking || isListening"
+                            class="h-10 w-10 text-primary"
+                        />
+                        <Mic
+                            v-else-if="isRecording"
+                            class="h-10 w-10 text-emerald-500"
+                        />
+                        <MicOff
+                            v-else
+                            class="h-10 w-10 text-muted-foreground"
+                        />
+                    </div>
+
+                    <!-- Status line -->
+                    <p
+                        class="max-w-md text-center text-sm text-muted-foreground"
+                    >
+                        <span v-if="isSpeaking">Listening to question...</span>
+                        <span v-else-if="isProcessingAnswer"
+                            >Evaluating your answer...</span
+                        >
+                        <span v-else-if="isRecording"
+                            >Speak now. We’ll move on after you
+                            finish.</span
+                        >
+                        <span v-else>Ready for your answer.</span>
+                    </p>
+
+                    <!-- Inline evaluation (compact) -->
+                    <div
+                        v-if="showEvaluation && currentEvaluation"
+                        class="w-full max-w-md rounded-xl border bg-card px-4 py-3 text-left shadow-sm"
+                    >
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-xs font-medium text-muted-foreground"
+                                >Feedback</span
+                            >
+                            <Badge variant="secondary" class="text-xs">
+                                {{ currentEvaluation.score_1_10 }}/10
+                            </Badge>
+                        </div>
+                        <p class="mt-2 text-sm">
+                            {{ currentEvaluation.feedback }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Transcript strip (conversation-style) -->
+                <div
+                    v-if="currentQuestion || answer.trim()"
+                    class="shrink-0 border-t bg-muted/30 px-4 py-4"
+                >
+                    <div class="mx-auto flex max-w-2xl flex-col gap-3">
+                        <div
+                            v-if="currentQuestion"
+                            class="flex gap-3"
+                        >
+                            <div
+                                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10"
+                            >
+                                <Volume2 class="h-4 w-4 text-primary" />
+                            </div>
+                            <div class="min-w-0 flex-1 rounded-2xl rounded-tl-sm bg-background px-4 py-2.5 text-sm shadow-sm">
+                                {{ currentQuestion }}
+                            </div>
+                        </div>
+                        <div
+                            v-if="answer.trim()"
+                            class="flex gap-3 justify-end"
+                        >
+                            <div class="min-w-0 max-w-[85%] rounded-2xl rounded-tr-sm bg-primary px-4 py-2.5 text-sm text-primary-foreground">
+                                {{ answer || '...' }}
+                            </div>
+                            <div
+                                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary"
+                            >
+                                <Mic class="h-4 w-4 text-primary-foreground" />
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Manual submit fallback -->
+                    <div class="mx-auto mt-3 flex max-w-2xl justify-end">
+                        <Button
+                            @click="processAnswer"
+                            :disabled="
+                                !answer.trim() ||
+                                showEvaluation ||
+                                isProcessingAnswer ||
+                                isSpeaking
+                            "
+                            variant="ghost"
+                            size="sm"
+                            class="text-xs text-muted-foreground"
+                        >
+                            Submit answer
+                        </Button>
+                    </div>
+                </div>
+            </template>
         </div>
     </AppLayout>
 </template>
+
+<style scoped>
+.viva-orb {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 7rem;
+    width: 7rem;
+    border-radius: 9999px;
+    border-width: 2px;
+    transition: all 0.3s ease-out;
+}
+.viva-orb--idle {
+    border-color: var(--muted);
+    background-color: color-mix(in srgb, var(--muted) 50%, transparent);
+}
+.viva-orb--idle:hover {
+    border-color: color-mix(in srgb, var(--muted-foreground) 30%, transparent);
+    background-color: color-mix(in srgb, var(--muted) 70%, transparent);
+}
+.viva-orb--speaking {
+    border-color: var(--primary);
+    background-color: color-mix(in srgb, var(--primary) 10%, transparent);
+    box-shadow: 0 10px 15px -3px color-mix(in srgb, var(--primary) 20%, transparent);
+    animation: viva-pulse 1.5s ease-in-out infinite;
+}
+.viva-orb--listening {
+    border-color: rgb(16 185 129);
+    background-color: rgb(16 185 129 / 0.1);
+    box-shadow: 0 10px 15px -3px rgb(16 185 129 / 0.2);
+    animation: viva-pulse 1.2s ease-in-out infinite;
+}
+@keyframes viva-pulse {
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.85;
+        transform: scale(1.08);
+    }
+}
+</style>
