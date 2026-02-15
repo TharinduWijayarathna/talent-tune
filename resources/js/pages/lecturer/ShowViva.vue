@@ -213,7 +213,9 @@ const pendingCount = () =>
                                 <CollapsibleTrigger
                                     class="flex w-full items-center justify-between gap-4 px-4 py-3 text-left"
                                 >
-                                    <div class="flex min-w-0 flex-1 items-center gap-3">
+                                    <div
+                                        class="flex min-w-0 flex-1 items-center gap-3"
+                                    >
                                         <ChevronRight
                                             class="h-4 w-4 shrink-0 text-muted-foreground transition-transform"
                                             :class="
@@ -223,12 +225,12 @@ const pendingCount = () =>
                                             "
                                         />
                                         <div class="min-w-0">
-                                            <p class="font-medium truncate">
+                                            <p class="truncate font-medium">
                                                 {{ sub.student_name }}
                                             </p>
                                             <p
                                                 v-if="sub.student_email"
-                                                class="text-xs text-muted-foreground truncate"
+                                                class="truncate text-xs text-muted-foreground"
                                             >
                                                 {{ sub.student_email }}
                                             </p>
@@ -263,14 +265,14 @@ const pendingCount = () =>
                                     />
                                 </CollapsibleTrigger>
                                 <CollapsibleContent>
-                                    <div
-                                        class="border-t bg-muted/30 px-4 py-4"
-                                    >
+                                    <div class="border-t bg-muted/30 px-4 py-4">
                                         <div
                                             v-if="sub.feedback"
                                             class="mb-4 rounded-md border bg-background p-3 text-sm"
                                         >
-                                            <p class="font-medium text-muted-foreground">
+                                            <p
+                                                class="font-medium text-muted-foreground"
+                                            >
                                                 Overall feedback
                                             </p>
                                             <p class="mt-1">
@@ -286,24 +288,31 @@ const pendingCount = () =>
                                         >
                                             No answers recorded yet.
                                         </div>
-                                        <div
-                                            v-else
-                                            class="space-y-4"
-                                        >
+                                        <div v-else class="space-y-4">
                                             <div
-                                                v-for="(item, idx) in sub.answers"
+                                                v-for="(
+                                                    item, idx
+                                                ) in sub.answers"
                                                 :key="idx"
                                                 class="rounded-lg border bg-background p-4"
                                             >
-                                                <div class="flex items-start gap-2">
+                                                <div
+                                                    class="flex items-start gap-2"
+                                                >
                                                     <MessageSquare
                                                         class="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
                                                     />
-                                                    <div class="min-w-0 flex-1 space-y-2">
-                                                        <p class="text-sm font-medium text-muted-foreground">
+                                                    <div
+                                                        class="min-w-0 flex-1 space-y-2"
+                                                    >
+                                                        <p
+                                                            class="text-sm font-medium text-muted-foreground"
+                                                        >
                                                             Q{{ idx + 1 }}
                                                         </p>
-                                                        <p class="text-sm font-medium">
+                                                        <p
+                                                            class="text-sm font-medium"
+                                                        >
                                                             {{ item.question }}
                                                         </p>
                                                         <p
@@ -314,7 +323,7 @@ const pendingCount = () =>
                                                         <div
                                                             v-if="
                                                                 item.score_1_10 !=
-                                                                null &&
+                                                                    null &&
                                                                 item.score_1_10 !==
                                                                     undefined
                                                             "
@@ -323,7 +332,10 @@ const pendingCount = () =>
                                                             <Badge
                                                                 variant="outline"
                                                             >
-                                                                Score: {{ item.score_1_10 }}/10
+                                                                Score:
+                                                                {{
+                                                                    item.score_1_10
+                                                                }}/10
                                                             </Badge>
                                                         </div>
                                                         <p
@@ -334,7 +346,9 @@ const pendingCount = () =>
                                                         </p>
                                                         <div
                                                             v-if="
-                                                                item.correctPoints?.length
+                                                                item
+                                                                    .correctPoints
+                                                                    ?.length
                                                             "
                                                             class="text-sm"
                                                         >
@@ -358,7 +372,9 @@ const pendingCount = () =>
                                                         </div>
                                                         <div
                                                             v-if="
-                                                                item.improvements?.length
+                                                                item
+                                                                    .improvements
+                                                                    ?.length
                                                             "
                                                             class="text-sm"
                                                         >
