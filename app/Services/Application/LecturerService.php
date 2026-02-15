@@ -6,6 +6,7 @@ use App\Models\Batch;
 use App\Models\Institution;
 use App\Models\User;
 use App\Models\Viva;
+use App\Models\VivaStudentSubmission;
 use App\Services\Ai\GeminiFileService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
@@ -156,6 +157,37 @@ class LecturerService
         return Viva::where('institution_id', $institution->id)
             ->where('lecturer_id', $user->id)
             ->findOrFail($id);
+    }
+
+    /**
+     * Get all submissions (attendees) for a viva for lecturer view.
+     *
+     * @return array<int, array{id: int, student_name: string, status: string, total_score: int|null, feedback: string|null, answers: array, document_path: string|null, completed_at: string|null}>
+     */
+    public function getVivaSubmissionsForShow(Institution $institution, User $user, int $vivaId): array
+    {
+        $viva = Viva::where('institution_id', $institution->id)
+            ->where('lecturer_id', $user->id)
+            ->findOrFail($vivaId);
+
+        return VivaStudentSubmission::where('viva_id', $viva->id)
+            ->with('student')
+            ->orderBy('updated_at', 'desc')
+            ->get()
+            ->map(function (VivaStudentSubmission $sub) {
+                return [
+                    'id' => $sub->id,
+                    'student_name' => $sub->student?->name ?? 'Unknown',
+                    'student_email' => $sub->student?->email ?? null,
+                    'status' => $sub->status,
+                    'total_score' => $sub->total_score,
+                    'feedback' => $sub->feedback,
+                    'answers' => $sub->answers ?? [],
+                    'document_path' => $sub->document_path,
+                    'completed_at' => $sub->updated_at?->format('Y-m-d H:i'),
+                ];
+            })
+            ->all();
     }
 
     /**

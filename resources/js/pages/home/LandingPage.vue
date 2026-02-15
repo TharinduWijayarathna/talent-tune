@@ -19,14 +19,11 @@ import {
     Building2,
     ChevronDown,
     Clock,
-    FileText,
     Globe,
-    GraduationCap,
     MessageSquare,
     Mic,
     Shield,
     Sparkles,
-    Star,
     TrendingUp,
     Users,
     Zap,
@@ -54,12 +51,14 @@ const howItWorksSteps = computed(() => [
         description:
             'Fill out the registration form with your institution details. Our admin team will review and activate your account within 24 hours.',
         icon: Building2,
+        gradient: 'from-violet-500 to-purple-600',
     },
     {
         number: '2',
         title: 'Get Your Subdomain',
         description: `Once activated, access your institution portal via your custom subdomain (e.g., your-university.${baseDomain.value}).`,
         icon: Globe,
+        gradient: 'from-blue-500 to-cyan-500',
     },
     {
         number: '3',
@@ -67,6 +66,7 @@ const howItWorksSteps = computed(() => [
         description:
             'Add lecturers and students, create viva sessions, and leverage AI-powered question generation and evaluation.',
         icon: Zap,
+        gradient: 'from-amber-500 to-orange-500',
     },
 ]);
 
@@ -324,50 +324,8 @@ onMounted(() => {
             </div>
         </section>
 
-        <!-- Stats Section -->
-        <section id="stats-section" class="border-y bg-muted/30 py-16">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="grid grid-cols-2 gap-8 md:grid-cols-4">
-                    <div
-                        v-for="(stat, index) in [
-                            {
-                                value: '500+',
-                                label: 'Institutions',
-                                icon: Building2,
-                            },
-                            {
-                                value: '50K+',
-                                label: 'Students',
-                                icon: GraduationCap,
-                            },
-                            { value: '10K+', label: 'Vivas', icon: FileText },
-                            { value: '98%', label: 'Satisfaction', icon: Star },
-                        ]"
-                        :key="index"
-                        class="text-center"
-                        :class="{
-                            'scale-95 opacity-0': !statsVisible,
-                            'scale-100 opacity-100': statsVisible,
-                        }"
-                        :style="`transition: all 0.6s ease-out ${index * 0.1}s;`"
-                    >
-                        <component
-                            :is="stat.icon"
-                            class="mx-auto mb-2 h-8 w-8 text-primary"
-                        />
-                        <div class="mb-1 text-3xl font-bold">
-                            {{ stat.value }}
-                        </div>
-                        <div class="text-sm text-muted-foreground">
-                            {{ stat.label }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
         <!-- Features Section -->
-        <section class="py-20 sm:py-32">
+        <section class="py-10 sm:py-32">
             <div class="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="mx-auto mb-16 max-w-2xl text-center">
                     <Badge variant="outline" class="mb-4">Features</Badge>
@@ -442,8 +400,8 @@ onMounted(() => {
                             </div>
                             <CardTitle
                                 class="transition-colors group-hover:text-primary"
-                                >{{ feature.title }}</CardTitle
-                            >
+                                >{{ feature.title }}
+                            </CardTitle>
                             <CardDescription class="text-base leading-relaxed">
                                 {{ feature.description }}
                             </CardDescription>
@@ -454,11 +412,19 @@ onMounted(() => {
         </section>
 
         <!-- How It Works Section -->
-        <section class="relative overflow-hidden bg-muted/50 py-20 sm:py-32">
-            <div class="bg-grid-pattern absolute inset-0 opacity-5" />
+        <section class="relative overflow-hidden py-20 sm:py-32">
+            <!-- Background -->
+            <div
+                class="absolute inset-0 bg-gradient-to-b from-muted/40 via-background to-muted/30"
+            />
+            <div class="bg-grid-pattern absolute inset-0 opacity-[0.07]" />
             <div class="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="mx-auto mb-16 max-w-2xl text-center">
-                    <Badge variant="outline" class="mb-4">Process</Badge>
+                <div class="mx-auto mb-20 max-w-2xl text-center">
+                    <Badge
+                        variant="outline"
+                        class="mb-4 border-primary/30 bg-primary/5 px-3 py-1"
+                        >Process</Badge
+                    >
                     <h2
                         class="mb-4 text-3xl font-bold tracking-tight sm:text-4xl"
                     >
@@ -469,32 +435,69 @@ onMounted(() => {
                         streamlined process.
                     </p>
                 </div>
-                <div class="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
-                    <div
+                <div
+                    class="mx-auto flex max-w-5xl flex-col gap-8 md:flex-row md:items-center md:gap-4"
+                >
+                    <template
                         v-for="(step, index) in howItWorksSteps"
                         :key="index"
-                        class="relative text-center"
                     >
-                        <div
-                            class="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/60 text-2xl font-bold text-primary-foreground shadow-lg"
+                        <Card
+                            class="group relative flex flex-1 flex-col overflow-hidden border-2 border-border/80 bg-card/80 shadow-lg backdrop-blur-sm transition-all duration-300 hover:-translate-y-2 hover:border-primary/30 hover:shadow-2xl"
                         >
-                            {{ step.number }}
-                        </div>
-                        <component
-                            :is="step.icon"
-                            class="mx-auto mb-4 h-8 w-8 text-primary"
-                        />
-                        <h3 class="mb-3 text-xl font-semibold">
-                            {{ step.title }}
-                        </h3>
-                        <p class="leading-relaxed text-muted-foreground">
-                            {{ step.description }}
-                        </p>
+                            <!-- Accent bar top -->
+                            <div
+                                class="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r opacity-90 transition-opacity group-hover:opacity-100"
+                                :class="step.gradient"
+                            />
+                            <CardHeader
+                                class="flex flex-1 flex-col items-center pt-8 pb-6 text-center"
+                            >
+                                <div
+                                    class="relative mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br text-white shadow-lg ring-4 ring-background transition-all duration-300 group-hover:scale-110 group-hover:shadow-xl"
+                                    :class="[step.gradient]"
+                                >
+                                    <span
+                                        class="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-background text-xs font-bold text-foreground shadow ring-2 ring-background"
+                                    >
+                                        {{ step.number }}
+                                    </span>
+                                    <component
+                                        :is="step.icon"
+                                        class="h-7 w-7 opacity-95"
+                                    />
+                                </div>
+                                <span
+                                    class="mb-1 text-xs font-medium tracking-wider text-muted-foreground uppercase"
+                                >
+                                    Step {{ step.number }}
+                                </span>
+                                <CardTitle
+                                    class="text-xl transition-colors group-hover:text-foreground"
+                                >
+                                    {{ step.title }}
+                                </CardTitle>
+                                <CardDescription
+                                    class="mt-2 text-base leading-relaxed"
+                                >
+                                    {{ step.description }}
+                                </CardDescription>
+                            </CardHeader>
+                        </Card>
                         <div
-                            v-if="index < 2"
-                            class="absolute top-8 left-full hidden h-0.5 w-full translate-x-4 transform bg-gradient-to-r from-primary/50 to-transparent md:block"
-                        />
-                    </div>
+                            v-if="index < howItWorksSteps.length - 1"
+                            class="hidden shrink-0 md:flex"
+                            aria-hidden="true"
+                        >
+                            <div
+                                class="flex h-10 w-10 items-center justify-center rounded-full bg-muted/80"
+                            >
+                                <ArrowRight
+                                    class="h-5 w-5 text-muted-foreground"
+                                />
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </div>
         </section>
@@ -708,7 +711,8 @@ onMounted(() => {
                                 <Link
                                     href="/register-institution"
                                     class="transition-colors hover:text-foreground"
-                                    >Register Institution</Link
+                                >
+                                    Register Institution</Link
                                 >
                             </li>
                             <li>
@@ -787,6 +791,7 @@ onMounted(() => {
     100% {
         background-position: 0% 50%;
     }
+
     50% {
         background-position: 100% 50%;
     }
@@ -810,6 +815,7 @@ onMounted(() => {
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);

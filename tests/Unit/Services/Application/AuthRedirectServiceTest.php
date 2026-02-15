@@ -52,6 +52,7 @@ test('getRedirectUrl returns slash when already on institution subdomain', funct
         'slug' => 'acme',
         'email' => 'acme@example.com',
         'is_active' => true,
+        'subscription_status' => 'active',
     ]);
     $user = User::factory()->make(['role' => 'student', 'institution_id' => $institution->id]);
     $user->setRelation('institution', $institution);
@@ -68,6 +69,7 @@ test('getRedirectUrl returns institution subdomain URL when on different host', 
         'slug' => 'acme',
         'email' => 'acme@example.com',
         'is_active' => true,
+        'subscription_status' => 'active',
     ]);
     $user = User::factory()->make(['role' => 'student', 'institution_id' => $institution->id]);
     $user->setRelation('institution', $institution);

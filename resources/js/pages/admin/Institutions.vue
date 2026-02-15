@@ -281,11 +281,7 @@ const activeCount = computed(
                                     }}
                                 </Badge>
 
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    as-child
-                                >
+                                <Button variant="outline" size="sm" as-child>
                                     <Link
                                         :href="`/admin/institutions/${institution.slug}/edit`"
                                     >
