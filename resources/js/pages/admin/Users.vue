@@ -117,11 +117,15 @@ const searchQuery = ref(props.filters.search ?? '');
 const institutionFilter = ref(props.filters.institution_id ?? '');
 
 const applyFilters = () => {
-    router.get(currentSection.value.route, {
-        search: searchQuery.value || undefined,
-        institution_id: institutionFilter.value || undefined,
-        page: 1,
-    }, { preserveState: true });
+    router.get(
+        currentSection.value.route,
+        {
+            search: searchQuery.value || undefined,
+            institution_id: institutionFilter.value || undefined,
+            page: 1,
+        },
+        { preserveState: true },
+    );
 };
 
 const roleLabels: Record<string, string> = {
@@ -141,7 +145,9 @@ const roleLabels: Record<string, string> = {
         >
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-2xl font-bold">{{ currentSection.title }}</h1>
+                    <h1 class="text-2xl font-bold">
+                        {{ currentSection.title }}
+                    </h1>
                     <p class="text-muted-foreground">
                         {{ currentSection.description }}
                     </p>

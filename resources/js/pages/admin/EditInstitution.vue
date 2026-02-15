@@ -76,15 +76,22 @@ const submit = () => {
                 <CardHeader>
                     <CardTitle>Institution Details</CardTitle>
                     <CardDescription>
-                        Update the institution information. The subdomain (slug) cannot be changed.
+                        Update the institution information. The subdomain (slug)
+                        cannot be changed.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form @submit.prevent="submit" class="space-y-6">
                         <div class="space-y-2">
                             <Label for="slug">Subdomain (read-only)</Label>
-                            <div class="flex items-center gap-2 rounded-md border border-input bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
-                                <span>{{ institution.slug }}.{{ baseDomain }}</span>
+                            <div
+                                class="flex items-center gap-2 rounded-md border border-input bg-muted/50 px-3 py-2 text-sm text-muted-foreground"
+                            >
+                                <span
+                                    >{{ institution.slug }}.{{
+                                        baseDomain
+                                    }}</span
+                                >
                             </div>
                         </div>
 
@@ -113,7 +120,9 @@ const submit = () => {
                                 <InputError :message="form.errors.email" />
                             </div>
                             <div class="space-y-2">
-                                <Label for="contact_person">Contact Person *</Label>
+                                <Label for="contact_person"
+                                    >Contact Person *</Label
+                                >
                                 <Input
                                     id="contact_person"
                                     v-model="form.contact_person"
@@ -121,7 +130,9 @@ const submit = () => {
                                     placeholder="Dr. Jane Smith"
                                     required
                                 />
-                                <InputError :message="form.errors.contact_person" />
+                                <InputError
+                                    :message="form.errors.contact_person"
+                                />
                             </div>
                         </div>
 
@@ -173,7 +184,10 @@ const submit = () => {
                                 type="checkbox"
                                 class="h-4 w-4 rounded border-input"
                             />
-                            <Label for="is_active" class="cursor-pointer font-normal">
+                            <Label
+                                for="is_active"
+                                class="cursor-pointer font-normal"
+                            >
                                 Institution is active (can access the platform)
                             </Label>
                         </div>

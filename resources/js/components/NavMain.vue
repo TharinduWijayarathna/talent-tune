@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import {
     SidebarGroup,
     SidebarGroupLabel,
@@ -14,7 +18,6 @@ import { urlIsActive } from '@/lib/utils';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 import { ChevronDown } from 'lucide-vue-next';
-import { computed } from 'vue';
 
 const props = defineProps<{
     items: NavItem[];
@@ -59,7 +62,9 @@ function isChildActive(item: NavItem): boolean {
                             >
                                 <SidebarMenuSubButton
                                     as-child
-                                    :is-active="urlIsActive(child.href, page.url)"
+                                    :is-active="
+                                        urlIsActive(child.href, page.url)
+                                    "
                                 >
                                     <Link :href="child.href">
                                         {{ child.title }}

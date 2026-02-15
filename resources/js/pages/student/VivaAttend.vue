@@ -858,7 +858,7 @@ onUnmounted(() => {
                 <div class="flex items-center gap-4">
                     <template v-if="sessionActive">
                         <span
-                            class="font-mono text-sm tabular-nums text-muted-foreground"
+                            class="font-mono text-sm text-muted-foreground tabular-nums"
                         >
                             {{ formatTime(timeElapsed) }}
                         </span>
@@ -987,7 +987,8 @@ onUnmounted(() => {
                         class="viva-orb"
                         :class="{
                             'viva-orb--speaking': isSpeaking || isListening,
-                            'viva-orb--listening': isRecording && !isSpeaking && !isListening,
+                            'viva-orb--listening':
+                                isRecording && !isSpeaking && !isListening,
                             'viva-orb--idle':
                                 !isRecording && !isSpeaking && !isListening,
                         }"
@@ -1015,8 +1016,7 @@ onUnmounted(() => {
                             >Evaluating your answer...</span
                         >
                         <span v-else-if="isRecording"
-                            >Speak now. We’ll move on after you
-                            finish.</span
+                            >Speak now. We’ll move on after you finish.</span
                         >
                         <span v-else>Ready for your answer.</span>
                     </p>
@@ -1027,7 +1027,8 @@ onUnmounted(() => {
                         class="w-full max-w-md rounded-xl border bg-card px-4 py-3 text-left shadow-sm"
                     >
                         <div class="flex items-center justify-between gap-2">
-                            <span class="text-xs font-medium text-muted-foreground"
+                            <span
+                                class="text-xs font-medium text-muted-foreground"
                                 >Feedback</span
                             >
                             <Badge variant="secondary" class="text-xs">
@@ -1046,24 +1047,25 @@ onUnmounted(() => {
                     class="shrink-0 border-t bg-muted/30 px-4 py-4"
                 >
                     <div class="mx-auto flex max-w-2xl flex-col gap-3">
-                        <div
-                            v-if="currentQuestion"
-                            class="flex gap-3"
-                        >
+                        <div v-if="currentQuestion" class="flex gap-3">
                             <div
                                 class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10"
                             >
                                 <Volume2 class="h-4 w-4 text-primary" />
                             </div>
-                            <div class="min-w-0 flex-1 rounded-2xl rounded-tl-sm bg-background px-4 py-2.5 text-sm shadow-sm">
+                            <div
+                                class="min-w-0 flex-1 rounded-2xl rounded-tl-sm bg-background px-4 py-2.5 text-sm shadow-sm"
+                            >
                                 {{ currentQuestion }}
                             </div>
                         </div>
                         <div
                             v-if="answer.trim()"
-                            class="flex gap-3 justify-end"
+                            class="flex justify-end gap-3"
                         >
-                            <div class="min-w-0 max-w-[85%] rounded-2xl rounded-tr-sm bg-primary px-4 py-2.5 text-sm text-primary-foreground">
+                            <div
+                                class="max-w-[85%] min-w-0 rounded-2xl rounded-tr-sm bg-primary px-4 py-2.5 text-sm text-primary-foreground"
+                            >
                                 {{ answer || '...' }}
                             </div>
                             <div
@@ -1118,7 +1120,8 @@ onUnmounted(() => {
 .viva-orb--speaking {
     border-color: var(--primary);
     background-color: color-mix(in srgb, var(--primary) 10%, transparent);
-    box-shadow: 0 10px 15px -3px color-mix(in srgb, var(--primary) 20%, transparent);
+    box-shadow: 0 10px 15px -3px
+        color-mix(in srgb, var(--primary) 20%, transparent);
     animation: viva-pulse 1.5s ease-in-out infinite;
 }
 .viva-orb--listening {

@@ -44,11 +44,11 @@ class AdminDashboardService
 
         foreach ($recentVivas as $viva) {
             $activities[] = [
-                'id' => 'viva-' . $viva->id,
+                'id' => 'viva-'.$viva->id,
                 'type' => $viva->status === 'completed' ? 'viva_completed' : 'viva_created',
                 'message' => $viva->status === 'completed'
                     ? "{$viva->title} viva completed"
-                    : "New viva: {$viva->title} by " . ($viva->lecturer?->name ?? 'Unknown'),
+                    : "New viva: {$viva->title} by ".($viva->lecturer?->name ?? 'Unknown'),
                 'time' => $viva->updated_at->diffForHumans(),
                 'institution' => $viva->institution?->name ?? '—',
                 '_sort_at' => $viva->updated_at->getTimestamp(),
@@ -63,7 +63,7 @@ class AdminDashboardService
 
         foreach ($recentUsers as $user) {
             $activities[] = [
-                'id' => 'user-' . $user->id,
+                'id' => 'user-'.$user->id,
                 'type' => $user->role === 'student' ? 'student_added' : 'lecturer_added',
                 'message' => "New {$user->role} registered: {$user->name}",
                 'time' => $user->created_at->diffForHumans(),

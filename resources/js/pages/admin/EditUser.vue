@@ -43,7 +43,9 @@ const sectionRoutes: Record<string, string> = {
     lecturers: '/admin/users/lecturers',
 };
 
-const backUrl = computed(() => sectionRoutes[props.returnSection] ?? '/admin/users/students');
+const backUrl = computed(
+    () => sectionRoutes[props.returnSection] ?? '/admin/users/students',
+);
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/admin/dashboard' },
@@ -146,7 +148,9 @@ const showDepartment = computed(() =>
                 <CardHeader>
                     <CardTitle>User Information</CardTitle>
                     <CardDescription>
-                        Update the details of the user. Fields shown depend on the selected role. Leave password blank to keep the current password.
+                        Update the details of the user. Fields shown depend on
+                        the selected role. Leave password blank to keep the
+                        current password.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -262,9 +266,10 @@ const showDepartment = computed(() =>
                             <InputError :message="form.errors.department" />
                         </div>
 
-                        <div class="border-t pt-4 space-y-4">
+                        <div class="space-y-4 border-t pt-4">
                             <p class="text-sm text-muted-foreground">
-                                Leave password blank to keep the current password.
+                                Leave password blank to keep the current
+                                password.
                             </p>
                             <div class="grid gap-4 md:grid-cols-2">
                                 <div class="space-y-2">
@@ -276,10 +281,14 @@ const showDepartment = computed(() =>
                                         placeholder="••••••••"
                                         autocomplete="new-password"
                                     />
-                                    <InputError :message="form.errors.password" />
+                                    <InputError
+                                        :message="form.errors.password"
+                                    />
                                 </div>
                                 <div class="space-y-2">
-                                    <Label for="password_confirmation">Confirm New Password</Label>
+                                    <Label for="password_confirmation"
+                                        >Confirm New Password</Label
+                                    >
                                     <Input
                                         id="password_confirmation"
                                         v-model="form.password_confirmation"
@@ -287,7 +296,11 @@ const showDepartment = computed(() =>
                                         placeholder="••••••••"
                                         autocomplete="new-password"
                                     />
-                                    <InputError :message="form.errors.password_confirmation" />
+                                    <InputError
+                                        :message="
+                                            form.errors.password_confirmation
+                                        "
+                                    />
                                 </div>
                             </div>
                         </div>

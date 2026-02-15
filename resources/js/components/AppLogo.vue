@@ -31,14 +31,11 @@ withDefaults(
         :alt="institutionName"
         :class="
             sidebar
-                ? 'h-auto max-h-10 w-full max-w-full object-contain rounded'
+                ? 'h-auto max-h-10 w-full max-w-full rounded object-contain'
                 : 'h-8 w-8 rounded object-contain'
         "
     />
-    <div
-        v-if="!sidebar"
-        class="ml-1 grid flex-1 text-left text-sm"
-    >
+    <div v-if="!sidebar" class="ml-1 grid flex-1 text-left text-sm">
         <span class="mb-0.5 truncate leading-tight font-semibold">{{
             institutionName
         }}</span>
