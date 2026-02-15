@@ -3,29 +3,36 @@ import { ref } from 'vue';
 // Theme: application uses light mode only. Dark mode and system preference have been removed.
 type Appearance = 'light';
 
-/** Always applies light theme. Dark mode is disabled; document never gets 'dark' class. */
-export function updateTheme(_value?: Appearance) {
+/**
+ * Applies the light theme only. No 'dark' class is ever set.
+ */
+export function updateTheme(): void {
     if (typeof document === 'undefined') {
         return;
     }
     document.documentElement.classList.remove('dark');
 }
 
-export function initializeTheme() {
+/**
+ * Ensures light mode is set on initial load.
+ */
+export function initializeTheme(): void {
     if (typeof window === 'undefined') {
         return;
     }
-    // Light mode only: ensure no dark class is ever applied.
-    updateTheme('light');
+    updateTheme();
 }
 
 const appearance = ref<Appearance>('light');
 
+/**
+ * useAppearance composable.
+ * The application enforces light mode. The API remains for compatibility.
+ */
 export function useAppearance() {
-    function updateAppearance(_value: Appearance) {
-        // No-op: theme is fixed to light. Kept for API compatibility.
+    function updateAppearance(): void {
         appearance.value = 'light';
-        updateTheme('light');
+        updateTheme();
     }
 
     return {

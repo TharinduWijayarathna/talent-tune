@@ -124,6 +124,60 @@ class GeminiQuestionService
         ];
     }
 
+    /**
+     * Correct speech-to-text transcript using AI. Fixes homophones, mishearings, and
+     * obvious errors using the question context, without changing meaning or adding content.
+     */
+    public function correctSpeechTranscript(string $question, string $rawTranscript, string $topic = ''): array
+    {
+        if (! $this->getApiKey()) {
+            return ['error' => 'Gemini API key not configured', 'code' => 500];
+        }
+
+        $rawTranscript = trim($rawTranscript);
+        if ($rawTranscript === '') {
+            return ['corrected' => ''];
+        }
+
+        $prompt = "You are correcting a speech-to-text transcript from a student's spoken viva answer. ";
+        if ($topic) {
+            $prompt .= "Topic: {$topic}. ";
+        }
+        $prompt .= "The question asked was: \"{$question}\"\n\n";
+        $prompt .= "Raw transcript (may contain recognition errors): \"{$rawTranscript}\"\n\n";
+        $prompt .= "Tasks:\n";
+        $prompt .= "1. Fix only obvious speech-to-text errors: homophones (e.g. 'their' vs 'there'), wrong words that sound similar, missing punctuation.\n";
+        $prompt .= "2. Do NOT change the meaning, add new content, or remove what the student said.\n";
+        $prompt .= "3. If the transcript is already correct or you are unsure, return it with minimal changes (e.g. punctuation only).\n";
+        $prompt .= "4. Preserve the student's wording and style; only fix what was likely misheard.\n\n";
+        $prompt .= "Return ONLY the corrected transcript as plain text, nothing else. No quotes, no explanation.";
+
+        $response = Http::post($this->getApiUrl(), [
+            'contents' => [['parts' => [['text' => $prompt]]]],
+            'generationConfig' => [
+                'temperature' => 0.2,
+                'topK' => 40,
+                'topP' => 0.95,
+                'maxOutputTokens' => 1024,
+            ],
+        ]);
+
+        if ($response->failed()) {
+            $errorData = $response->json();
+
+            return [
+                'error' => $errorData['error']['message'] ?? 'Failed to correct transcript',
+                'code' => $response->status(),
+            ];
+        }
+
+        $data = $response->json();
+        $corrected = trim($data['candidates'][0]['content']['parts'][0]['text'] ?? '');
+        $corrected = preg_replace('/^["\']|["\']$/u', '', $corrected);
+
+        return ['corrected' => $corrected ?: $rawTranscript];
+    }
+
     public function evaluateAnswer(string $question, string $answer, string $topic = ''): array
     {
         if (! $this->getApiKey()) {

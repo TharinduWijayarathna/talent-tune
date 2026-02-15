@@ -47,6 +47,7 @@ class GeminiController extends Controller
 
     /**
      * Evaluate a student's answer using Gemini AI.
+     * When from_voice is true, the raw speech-to-text is first corrected by AI before evaluation.
      */
     public function evaluateAnswer(Request $request): JsonResponse
     {
@@ -54,19 +55,42 @@ class GeminiController extends Controller
             'question' => 'required|string|max:500',
             'answer' => 'required|string|max:5000',
             'topic' => 'nullable|string|max:200',
+            'from_voice' => 'nullable|boolean',
         ]);
 
-        $result = $this->geminiQuestionService->evaluateAnswer(
-            $request->input('question'),
-            $request->input('answer'),
-            $request->input('topic', '')
-        );
+        $question = $request->input('question');
+        $answer = $request->input('answer');
+        $topic = $request->input('topic', '');
+        $fromVoice = $request->boolean('from_voice');
+        $correctedAnswer = null;
+
+        if ($fromVoice && trim($answer) !== '') {
+            $correction = $this->geminiQuestionService->correctSpeechTranscript(
+                $question,
+                $answer,
+                $topic
+            );
+            if (isset($correction['error'])) {
+                $code = $correction['code'] ?? 500;
+                unset($correction['code']);
+
+                return response()->json($correction, $code);
+            }
+            $correctedAnswer = $correction['corrected'] ?? $answer;
+            $answer = $correctedAnswer;
+        }
+
+        $result = $this->geminiQuestionService->evaluateAnswer($question, $answer, $topic);
 
         if (isset($result['error'])) {
             $code = $result['code'] ?? 500;
             unset($result['code']);
 
             return response()->json($result, $code);
+        }
+
+        if ($correctedAnswer !== null) {
+            $result['corrected_answer'] = $correctedAnswer;
         }
 
         return response()->json($result);

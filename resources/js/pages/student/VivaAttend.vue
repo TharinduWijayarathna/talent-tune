@@ -588,8 +588,12 @@ const stopRecording = () => {
     recognitionActive.value = false;
 };
 
-// Evaluate answer using Gemini AI
-const evaluateAnswer = async (question: string, answerText: string) => {
+// Evaluate answer using Gemini AI. When fromVoice is true, raw speech-to-text is corrected by AI first.
+const evaluateAnswer = async (
+    question: string,
+    answerText: string,
+    fromVoice: boolean = true,
+) => {
     try {
         const response = await fetch('/api/viva/answer/evaluate', {
             method: 'POST',
@@ -603,6 +607,7 @@ const evaluateAnswer = async (question: string, answerText: string) => {
                 question: question,
                 answer: answerText,
                 topic: vivaSession.value.title,
+                from_voice: fromVoice,
             }),
         });
 
@@ -657,14 +662,29 @@ const evaluateAndMoveOn = async (answerText: string, isSkipped: boolean) => {
             improvements: [],
         };
     } else {
-        evaluation = await evaluateAnswer(currentQuestion.value!, answerText);
+        evaluation = await evaluateAnswer(
+            currentQuestion.value!,
+            answerText,
+            true,
+        ); // from_voice: true so AI corrects speech-to-text errors
     }
+
+    // Use AI-corrected transcript when available so we store what the user actually said
+    const correctedAnswer = (evaluation as { corrected_answer?: string })
+        ?.corrected_answer;
+    const answerToStore =
+        correctedAnswer !== undefined ? correctedAnswer : answerText;
 
     // Store answer and evaluation (score_1_10 kept for backend, not displayed)
     answers.value.push({
         question: currentQuestion.value!,
-        answer: answerText,
-        evaluation,
+        answer: answerToStore,
+        evaluation: {
+            score_1_10: evaluation.score_1_10,
+            feedback: evaluation.feedback,
+            correctPoints: evaluation.correctPoints ?? [],
+            improvements: evaluation.improvements ?? [],
+        },
     });
 
     // Show evaluation
