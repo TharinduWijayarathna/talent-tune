@@ -34,7 +34,7 @@ node /assets/scripts/prestart.mjs /assets/nginx.template.conf /etc/nginx.conf
 
 # Set APP_URL to HTTPS in production if not already set
 if [ "$APP_ENV" = "production" ] && ([ -z "$APP_URL" ] || [[ "$APP_URL" == http://* ]]); then
-    export APP_URL="https://pos.vintorr.com"
+    export APP_URL="https://talenttune.site"
 fi
 
 # Run migrations if database is available
@@ -154,7 +154,7 @@ http {
     server {
         listen ${PORT};
         listen [::]:${PORT};
-        server_name pos.vintorr.com;
+        server_name talenttune.site;
 
         root /app/public;
 
