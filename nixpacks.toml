@@ -1,3 +1,7 @@
+# Node 22 required for Vite plugin (crypto.hash); Nixpacks defaults to 18
+[variables]
+NIXPACKS_NODE_VERSION = "22"
+
 [phases.setup]
 nixPkgs = ["...", "python311Packages.supervisor", "php82Extensions.redis"]
 
