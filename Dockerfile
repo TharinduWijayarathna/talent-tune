@@ -1,9 +1,10 @@
-# Single-stage build for Laravel + Vue + Inertia application
+# Laravel + Vue + Inertia — runnable with Docker only.
+# Build:  docker build -t talenttune .
+# Run:    docker run -p 80:80 --env-file .env talenttune
 FROM ubuntu:24.04
 
 WORKDIR /app
 
-# Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=UTC
 ENV PHP_VERSION=8.3
@@ -91,7 +92,6 @@ RUN mkdir -p /var/log /etc/supervisor/conf.d/ && \
     chmod +x /assets/start.sh && \
     cp /assets/worker-*.conf /etc/supervisor/conf.d/
 
-# App listens on 0.0.0.0 (nginx listen ${PORT}) for Dokploy/Traefik
 EXPOSE 80
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
