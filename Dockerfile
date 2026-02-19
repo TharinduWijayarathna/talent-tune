@@ -91,9 +91,10 @@ RUN mkdir -p /var/log /etc/supervisor/conf.d/ && \
     chmod +x /assets/start.sh && \
     cp /assets/worker-*.conf /etc/supervisor/conf.d/
 
+# App listens on 0.0.0.0 (nginx listen ${PORT}) for Dokploy/Traefik
 EXPOSE 80
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:${PORT:-80}/ || exit 1
+    CMD curl -f http://127.0.0.1:${PORT:-80}/ || exit 1
 
 CMD ["/assets/start.sh"]
