@@ -2,9 +2,9 @@
 #
 # In Dokploy:
 # 1. Set Compose Path to ./docker-compose.yml
-# 2. Domains tab → Add Domain → set container port to 80
+# 2. Domains tab → Add Domain (e.g. talenttune.site) → set CONTAINER PORT to 80
 # 3. Environment tab: set APP_KEY, APP_URL, DB_* (or DATABASE_URL), etc.
-# 4. Deploy (builds from Dockerfile, Traefik routes to port 80)
+# 4. Deploy (builds from Dockerfile). Traefik will route the domain to this container on port 80.
 
 version: "3.8"
 
@@ -14,30 +14,26 @@ services:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
-    # Container port only – Dokploy/Traefik routes via Domains (set port 80 in UI)
-    ports:
+    # Container listens on 80. Traefik (Dokploy) routes domain → this service:80.
+    expose:
       - 80
+    ports:
+      - "80"
     env_file:
       - .env
     environment:
       - APP_ENV=production
-      # Optional: override if Dokploy provides URL
-      # - APP_URL=https://your-domain.com
+      # - APP_URL=https://talenttune.site
     volumes:
       - app_storage:/app/storage
       - app_bootstrap_cache:/app/bootstrap/cache
-      # Persist SQLite DB if using sqlite (optional; remove if using external DB)
       - app_database:/app/database
     networks:
       - dokploy-network
-    # Optional: manual Traefik labels (if not using Dokploy Domains UI)
-    # Uncomment and set your domain, then you can remove "ports" above and use "expose: - 80"
-    # labels:
-    #   - "traefik.enable=true"
-    #   - "traefik.http.routers.talenttune.rule=Host(`your-domain.com`)"
-    #   - "traefik.http.routers.talenttune.entrypoints=websecure"
-    #   - "traefik.http.routers.talenttune.tls.certResolver=letsencrypt"
-    #   - "traefik.http.services.talenttune.loadbalancer.server.port=80"
+    # Traefik: app listens on port 80 (Dokploy Domains will add Host rule when you add a domain)
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.talenttune-app.loadbalancer.server.port=80"
 
 volumes:
   app_storage:
