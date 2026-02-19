@@ -28,6 +28,6 @@ php /app/artisan config:cache || true
 # Storage Link
 php /app/artisan storage:link || true
 
-# Start supervisor
+# Start supervisor (PHP-FPM priority=1, then Nginx priority=2)
 supervisord -c /assets/supervisord.conf -n
 
