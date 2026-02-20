@@ -29,10 +29,17 @@ import AppLogo from './AppLogo.vue';
 
 const page = usePage();
 
-// Determine role based on user's role from auth data
+// Determine role from auth data (backend shares auth.user.role in HandleInertiaRequests)
 const currentRole = computed(() => {
-    const user = page.props.auth?.user as any;
-    return user?.role || null;
+    const user = page.props.auth?.user as { role?: string } | null | undefined;
+    if (user?.role) return user.role;
+    // Fallback: infer from current path so sidebar still shows after refresh
+    const path = page.url;
+    if (path.startsWith('/admin')) return 'admin';
+    if (path.startsWith('/institution')) return 'institution';
+    if (path.startsWith('/lecturer')) return 'lecturer';
+    if (path.startsWith('/student')) return 'student';
+    return null;
 });
 
 const mainNavItems = computed<NavItem[]>(() => {

@@ -19,9 +19,9 @@ import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 import { ChevronDown } from 'lucide-vue-next';
 
-// const props = defineProps<{
-//     items: NavItem[];
-// }>();
+defineProps<{
+    items: NavItem[];
+}>();
 
 const page = usePage();
 
