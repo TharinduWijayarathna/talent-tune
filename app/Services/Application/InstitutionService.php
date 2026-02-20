@@ -14,6 +14,9 @@ use Illuminate\Support\Str;
 
 class InstitutionService
 {
+    public function __construct(
+        protected DockployDomainService $dockployDomainService
+    ) {}
     public function create(array $validated): Institution
     {
         $slug = $this->generateUniqueSlug($validated['name']);
@@ -104,6 +107,8 @@ class InstitutionService
 
     public function activateInstitution(Institution $institution, Request $request): void
     {
+        $this->createSubdomainIfConfigured($institution);
+
         $existingAdmin = User::where('institution_id', $institution->id)
             ->where('role', 'institution')
             ->first();
@@ -150,6 +155,34 @@ class InstitutionService
         ]);
 
         $this->sendActivationEmail($institution, $adminEmail, $password, $request);
+    }
+
+    /**
+     * Create institution subdomain (e.g. {slug}.talenttune.site) via Dockploy/Vintorr API in production.
+     */
+    protected function createSubdomainIfConfigured(Institution $institution): void
+    {
+        if (! $this->dockployDomainService->isConfigured()) {
+            return;
+        }
+
+        $baseDomain = config('domain.domain');
+        if (empty($baseDomain)) {
+            Log::debug('Dockploy: APP_DOMAIN not set, skipping subdomain create');
+
+            return;
+        }
+
+        $host = $institution->slug.'.'.$baseDomain;
+        $result = $this->dockployDomainService->createSubdomain($host);
+
+        if (! $result['success']) {
+            Log::warning('Dockploy subdomain create failed for institution', [
+                'institution_id' => $institution->id,
+                'host' => $host,
+                'message' => $result['message'] ?? 'Unknown error',
+            ]);
+        }
     }
 
     public function sendActivationEmail(Institution $institution, string $email, string $password, Request $request): void
