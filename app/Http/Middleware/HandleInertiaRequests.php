@@ -51,12 +51,17 @@ class HandleInertiaRequests extends Middleware
                 : (count($parts) >= 2 ? implode('.', array_slice($parts, -2)) : $host);
         }
 
+        $user = $request->user();
+        $authUser = $user ? array_merge($user->toArray(), [
+            'role' => $user->role,
+        ]) : null;
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
-                'user' => $request->user(),
+                'user' => $authUser,
             ],
             'institution' => $institution ? [
                 'id' => $institution->id,
