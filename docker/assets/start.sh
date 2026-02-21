@@ -17,5 +17,9 @@ php /app/artisan config:cache || true
 php /app/artisan cache:clear || true
 php /app/artisan storage:link || true
 
+# Ensure storage and bootstrap/cache are writable by www-data (PHP-FPM).
+# Artisan commands above run as root and may create files owned by root.
+chown -R www-data:www-data /app/storage /app/bootstrap/cache
+
 # Start supervisor (must not exit)
 exec supervisord -c /etc/supervisord.conf -n

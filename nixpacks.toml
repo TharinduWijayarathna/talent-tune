@@ -53,6 +53,9 @@ php /app/artisan cache:clear || true
 # Storage Link
 php /app/artisan storage:link
 
+# Ensure storage and bootstrap/cache are writable by www-data (PHP-FPM)
+chown -R www-data:www-data /app/storage /app/bootstrap/cache
+
 # Start supervisor
 supervisord -c /etc/supervisord.conf -n
 '''
