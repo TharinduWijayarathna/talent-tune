@@ -61,4 +61,40 @@ class HomeController extends Controller
             'canRegister' => Features::enabled(Features::registration()),
         ]);
     }
+
+    /**
+     * Show the Features marketing page.
+     */
+    public function features(Request $request): Response
+    {
+        $institution = $this->institutionResolver->resolve($request);
+
+        return Inertia::render('home/Features', [
+            'institution' => $institution ? ['id' => $institution->id] : null,
+        ]);
+    }
+
+    /**
+     * Show the Pricing marketing page.
+     */
+    public function pricing(Request $request): Response
+    {
+        $institution = $this->institutionResolver->resolve($request);
+
+        return Inertia::render('home/Pricing', [
+            'institution' => $institution ? ['id' => $institution->id] : null,
+        ]);
+    }
+
+    /**
+     * Show the About marketing page.
+     */
+    public function about(Request $request): Response
+    {
+        $institution = $this->institutionResolver->resolve($request);
+
+        return Inertia::render('home/About', [
+            'institution' => $institution ? ['id' => $institution->id] : null,
+        ]);
+    }
 }

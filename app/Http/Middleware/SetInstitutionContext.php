@@ -186,6 +186,9 @@ class SetInstitutionContext
 
         $publicRoutes = [
             'home',
+            'features',
+            'pricing',
+            'about',
             'login',
             'register',
             'password.request',

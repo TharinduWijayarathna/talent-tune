@@ -8,6 +8,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import SiteHeader from '@/components/SiteHeader.vue';
 import { useDomain } from '@/composables/useDomain';
 import { login } from '@/routes';
 import { Head, Link, usePage } from '@inertiajs/vue3';
@@ -110,44 +111,7 @@ onMounted(() => {
     />
 
     <div class="min-h-screen bg-background">
-        <!-- Navigation -->
-        <nav
-            class="sticky top-0 z-50 border-b bg-background/95 backdrop-blur transition-all supports-[backdrop-filter]:bg-background/60"
-        >
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex h-16 items-center justify-between">
-                    <Link href="/" class="flex items-center gap-2">
-                        <img
-                            src="/images/logo.png"
-                            alt="TalentTune"
-                            class="h-9 w-auto object-contain"
-                        />
-                    </Link>
-                    <div class="flex items-center gap-4">
-                        <Link
-                            :href="'/register-institution'"
-                            class="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
-                        >
-                            Register Your University
-                        </Link>
-                        <!-- Hide login link on main domain, but keep /login route accessible for admins -->
-                        <Link
-                            v-if="!isMainDomain"
-                            :href="login()"
-                            class="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                        >
-                            Sign In
-                        </Link>
-                        <Link :href="'/register-institution'">
-                            <Button size="sm" class="hidden sm:flex">
-                                Get Started
-                                <ArrowRight class="ml-2 h-4 w-4" />
-                            </Button>
-                        </Link>
-                    </div>
-                </div>
-            </div>
-        </nav>
+        <SiteHeader :is-main-domain="isMainDomain" />
 
         <!-- Hero Section with Animations -->
         <section
