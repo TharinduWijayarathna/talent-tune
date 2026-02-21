@@ -96,6 +96,7 @@ class StudentService
         return $vivas->map(function (Viva $viva) use ($submissionScores, $nowUtc) {
             $submission = $submissionScores->get($viva->id);
             $marks = $submission && $submission->status === 'completed' ? $submission->total_score : null;
+            $grade = $submission && $submission->status === 'completed' ? $submission->grade : null;
 
             $rawScheduled = $viva->getRawOriginal('scheduled_at');
             $scheduledAtUtc = $rawScheduled ? Carbon::parse($rawScheduled, 'UTC') : $viva->scheduled_at->copy()->utc();
@@ -115,6 +116,7 @@ class StudentService
                 'batch' => $viva->batch,
                 'materials' => $viva->lecture_materials,
                 'marks' => $marks,
+                'grade' => $grade,
                 'can_attend' => $can_attend,
             ];
         })->all();
@@ -215,10 +217,12 @@ class StudentService
 
         $rubric = $this->rubricService->getRubricScore($scores);
         if ($rubric['success']) {
-            $submission->total_score = (int) round($rubric['score']);
+            $submission->total_score = (int) round($rubric['total_score'] ?? $rubric['score']);
+            $submission->grade = isset($rubric['grade']) ? (string) $rubric['grade'] : null;
             $submission->feedback = null;
         } else {
             $submission->total_score = (int) round(array_sum($scores) / 5 * 10);
+            $submission->grade = null;
             $submission->feedback = 'Rubric service unavailable; score is average of question scores.';
         }
 
@@ -227,6 +231,7 @@ class StudentService
         return [
             'success' => true,
             'rubric_score' => $submission->total_score,
+            'grade' => $submission->grade,
             'rubric_from_service' => $rubric['success'],
         ];
     }

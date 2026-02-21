@@ -15,6 +15,7 @@ class VivaStudentSubmission extends Model
         'document_path',
         'answers',
         'total_score',
+        'grade',
         'feedback',
         'status',
     ];

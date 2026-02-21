@@ -155,7 +155,7 @@ test('completeVivaSubmission saves answers and uses rubric score when available'
     $this->rubricService->shouldReceive('getRubricScore')
         ->once()
         ->with([5, 6, 7, 8, 9])
-        ->andReturn(['success' => true, 'score' => 72.5]);
+        ->andReturn(['success' => true, 'score' => 72.5, 'total_score' => 72.5, 'grade' => 'B']);
 
     $answers = [
         ['score_1_10' => 5],
@@ -170,9 +170,11 @@ test('completeVivaSubmission saves answers and uses rubric score when available'
 
     expect($result['success'])->toBeTrue();
     expect($result['rubric_from_service'])->toBeTrue();
+    expect($result['grade'])->toBe('B');
     $submission->refresh();
     expect($submission->status)->toBe('completed');
     expect($submission->total_score)->toBe(73); // rounded
+    expect($submission->grade)->toBe('B');
 });
 
 test('uploadVivaDocument stores file and updates submission', function () {

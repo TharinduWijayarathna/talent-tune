@@ -42,6 +42,7 @@ interface Submission {
     student_email?: string | null;
     status: string;
     total_score: number | null;
+    grade: string | null;
     feedback: string | null;
     answers: AnswerItem[];
     document_path: string | null;
@@ -247,11 +248,22 @@ const pendingCount = () =>
                                         <span
                                             v-if="
                                                 sub.status === 'completed' &&
-                                                sub.total_score != null
+                                                (sub.total_score != null ||
+                                                    sub.grade)
                                             "
                                             class="text-sm font-medium text-muted-foreground"
                                         >
-                                            Score: {{ sub.total_score }}
+                                            <template v-if="sub.grade">
+                                                Grade: {{ sub.grade }}
+                                                <template
+                                                    v-if="sub.total_score != null"
+                                                >
+                                                    ({{ sub.total_score }})
+                                                </template>
+                                            </template>
+                                            <template v-else-if="sub.total_score != null">
+                                                Score: {{ sub.total_score }}
+                                            </template>
                                         </span>
                                         <span
                                             v-if="sub.completed_at"
@@ -266,6 +278,26 @@ const pendingCount = () =>
                                 </CollapsibleTrigger>
                                 <CollapsibleContent>
                                     <div class="border-t bg-muted/30 px-4 py-4">
+                                        <div
+                                            v-if="
+                                                sub.status === 'completed' &&
+                                                (sub.grade || sub.total_score != null)
+                                            "
+                                            class="mb-4 flex flex-wrap items-center gap-4 rounded-md border bg-background p-3 text-sm"
+                                        >
+                                            <span
+                                                v-if="sub.grade"
+                                                class="font-semibold"
+                                            >
+                                                Grade: {{ sub.grade }}
+                                            </span>
+                                            <span
+                                                v-if="sub.total_score != null"
+                                                class="text-muted-foreground"
+                                            >
+                                                Total score: {{ sub.total_score }}
+                                            </span>
+                                        </div>
                                         <div
                                             v-if="sub.feedback"
                                             class="mb-4 rounded-md border bg-background p-3 text-sm"

@@ -27,6 +27,7 @@ const props = defineProps<{
         batch?: string;
         materials?: string[];
         marks?: number;
+        grade?: string | null;
         can_attend?: boolean;
     }>;
 }>();
@@ -197,14 +198,25 @@ const attendLabel = (viva: {
                             </div>
 
                             <div
-                                v-if="viva.marks"
+                                v-if="viva.marks != null || viva.grade"
                                 class="rounded-lg bg-muted p-3"
                             >
                                 <div class="text-sm font-medium">
-                                    Marks Obtained
+                                    Result
                                 </div>
                                 <div class="text-2xl font-bold">
-                                    {{ viva.marks }}%
+                                    <template v-if="viva.grade">
+                                        Grade: {{ viva.grade }}
+                                        <span
+                                            v-if="viva.marks != null"
+                                            class="text-lg font-normal text-muted-foreground"
+                                        >
+                                            ({{ viva.marks }}%)
+                                        </span>
+                                    </template>
+                                    <template v-else-if="viva.marks != null">
+                                        {{ viva.marks }}%
+                                    </template>
                                 </div>
                             </div>
 

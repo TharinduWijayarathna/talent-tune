@@ -162,7 +162,7 @@ class LecturerService
     /**
      * Get all submissions (attendees) for a viva for lecturer view.
      *
-     * @return array<int, array{id: int, student_name: string, status: string, total_score: int|null, feedback: string|null, answers: array, document_path: string|null, completed_at: string|null}>
+     * @return array<int, array{id: int, student_name: string, status: string, total_score: int|null, grade: string|null, feedback: string|null, answers: array, document_path: string|null, completed_at: string|null}>
      */
     public function getVivaSubmissionsForShow(Institution $institution, User $user, int $vivaId): array
     {
@@ -181,6 +181,7 @@ class LecturerService
                     'student_email' => $sub->student?->email ?? null,
                     'status' => $sub->status,
                     'total_score' => $sub->total_score,
+                    'grade' => $sub->grade,
                     'feedback' => $sub->feedback,
                     'answers' => $sub->answers ?? [],
                     'document_path' => $sub->document_path,

@@ -8,10 +8,12 @@ use Illuminate\Support\Facades\Log;
 class RubricService
 {
     /**
-     * Get rubric-based score from Python service using 5 question scores (1-10 each).
+     * Get grade and total score from model API using 5 question scores (1-10 each).
+     * API expects: { "q1_score", "q2_score", ... "q5_score" }
+     * API returns: { "grade": "B", "total_score": 39.0 }
      *
      * @param  array<int, int>  $scores  [q1_score, q2_score, q3_score, q4_score, q5_score] each 1-10
-     * @return array{success: bool, score?: float|int, error?: string}
+     * @return array{success: bool, grade?: string, total_score?: float, score?: float, error?: string}
      */
     public function getRubricScore(array $scores): array
     {
@@ -49,9 +51,16 @@ class RubricService
             }
 
             $data = $response->json();
-            $score = $data['score'] ?? $data['rubric_score'] ?? $data['prediction'] ?? null;
-            if ($score !== null && is_numeric($score)) {
-                return ['success' => true, 'score' => (float) $score];
+            $grade = isset($data['grade']) ? (string) $data['grade'] : null;
+            $totalScore = $data['total_score'] ?? $data['score'] ?? $data['rubric_score'] ?? $data['prediction'] ?? null;
+            if ($totalScore !== null && is_numeric($totalScore)) {
+                $totalScore = (float) $totalScore;
+                return [
+                    'success' => true,
+                    'grade' => $grade,
+                    'total_score' => $totalScore,
+                    'score' => $totalScore,
+                ];
             }
 
             return [
