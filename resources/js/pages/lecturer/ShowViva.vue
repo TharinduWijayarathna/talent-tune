@@ -256,12 +256,18 @@ const pendingCount = () =>
                                             <template v-if="sub.grade">
                                                 Grade: {{ sub.grade }}
                                                 <template
-                                                    v-if="sub.total_score != null"
+                                                    v-if="
+                                                        sub.total_score != null
+                                                    "
                                                 >
                                                     ({{ sub.total_score }})
                                                 </template>
                                             </template>
-                                            <template v-else-if="sub.total_score != null">
+                                            <template
+                                                v-else-if="
+                                                    sub.total_score != null
+                                                "
+                                            >
                                                 Score: {{ sub.total_score }}
                                             </template>
                                         </span>
@@ -281,7 +287,8 @@ const pendingCount = () =>
                                         <div
                                             v-if="
                                                 sub.status === 'completed' &&
-                                                (sub.grade || sub.total_score != null)
+                                                (sub.grade ||
+                                                    sub.total_score != null)
                                             "
                                             class="mb-4 flex flex-wrap items-center gap-4 rounded-md border bg-background p-3 text-sm"
                                         >
@@ -295,7 +302,8 @@ const pendingCount = () =>
                                                 v-if="sub.total_score != null"
                                                 class="text-muted-foreground"
                                             >
-                                                Total score: {{ sub.total_score }}
+                                                Total score:
+                                                {{ sub.total_score }}
                                             </span>
                                         </div>
                                         <div

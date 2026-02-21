@@ -17,6 +17,7 @@ class InstitutionService
     public function __construct(
         protected DockployDomainService $dockployDomainService
     ) {}
+
     public function create(array $validated): Institution
     {
         $slug = $this->generateUniqueSlug($validated['name']);

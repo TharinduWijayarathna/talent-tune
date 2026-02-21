@@ -201,9 +201,7 @@ const attendLabel = (viva: {
                                 v-if="viva.marks != null || viva.grade"
                                 class="rounded-lg bg-muted p-3"
                             >
-                                <div class="text-sm font-medium">
-                                    Result
-                                </div>
+                                <div class="text-sm font-medium">Result</div>
                                 <div class="text-2xl font-bold">
                                     <template v-if="viva.grade">
                                         Grade: {{ viva.grade }}

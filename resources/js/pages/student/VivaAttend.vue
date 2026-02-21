@@ -748,14 +748,19 @@ const completeAndShowRubric = async () => {
         });
         const data = await response.json().catch(() => ({}));
         if (response.ok && data.success) {
-            const grade = data.grade != null && data.grade !== '' ? data.grade : null;
-            const totalScore = data.rubric_score != null ? data.rubric_score : null;
-            let resultMessage = 'Viva session completed!\n\nYour answers have been saved.';
+            const grade =
+                data.grade != null && data.grade !== '' ? data.grade : null;
+            const totalScore =
+                data.rubric_score != null ? data.rubric_score : null;
+            let resultMessage =
+                'Viva session completed!\n\nYour answers have been saved.';
             if (data.rubric_from_service) {
                 if (grade) resultMessage += `\n\nYour grade: ${grade}`;
-                if (totalScore != null) resultMessage += `\nTotal score: ${totalScore}`;
+                if (totalScore != null)
+                    resultMessage += `\nTotal score: ${totalScore}`;
             } else {
-                resultMessage += '\n\nScore has been recorded based on your answers.';
+                resultMessage +=
+                    '\n\nScore has been recorded based on your answers.';
             }
             alert(resultMessage);
         } else {

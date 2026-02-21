@@ -150,7 +150,7 @@ class GeminiQuestionService
         $prompt .= "2. Do NOT change the meaning, add new content, or remove what the student said.\n";
         $prompt .= "3. If the transcript is already correct or you are unsure, return it with minimal changes (e.g. punctuation only).\n";
         $prompt .= "4. Preserve the student's wording and style; only fix what was likely misheard.\n\n";
-        $prompt .= "Return ONLY the corrected transcript as plain text, nothing else. No quotes, no explanation.";
+        $prompt .= 'Return ONLY the corrected transcript as plain text, nothing else. No quotes, no explanation.';
 
         $response = Http::post($this->getApiUrl(), [
             'contents' => [['parts' => [['text' => $prompt]]]],

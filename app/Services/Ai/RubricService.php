@@ -55,6 +55,7 @@ class RubricService
             $totalScore = $data['total_score'] ?? $data['score'] ?? $data['rubric_score'] ?? $data['prediction'] ?? null;
             if ($totalScore !== null && is_numeric($totalScore)) {
                 $totalScore = (float) $totalScore;
+
                 return [
                     'success' => true,
                     'grade' => $grade,
