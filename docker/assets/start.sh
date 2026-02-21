@@ -10,18 +10,12 @@ if [ "$APP_ENV" = "production" ]; then
   case "${APP_URL:-}" in ""|http://*) export APP_URL="https://talenttune.site";; esac
 fi
 
-# Run migrations if database is available
-php /app/artisan migrate --force
-
-# Clear and cache config
-php /app/artisan config:clear
-php /app/artisan config:cache
-
-# Clear cache (after DB exists from migrate above)
+# These can fail if DB/env not ready; don't exit the container
+php /app/artisan migrate --force || true
+php /app/artisan config:clear || true
+php /app/artisan config:cache || true
 php /app/artisan cache:clear || true
+php /app/artisan storage:link || true
 
-# Storage Link
-php /app/artisan storage:link
-
-# Start supervisor
+# Start supervisor (must not exit)
 exec supervisord -c /etc/supervisord.conf -n
