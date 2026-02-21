@@ -22,7 +22,7 @@ class InstitutionService
     {
         $slug = $this->generateUniqueSlug($validated['name']);
 
-        return Institution::create([
+        $institution = Institution::create([
             'name' => $validated['name'],
             'slug' => $slug,
             'email' => $validated['email'],
@@ -38,6 +38,10 @@ class InstitutionService
             ],
             'is_active' => false,
         ]);
+
+        $this->createSubdomainIfConfigured($institution);
+
+        return $institution;
     }
 
     public function generateUniqueSlug(string $name): string

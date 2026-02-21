@@ -24,6 +24,8 @@ const props = defineProps<{
     canResetPassword: boolean;
     canRegister: boolean;
     showRoleSelection?: boolean;
+    /** When true, only institution admin can log in (workspace requires payment). */
+    adminLoginOnly?: boolean;
     institution?: {
         name: string;
         slug: string;
@@ -50,11 +52,12 @@ const allErrors = computed(() => {
     return errors;
 });
 
+// When adminLoginOnly, default to institution so we show email/password form only
 const selectedRole = ref<'institution' | 'lecturer' | 'student' | null>(
-    props.showRoleSelection ? null : null,
+    props.showRoleSelection ? (props.adminLoginOnly ? 'institution' : null) : null,
 );
 
-const roles = [
+const allRoles = [
     {
         value: 'student',
         label: 'Student',
@@ -74,6 +77,11 @@ const roles = [
         description: 'Manage lecturers and students',
     },
 ];
+
+// When payment is required, show only institution admin role
+const roles = computed(() =>
+    props.adminLoginOnly ? allRoles.filter((r) => r.value === 'institution') : allRoles,
+);
 
 const form = useForm({
     email: '',
@@ -113,9 +121,11 @@ const submit = () => {
                 : 'Log in to your account'
         "
         :description="
-            showRoleSelection
-                ? 'Select your role and enter your credentials'
-                : 'Enter your email and password below to log in'
+            adminLoginOnly
+                ? 'Log in as institution admin to complete payment and access the workspace'
+                : showRoleSelection
+                  ? 'Select your role and enter your credentials'
+                  : 'Enter your email and password below to log in'
         "
     >
         <Head title="Log in" />
@@ -182,7 +192,7 @@ const submit = () => {
             class="flex w-full flex-col gap-6"
             v-if="!showRoleSelection || selectedRole"
         >
-            <!-- Role Indicator (when role is selected) -->
+            <!-- Role Indicator (when role is selected; hide Change Role when admin-only) -->
             <div
                 v-if="showRoleSelection && selectedRole"
                 class="mb-2 flex w-full items-center justify-between px-1"
@@ -197,6 +207,7 @@ const submit = () => {
                     }}</span>
                 </div>
                 <Button
+                    v-if="!adminLoginOnly"
                     type="button"
                     variant="ghost"
                     size="sm"

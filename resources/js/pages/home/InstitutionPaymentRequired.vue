@@ -53,18 +53,19 @@ const loginUrl =
                                 <h1
                                     class="mb-4 text-3xl font-bold tracking-tight"
                                 >
-                                    Payment needs to be completed
+                                    Complete payment to access the workspace
                                 </h1>
                                 <p class="mb-8 text-lg text-muted-foreground">
                                     <strong>{{ institution.name }}</strong> has
-                                    been activated. The institution admin must
-                                    log in and complete the subscription payment
-                                    before the workspace can be used.
+                                    been activated. You must complete the
+                                    subscription payment before you can access
+                                    this workspace.
                                 </p>
                                 <div
                                     class="mb-8 rounded-lg bg-muted p-6 text-left"
                                 >
                                     <p class="text-sm text-muted-foreground">
+                                        Log in as the institution admin below.
                                         After payment is completed, the
                                         dashboard and all features will be
                                         available.
@@ -73,7 +74,7 @@ const loginUrl =
                                 <a :href="loginUrl">
                                     <Button size="lg">
                                         <LogIn class="mr-2 h-4 w-4" />
-                                        Log in (institution admin)
+                                        Log in as institution admin
                                     </Button>
                                 </a>
                             </div>
