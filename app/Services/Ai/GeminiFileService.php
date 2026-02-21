@@ -60,7 +60,7 @@ class GeminiFileService
         }
     }
 
-    protected function extractFileContent(string $filePath): ?string
+    public function extractFileContent(string $filePath): ?string
     {
         if (! Storage::exists($filePath)) {
             return null;

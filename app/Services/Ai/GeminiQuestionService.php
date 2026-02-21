@@ -42,10 +42,20 @@ class GeminiQuestionService
         if ($vivaId) {
             $viva = Viva::find($vivaId);
             if ($viva && ! empty(trim((string) $viva->instructions))) {
-                $prompt = "Generate {$numQuestions} viva questions based on the following instructions.\n\n";
+                $prompt = "Generate {$numQuestions} viva questions based on the lecturer's instructions and the student's submitted document.\n\n";
                 $prompt .= "Viva title: {$topic}\n\n";
                 $prompt .= "Lecturer's instructions (topics, concepts, and areas to assess):\n";
                 $prompt .= trim($viva->instructions);
+
+                if ($studentDocumentPath) {
+                    $studentContent = $this->geminiFileService->extractFileContent($studentDocumentPath);
+                    if (! empty(trim((string) $studentContent))) {
+                        $prompt .= "\n\n---\n\nStudent's submitted document (PDF) content:\n";
+                        $prompt .= trim($studentContent);
+                        $prompt .= "\n\nGenerate questions that: (1) align with the lecturer's instructions above, ";
+                        $prompt .= "(2) relate to the student's document content, (3) test understanding of both the instructed topics and the student's work.";
+                    }
+                }
             } elseif ($viva && $viva->base_prompt) {
                 $prompt = $viva->base_prompt;
             } else {

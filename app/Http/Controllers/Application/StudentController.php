@@ -90,7 +90,7 @@ class StudentController extends Controller
         $user = $request->user();
 
         $validated = $request->validate([
-            'document' => ['required', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
+            'document' => ['required', 'file', 'mimes:pdf', 'max:10240'],
         ]);
 
         $result = $this->studentService->uploadVivaDocument(

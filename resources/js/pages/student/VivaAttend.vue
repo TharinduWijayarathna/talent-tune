@@ -1,10 +1,18 @@
 <script setup lang="ts">
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/vue3';
-import { Mic, MicOff, Square, Volume2 } from 'lucide-vue-next';
+import {
+    FileText,
+    Mic,
+    MicOff,
+    Square,
+    Upload,
+    Volume2,
+} from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 const props = defineProps<{
@@ -85,14 +93,81 @@ const isProcessingAnswer = ref(false);
 const page = usePage();
 const csrfToken = computed(() => (page.props as any).csrfToken || '');
 
+// Student PDF upload (required so questions use lecturer instructions + student's document)
+const documentFile = ref<File | null>(null);
+const documentInputRef = ref<HTMLInputElement | null>(null);
+const isUploadingDocument = ref(false);
+const uploadedDocumentPath = ref<string | null>(
+    props.submission?.document_path || null,
+);
+const documentUploaded = ref(!!props.submission?.document_path);
+
+const handleDocumentSelect = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    if (target.files && target.files[0]) {
+        const file = target.files[0];
+        if (file.type !== 'application/pdf') {
+            alert('Please upload a PDF file only.');
+            target.value = '';
+            return;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+            alert('File is too large. Maximum size is 10MB.');
+            target.value = '';
+            return;
+        }
+        documentFile.value = file;
+    }
+};
+
+const uploadDocument = async () => {
+    if (!documentFile.value || !vivaSession.value.id) return;
+    isUploadingDocument.value = true;
+    try {
+        const formData = new FormData();
+        formData.append('document', documentFile.value);
+        const response = await fetch(
+            `/student/vivas/${vivaSession.value.id}/upload-document`,
+            {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken.value,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'same-origin',
+                body: formData,
+            },
+        );
+        if (!response.ok) {
+            const errorData = await response
+                .json()
+                .catch(() => ({ error: 'Failed to upload document' }));
+            throw new Error(errorData.error || 'Failed to upload document');
+        }
+        const data = await response.json();
+        uploadedDocumentPath.value = data.document_path;
+        documentUploaded.value = true;
+        documentFile.value = null;
+        if (documentInputRef.value) documentInputRef.value.value = '';
+        alert('PDF uploaded. You can now start the viva.');
+    } catch (error: any) {
+        alert(`Error uploading document: ${error.message}`);
+    } finally {
+        isUploadingDocument.value = false;
+    }
+};
+
 let timerInterval: ReturnType<typeof setInterval> | null = null;
 let currentAudio: HTMLAudioElement | null = null;
 let silenceTimer: ReturnType<typeof setTimeout> | null = null;
 let finalAnswer = '';
 
 const generateQuestions = async () => {
+    if (!documentUploaded.value || !uploadedDocumentPath.value) {
+        alert('Please upload your PDF document before starting the viva.');
+        return false;
+    }
     isLoadingQuestions.value = true;
-
     try {
         const response = await fetch('/api/viva/questions/generate', {
             method: 'POST',
@@ -110,6 +185,7 @@ const generateQuestions = async () => {
                     ' viva session',
                 numQuestions: 5,
                 difficulty: 'intermediate',
+                studentDocumentPath: uploadedDocumentPath.value,
             }),
         });
 
@@ -813,9 +889,45 @@ onUnmounted(() => {
                 </div>
             </header>
 
-            <!-- Ready to start (session not started) -->
+            <!-- Document upload gate (PDF required) -->
             <div
-                v-if="!sessionActive"
+                v-if="!documentUploaded"
+                class="flex flex-1 flex-col items-center justify-center gap-6 px-4 py-12"
+            >
+                <div
+                    class="flex h-20 w-20 items-center justify-center rounded-full bg-muted"
+                >
+                    <FileText class="h-10 w-10 text-muted-foreground" />
+                </div>
+                <div class="max-w-sm text-center">
+                    <h2 class="text-lg font-medium">Upload your document (PDF)</h2>
+                    <p class="mt-1 text-sm text-muted-foreground">
+                        Upload your PDF so questions can be based on the
+                        lecturer’s instructions and your document. Max 10MB.
+                    </p>
+                </div>
+                <div class="flex w-full max-w-sm flex-col gap-2">
+                    <Input
+                        ref="documentInputRef"
+                        id="document"
+                        type="file"
+                        accept=".pdf,application/pdf"
+                        class="cursor-pointer"
+                        @change="handleDocumentSelect"
+                    />
+                    <Button
+                        :disabled="!documentFile || isUploadingDocument"
+                        @click="uploadDocument"
+                    >
+                        <Upload class="mr-2 h-4 w-4" />
+                        {{ isUploadingDocument ? 'Uploading...' : 'Upload PDF' }}
+                    </Button>
+                </div>
+            </div>
+
+            <!-- Ready to start (document uploaded, session not started) -->
+            <div
+                v-else-if="!sessionActive"
                 class="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-12"
             >
                 <div
@@ -831,9 +943,10 @@ onUnmounted(() => {
                             Ready for your viva
                         </h2>
                         <p class="text-sm text-muted-foreground">
-                            Questions are based on the lecturer’s instructions
-                            for this viva. You’ll get 5 questions and can answer
-                            by voice. Say “I don’t know” or “Skip” to move on.
+                            Questions will use the lecturer’s instructions and
+                            your uploaded PDF. You’ll get 5 questions and can
+                            answer by voice. Say “I don’t know” or “Skip” to
+                            move on.
                         </p>
                     </div>
                     <ul
