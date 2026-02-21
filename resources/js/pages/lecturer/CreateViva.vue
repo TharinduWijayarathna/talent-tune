@@ -23,14 +23,8 @@ import { cn } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { format } from 'date-fns';
-import {
-    Calendar as CalendarIcon,
-    Clock,
-    FileText,
-    Upload,
-    X,
-} from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { Calendar as CalendarIcon, Clock } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 const props = defineProps<{
     batches?: string[];
@@ -53,74 +47,8 @@ const form = useForm({
 
 const availableBatches = computed(() => props.batches || []);
 
-const fileInputRef = ref<HTMLInputElement | null>(null);
-const uploadedFiles = ref<Array<{ name: string; size: number; file: File }>>(
-    [],
-);
-
-const handleFileUpload = (event: Event) => {
-    const target = event.target as HTMLInputElement;
-    if (target.files) {
-        Array.from(target.files).forEach((file) => {
-            // Check file size (max 10MB)
-            if (file.size > 10 * 1024 * 1024) {
-                alert(
-                    `File "${file.name}" is too large. Maximum size is 10MB.`,
-                );
-                return;
-            }
-            uploadedFiles.value.push({
-                name: file.name,
-                size: file.size,
-                file,
-            });
-        });
-        // Reset input to allow selecting the same file again
-        target.value = '';
-    }
-};
-
-const removeFile = (index: number) => {
-    uploadedFiles.value.splice(index, 1);
-};
-
-const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
-};
-
 const submitForm = () => {
-    // Create FormData to handle file uploads
-    const formData = new FormData();
-
-    // Add form fields
-    formData.append('title', form.title);
-    formData.append('description', form.description || '');
-    formData.append('batch', form.batch);
-    formData.append('date', form.date);
-    formData.append('time', form.time);
-    formData.append('instructions', form.instructions || '');
-    // Send lecturer's timezone so scheduled time is stored correctly (then compared in UTC)
-    try {
-        formData.append(
-            'timezone',
-            Intl.DateTimeFormat().resolvedOptions().timeZone || '',
-        );
-    } catch {
-        formData.append('timezone', '');
-    }
-
-    // Add files
-    uploadedFiles.value.forEach((fileItem, index) => {
-        formData.append(`lecture_materials[${index}]`, fileItem.file);
-    });
-
-    // Submit using Inertia's post method with FormData
-    form.transform(() => formData).post('/lecturer/vivas', {
-        forceFormData: true,
+    form.post('/lecturer/vivas', {
         preserveScroll: true,
     });
 };
@@ -290,13 +218,15 @@ const submitForm = () => {
                         </CardContent>
                     </Card>
 
-                    <!-- Instructions -->
-                    <Card>
+                    <!-- Instructions (used to generate viva questions) -->
+                    <Card class="md:col-span-2">
                         <CardHeader>
-                            <CardTitle>Instructions</CardTitle>
+                            <CardTitle>Instructions for the viva</CardTitle>
                             <CardDescription
-                                >Provide instructions for
-                                students</CardDescription
+                                >Type instructions that define the scope and
+                                focus of this viva. Questions will be
+                                generated for students based on these
+                                instructions.</CardDescription
                             >
                         </CardHeader>
                         <CardContent>
@@ -305,92 +235,12 @@ const submitForm = () => {
                                 <Textarea
                                     id="instructions"
                                     v-model="form.instructions"
-                                    placeholder="Enter instructions for students..."
+                                    placeholder="e.g. Key topics to cover, concepts to assess, question areas (SQL, normalization, indexing...)"
                                     rows="8"
                                 />
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <!-- Lecture Materials -->
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Lecture Materials</CardTitle>
-                            <CardDescription
-                                >Upload materials and resources</CardDescription
-                            >
-                        </CardHeader>
-                        <CardContent class="space-y-4">
-                            <div
-                                class="cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors hover:border-primary"
-                                @click="() => fileInputRef?.click()"
-                            >
-                                <Upload
-                                    class="mx-auto mb-2 h-8 w-8 text-muted-foreground"
+                                <InputError
+                                    :message="form.errors.instructions"
                                 />
-                                <p class="mb-1 text-sm font-medium">
-                                    Click to upload or drag and drop
-                                </p>
-                                <p class="text-xs text-muted-foreground">
-                                    PDF, DOC, DOCX, PPT, PPTX (Max 10MB)
-                                </p>
-                                <input
-                                    ref="fileInputRef"
-                                    type="file"
-                                    multiple
-                                    accept=".pdf,.doc,.docx,.ppt,.pptx"
-                                    class="hidden"
-                                    @change="handleFileUpload"
-                                />
-                            </div>
-
-                            <!-- Uploaded Files List -->
-                            <div
-                                v-if="uploadedFiles.length > 0"
-                                class="space-y-2"
-                            >
-                                <div class="text-sm font-medium">
-                                    Uploaded Files:
-                                </div>
-                                <div class="space-y-2">
-                                    <div
-                                        v-for="(file, index) in uploadedFiles"
-                                        :key="index"
-                                        class="flex items-center justify-between rounded-lg border p-3"
-                                    >
-                                        <div
-                                            class="flex flex-1 items-center gap-2"
-                                        >
-                                            <FileText
-                                                class="h-4 w-4 text-muted-foreground"
-                                            />
-                                            <div class="min-w-0 flex-1">
-                                                <div
-                                                    class="truncate text-sm font-medium"
-                                                >
-                                                    {{ file.name }}
-                                                </div>
-                                                <div
-                                                    class="text-xs text-muted-foreground"
-                                                >
-                                                    {{
-                                                        formatFileSize(
-                                                            file.size,
-                                                        )
-                                                    }}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="sm"
-                                            @click="removeFile(index)"
-                                        >
-                                            <X class="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                </div>
                             </div>
                         </CardContent>
                     </Card>

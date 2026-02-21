@@ -96,13 +96,9 @@ class LecturerController extends Controller
             'time' => ['required', 'string'],
             'timezone' => ['nullable', 'string', 'max:50'],
             'instructions' => ['nullable', 'string'],
-            'lecture_materials' => ['nullable', 'array'],
-            'lecture_materials.*' => ['file', 'mimes:pdf,doc,docx,ppt,pptx', 'max:10240'],
         ]);
 
-        $files = $request->file('lecture_materials', []);
-
-        $this->lecturerService->createViva($institution, $user, $validated, $files);
+        $this->lecturerService->createViva($institution, $user, $validated);
 
         return redirect()->route('lecturer.dashboard')->with('status', 'Viva session created successfully.');
     }

@@ -4,12 +4,10 @@ use App\Models\Batch;
 use App\Models\Institution;
 use App\Models\User;
 use App\Models\Viva;
-use App\Services\Ai\GeminiFileService;
 use App\Services\Application\LecturerService;
 
 beforeEach(function () {
-    $this->geminiFileService = \Mockery::mock(GeminiFileService::class);
-    $this->service = new LecturerService($this->geminiFileService);
+    $this->service = new LecturerService;
     $this->institution = Institution::create([
         'name' => 'Test School',
         'slug' => 'test-school',
@@ -19,7 +17,6 @@ beforeEach(function () {
 });
 
 afterEach(function () {
-    \Mockery::close();
 });
 
 test('getDashboardData returns stats and recent sessions for lecturer', function () {
@@ -167,7 +164,7 @@ test('closeViva updates status to completed', function () {
     expect($updated->status)->toBe('completed');
 });
 
-test('createViva creates viva with processed data from GeminiFileService', function () {
+test('createViva creates viva with instructions and no base_prompt', function () {
     $lecturer = User::create([
         'name' => 'Dr. Lecturer',
         'email' => 'lecturer@testschool.edu',
@@ -175,10 +172,6 @@ test('createViva creates viva with processed data from GeminiFileService', funct
         'role' => 'lecturer',
         'institution_id' => $this->institution->id,
     ]);
-    $this->geminiFileService->shouldReceive('processLectureMaterials')
-        ->once()
-        ->with([], 'Viva Title', 'Description')
-        ->andReturn(['background' => 'Background text', 'base_prompt' => 'Base prompt text']);
 
     $validated = [
         'title' => 'Viva Title',
@@ -189,12 +182,13 @@ test('createViva creates viva with processed data from GeminiFileService', funct
         'instructions' => 'Instructions',
     ];
 
-    $viva = $this->service->createViva($this->institution, $lecturer, $validated, []);
+    $viva = $this->service->createViva($this->institution, $lecturer, $validated);
 
     expect($viva)->toBeInstanceOf(Viva::class);
     expect($viva->title)->toBe('Viva Title');
     expect($viva->batch)->toBe('2024');
-    expect($viva->viva_background)->toBe('Background text');
-    expect($viva->base_prompt)->toBe('Base prompt text');
+    expect($viva->instructions)->toBe('Instructions');
+    expect($viva->viva_background)->toBeNull();
+    expect($viva->base_prompt)->toBeNull();
     expect($viva->status)->toBe('upcoming');
 });

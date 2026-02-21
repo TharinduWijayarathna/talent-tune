@@ -7,15 +7,10 @@ use App\Models\Institution;
 use App\Models\User;
 use App\Models\Viva;
 use App\Models\VivaStudentSubmission;
-use App\Services\Ai\GeminiFileService;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 
 class LecturerService
 {
-    public function __construct(
-        protected GeminiFileService $geminiFileService
-    ) {}
 
     public function getDashboardData(Institution $institution, User $user): array
     {
@@ -114,23 +109,10 @@ class LecturerService
     }
 
     /**
-     * @param  array<int, UploadedFile>  $lectureMaterialFiles
+     * Create a viva session. Lecturer's instructions are stored and used at question-generation time.
      */
-    public function createViva(Institution $institution, User $user, array $validated, array $lectureMaterialFiles = []): Viva
+    public function createViva(Institution $institution, User $user, array $validated): Viva
     {
-        $storedFiles = [];
-        foreach ($lectureMaterialFiles as $file) {
-            if ($file instanceof UploadedFile) {
-                $storedFiles[] = $file->store('vivas/lecture-materials', 'private');
-            }
-        }
-
-        $processedData = $this->geminiFileService->processLectureMaterials(
-            $storedFiles,
-            $validated['title'],
-            $validated['description'] ?? null
-        );
-
         // Parse scheduled time in lecturer's timezone so "6:30 PM" means their local time, then store as UTC
         $tz = ! empty($validated['timezone']) && in_array($validated['timezone'], timezone_identifiers_list(), true)
             ? $validated['timezone']
@@ -143,9 +125,9 @@ class LecturerService
             'batch' => $validated['batch'],
             'scheduled_at' => $scheduledAt,
             'instructions' => $validated['instructions'] ?? null,
-            'lecture_materials' => $storedFiles,
-            'viva_background' => $processedData['background'],
-            'base_prompt' => $processedData['base_prompt'],
+            'lecture_materials' => null,
+            'viva_background' => null,
+            'base_prompt' => null,
             'institution_id' => $institution->id,
             'lecturer_id' => $user->id,
             'status' => 'upcoming',

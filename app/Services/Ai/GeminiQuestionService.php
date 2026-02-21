@@ -41,16 +41,13 @@ class GeminiQuestionService
         $prompt = '';
         if ($vivaId) {
             $viva = Viva::find($vivaId);
-            if ($viva && $viva->base_prompt) {
+            if ($viva && ! empty(trim((string) $viva->instructions))) {
+                $prompt = "Generate {$numQuestions} viva questions based on the following instructions.\n\n";
+                $prompt .= "Viva title: {$topic}\n\n";
+                $prompt .= "Lecturer's instructions (topics, concepts, and areas to assess):\n";
+                $prompt .= trim($viva->instructions);
+            } elseif ($viva && $viva->base_prompt) {
                 $prompt = $viva->base_prompt;
-                if ($studentDocumentPath && $viva->viva_background) {
-                    $prompt = $this->geminiFileService->enhancePromptWithStudentDocument(
-                        $studentDocumentPath,
-                        $viva->viva_background,
-                        $prompt,
-                        $viva->title
-                    );
-                }
             } else {
                 $prompt = "Generate {$numQuestions} viva questions for the topic: {$topic}";
                 if ($description) {
