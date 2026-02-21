@@ -30,12 +30,15 @@ class AuthenticatedSessionController extends Controller
         }
 
         $showRoleSelection = $institution !== null;
+        // When workspace requires payment, only institution admin can log in (to complete payment)
+        $adminLoginOnly = $institution && $institution->subscription_status !== 'active';
 
         return Inertia::render('auth/Login', [
             'canResetPassword' => Features::enabled(Features::resetPasswords()),
             'canRegister' => Features::enabled(Features::registration()),
             'status' => $request->session()->get('status'),
             'showRoleSelection' => $showRoleSelection,
+            'adminLoginOnly' => $adminLoginOnly,
             'institution' => $institution ? [
                 'name' => $institution->name,
                 'slug' => $institution->slug,
