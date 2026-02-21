@@ -15,15 +15,15 @@ COPY . .
 RUN composer dump-autoload --optimize
 
 # ----------------------------
-# Stage 2: Node 22 (Vite build)
+# Stage 2: Vite build (needs PHP for wayfinder:generate)
 # ----------------------------
-FROM node:22-bookworm-slim AS frontend
+FROM php-base AS frontend
+# Install Node 22 (Wayfinder plugin runs "php artisan wayfinder:generate" during build)
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-COPY package.json package-lock.json* ./
-RUN npm ci
-COPY --from=php-base /app /app
-# Only need resources and vite config for build
-RUN npm run build
+RUN npm ci && npm run build
 
 # ----------------------------
 # Stage 3: Runtime (PHP-FPM + nginx + supervisor)
