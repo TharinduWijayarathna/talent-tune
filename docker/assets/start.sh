@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
 # Transform the nginx configuration (substitute PORT)
@@ -6,8 +6,8 @@ export PORT="${PORT:-80}"
 sed "s/\${PORT}/$PORT/g" /assets/nginx.template.conf > /etc/nginx.conf
 
 # Set APP_URL to HTTPS in production if not already set
-if [ "$APP_ENV" = "production" ] && ([ -z "$APP_URL" ] || [[ "$APP_URL" == http://* ]]); then
-    export APP_URL="https://talenttune.site"
+if [ "$APP_ENV" = "production" ]; then
+  case "${APP_URL:-}" in ""|http://*) export APP_URL="https://talenttune.site";; esac
 fi
 
 # Run migrations if database is available
