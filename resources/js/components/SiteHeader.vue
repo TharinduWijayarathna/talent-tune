@@ -9,7 +9,14 @@ import {
 } from '@/components/ui/sheet';
 import { login, registerInstitution } from '@/routes';
 import { Link } from '@inertiajs/vue3';
-import { ArrowRight, Menu } from 'lucide-vue-next';
+import {
+    ArrowRight,
+    Building2,
+    CreditCard,
+    Home,
+    Menu,
+    Sparkles,
+} from 'lucide-vue-next';
 import { ref } from 'vue';
 
 defineProps<{
@@ -20,6 +27,13 @@ const mobileMenuOpen = ref(false);
 
 const navLinkClass =
     'text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded';
+
+const mobileNavItems = [
+    { href: '/', label: 'Home', icon: Home },
+    { href: '/features', label: 'Features', icon: Sparkles },
+    { href: '/pricing', label: 'Pricing', icon: CreditCard },
+    { href: '/about', label: 'About', icon: Building2 },
+];
 
 function closeMobileMenu() {
     mobileMenuOpen.value = false;
@@ -78,66 +92,65 @@ function closeMobileMenu() {
                     >
                         <Menu class="h-5 w-5" />
                     </SheetTrigger>
-                    <SheetContent side="right" class="w-[280px] sm:w-[320px]">
-                        <SheetHeader>
-                            <SheetTitle class="sr-only">Menu</SheetTitle>
+                    <SheetContent
+                        side="right"
+                        class="flex w-[300px] flex-col border-l border-border/50 bg-background/98 px-0 sm:w-[340px]"
+                    >
+                        <SheetHeader
+                            class="border-b border-border/40 px-6 pb-4 pt-6 pr-14"
+                        >
+                            <div class="flex items-center gap-2">
+                                <img
+                                    src="/images/logo.png"
+                                    alt="TalentTune"
+                                    class="h-8 w-auto"
+                                />
+                                <SheetTitle class="text-base font-semibold">
+                                    Menu
+                                </SheetTitle>
+                            </div>
                         </SheetHeader>
                         <nav
-                            class="mt-6 flex flex-col gap-1"
+                            class="flex flex-1 flex-col gap-0.5 px-4 py-6"
                             aria-label="Mobile menu"
                         >
                             <Link
-                                href="/"
-                                :class="navLinkClass"
-                                class="block py-3 text-base"
+                                v-for="item in mobileNavItems"
+                                :key="item.href"
+                                :href="item.href"
+                                class="flex items-center gap-3 rounded-lg px-3 py-3.5 text-base font-medium text-foreground/90 transition-colors hover:bg-muted/60 hover:text-foreground active:bg-muted/80"
                                 @click="closeMobileMenu"
                             >
-                                Home
-                            </Link>
-                            <Link
-                                href="/features"
-                                :class="navLinkClass"
-                                class="block py-3 text-base"
-                                @click="closeMobileMenu"
-                            >
-                                Features
-                            </Link>
-                            <Link
-                                href="/pricing"
-                                :class="navLinkClass"
-                                class="block py-3 text-base"
-                                @click="closeMobileMenu"
-                            >
-                                Pricing
-                            </Link>
-                            <Link
-                                href="/about"
-                                :class="navLinkClass"
-                                class="block py-3 text-base"
-                                @click="closeMobileMenu"
-                            >
-                                About
+                                <component
+                                    :is="item.icon"
+                                    class="h-5 w-5 shrink-0 text-primary/80"
+                                />
+                                {{ item.label }}
                             </Link>
                             <Link
                                 v-if="!isMainDomain"
                                 :href="login.url()"
-                                :class="navLinkClass"
-                                class="block py-3 text-base"
+                                class="mt-2 flex items-center gap-3 rounded-lg px-3 py-3.5 text-base font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
                                 @click="closeMobileMenu"
                             >
                                 Sign In
                             </Link>
+                        </nav>
+                        <div class="border-t border-border/40 p-4">
                             <Link
                                 :href="registerInstitution.url()"
-                                class="mt-4"
+                                class="block"
                                 @click="closeMobileMenu"
                             >
-                                <Button size="lg" class="w-full gap-2">
+                                <Button
+                                    size="lg"
+                                    class="w-full gap-2 shadow-md transition-all hover:shadow-lg"
+                                >
                                     Get Started
                                     <ArrowRight class="h-4 w-4" />
                                 </Button>
                             </Link>
-                        </nav>
+                        </div>
                     </SheetContent>
                 </Sheet>
             </div>
