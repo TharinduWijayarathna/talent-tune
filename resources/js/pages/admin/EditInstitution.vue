@@ -24,7 +24,6 @@ interface InstitutionForm {
     contact_person: string | null;
     phone: string | null;
     address: string | null;
-    primary_color: string | null;
     is_active: boolean;
     subscription_status?: string | null;
 }
@@ -47,7 +46,6 @@ const form = useForm({
     contact_person: props.institution.contact_person ?? '',
     phone: props.institution.phone ?? '',
     address: props.institution.address ?? '',
-    primary_color: props.institution.primary_color ?? '#3b82f6',
     is_active: props.institution.is_active,
 });
 
@@ -156,25 +154,6 @@ const submit = () => {
                                 rows="2"
                             />
                             <InputError :message="form.errors.address" />
-                        </div>
-
-                        <div class="space-y-2">
-                            <Label for="primary_color">Primary Color</Label>
-                            <div class="flex gap-2">
-                                <input
-                                    id="primary_color"
-                                    v-model="form.primary_color"
-                                    type="color"
-                                    class="h-10 w-14 cursor-pointer rounded border border-input"
-                                />
-                                <Input
-                                    v-model="form.primary_color"
-                                    type="text"
-                                    placeholder="#3b82f6"
-                                    class="flex-1 font-mono text-sm"
-                                />
-                            </div>
-                            <InputError :message="form.errors.primary_color" />
                         </div>
 
                         <div class="flex items-center gap-2">

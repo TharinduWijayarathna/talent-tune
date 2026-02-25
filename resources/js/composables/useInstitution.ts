@@ -17,13 +17,10 @@ export function useInstitution() {
 
     const institutionLogo = computed(() => institution.value?.logo_url);
 
-    const institutionColor = computed(() => institution.value?.primary_color);
-
     return {
         institution,
         hasInstitution,
         institutionName,
         institutionLogo,
-        institutionColor,
     };
 }

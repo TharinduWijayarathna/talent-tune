@@ -29,7 +29,6 @@ class InstitutionFactory extends Factory
             'contact_person' => fake()->name(),
             'phone' => fake()->phoneNumber(),
             'address' => fake()->address(),
-            'primary_color' => '#3b82f6',
             'settings' => [],
             'is_active' => false,
         ];

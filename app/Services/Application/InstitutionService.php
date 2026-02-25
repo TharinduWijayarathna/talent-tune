@@ -29,7 +29,6 @@ class InstitutionService
             'contact_person' => $validated['contact_person'],
             'phone' => $validated['phone'] ?? null,
             'address' => $validated['address'] ?? null,
-            'primary_color' => $validated['primary_color'] ?? '#3b82f6',
             'settings' => [
                 'email' => $validated['email'],
                 'contact_person' => $validated['contact_person'],
@@ -69,7 +68,6 @@ class InstitutionService
             'contact_person' => $data['contact_person'],
             'phone' => $data['phone'] ?? null,
             'address' => $data['address'] ?? null,
-            'primary_color' => $data['primary_color'] ?? $institution->primary_color,
             'is_active' => $data['is_active'] ?? $institution->is_active,
             'settings' => array_merge($institution->settings ?? [], [
                 'email' => $data['email'],

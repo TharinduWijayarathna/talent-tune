@@ -11,7 +11,7 @@ import { dashboard, login } from '@/routes';
 import type { Institution } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { ArrowRight, CheckCircle2 } from 'lucide-vue-next';
-import { computed, onMounted, watch } from 'vue';
+import { computed } from 'vue';
 
 interface Props {
     canRegister: boolean;
@@ -27,39 +27,6 @@ const page = usePage();
 const institution = computed(() => props.institution || page.props.institution);
 const institutionName = computed(() => institution.value?.name || 'TalentTune');
 const institutionLogo = computed(() => institution.value?.logo_url);
-const institutionColor = computed(() => institution.value?.primary_color);
-
-// Apply institution color as CSS variable if available
-onMounted(() => {
-    applyInstitutionColor();
-});
-watch(institutionColor, () => {
-    applyInstitutionColor();
-});
-
-const applyInstitutionColor = () => {
-    if (institutionColor.value) {
-        // Apply as CSS variable
-        document.documentElement.style.setProperty(
-            '--institution-primary',
-            institutionColor.value,
-        );
-        // Also apply to primary color classes via style tag
-        const styleId = 'institution-branding';
-        let styleElement = document.getElementById(styleId);
-        if (!styleElement) {
-            styleElement = document.createElement('style');
-            styleElement.id = styleId;
-            document.head.appendChild(styleElement);
-        }
-        styleElement.textContent = `
-            .institution-primary { color: ${institutionColor.value} !important; }
-            .institution-bg-primary { background-color: ${institutionColor.value} !important; }
-            .institution-border-primary { border-color: ${institutionColor.value} !important; }
-            .institution-gradient { background: linear-gradient(to right, ${institutionColor.value}, ${institutionColor.value}80) !important; }
-        `;
-    }
-};
 </script>
 
 <template>
@@ -116,16 +83,7 @@ const applyInstitutionColor = () => {
                         class="mb-4 text-4xl font-bold tracking-tight sm:text-5xl"
                     >
                         <span
-                            :class="
-                                institutionColor
-                                    ? ''
-                                    : 'bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent'
-                            "
-                            :style="
-                                institutionColor
-                                    ? { color: institutionColor }
-                                    : {}
-                            "
+                            class="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent"
                         >
                             {{ institutionName }}
                         </span>

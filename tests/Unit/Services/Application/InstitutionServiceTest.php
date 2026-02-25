@@ -15,7 +15,6 @@ test('create creates institution with generated slug', function () {
         'contact_person' => 'John Doe',
         'phone' => '+1234567890',
         'address' => '123 Main St',
-        'primary_color' => '#3b82f6',
     ];
 
     $institution = $this->service->create($validated);

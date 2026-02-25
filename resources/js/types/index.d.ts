@@ -29,7 +29,6 @@ export interface Institution {
     name: string;
     slug: string;
     logo_url?: string | null;
-    primary_color?: string | null;
 }
 
 export type AppPageProps<

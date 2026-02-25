@@ -9,7 +9,6 @@ import {
     FileText,
     Mic,
     MicOff,
-    Square,
     Upload,
     Volume2,
 } from 'lucide-vue-next';
@@ -876,15 +875,6 @@ onUnmounted(() => {
                         <span class="text-sm text-muted-foreground">
                             {{ questionIndex + 1 }}/{{ questions.length }}
                         </span>
-                        <Button
-                            @click="stopSession"
-                            variant="ghost"
-                            size="sm"
-                            class="text-muted-foreground hover:text-destructive"
-                        >
-                            <Square class="mr-1.5 h-4 w-4" />
-                            End
-                        </Button>
                     </template>
                 </div>
             </header>

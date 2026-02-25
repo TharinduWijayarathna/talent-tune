@@ -11,30 +11,37 @@ import {
 import SiteHeader from '@/components/SiteHeader.vue';
 import { registerInstitution } from '@/routes';
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { Check } from 'lucide-vue-next';
+import { Check, Mail } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 const page = usePage();
 const isMainDomain = computed(() => !page.props.institution);
 
+const contactEmail = 'hello@talenttune.com';
+const contactMailto = `mailto:${contactEmail}?subject=TalentTune%20-%20Institution%20%2F%20Custom%20plan%20inquiry`;
+
 const plans = [
     {
         name: 'Starter',
         description: 'For small departments and pilot programs.',
-        price: 'Contact us',
+        price: '$99',
+        pricePeriod: 'per month',
         features: [
             'Up to 100 students',
             'AI question generation',
             'Basic analytics',
             'Email support',
         ],
-        cta: 'Get in touch',
+        cta: 'Get Started',
+        href: registerInstitution.url(),
+        isLink: true,
         highlighted: false,
     },
     {
         name: 'Institution',
-        description: 'For universities and colleges.',
+        description: 'For universities and colleges. Custom pricing—contact us for a tailored quote.',
         price: 'Custom',
+        pricePeriod: 'Contact us',
         features: [
             'Unlimited students',
             'All AI features',
@@ -42,7 +49,9 @@ const plans = [
             'Priority support',
             'Custom branding',
         ],
-        cta: 'Get Started',
+        cta: 'Email us',
+        mailto: contactMailto,
+        isLink: false,
         highlighted: true,
     },
 ];
@@ -82,8 +91,16 @@ const plans = [
                         <CardHeader>
                             <CardTitle class="text-xl">{{ plan.name }}</CardTitle>
                             <CardDescription>{{ plan.description }}</CardDescription>
-                            <div class="mt-4 text-2xl font-bold">
-                                {{ plan.price }}
+                            <div class="mt-4 flex items-baseline gap-1.5">
+                                <span class="text-2xl font-bold">{{
+                                    plan.price
+                                }}</span>
+                                <span
+                                    v-if="plan.pricePeriod"
+                                    class="text-sm font-normal text-muted-foreground"
+                                >
+                                    {{ plan.pricePeriod }}
+                                </span>
                             </div>
                         </CardHeader>
                         <CardContent class="flex flex-1 flex-col">
@@ -98,16 +115,34 @@ const plans = [
                                 </li>
                             </ul>
                             <Link
-                                :href="registerInstitution.url()"
+                                v-if="plan.isLink"
+                                :href="plan.href"
                                 class="mt-auto"
                             >
                                 <Button
-                                    :variant="plan.highlighted ? 'default' : 'outline'"
+                                    :variant="
+                                        plan.highlighted ? 'default' : 'outline'
+                                    "
                                     class="w-full"
                                 >
                                     {{ plan.cta }}
                                 </Button>
                             </Link>
+                            <a
+                                v-else
+                                :href="plan.mailto"
+                                class="mt-auto"
+                            >
+                                <Button
+                                    :variant="
+                                        plan.highlighted ? 'default' : 'outline'
+                                    "
+                                    class="w-full gap-2"
+                                >
+                                    <Mail class="h-4 w-4" />
+                                    {{ plan.cta }}
+                                </Button>
+                            </a>
                         </CardContent>
                     </Card>
                 </div>

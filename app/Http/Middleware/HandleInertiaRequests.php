@@ -68,7 +68,6 @@ class HandleInertiaRequests extends Middleware
                 'name' => $institution->name,
                 'slug' => $institution->slug,
                 'logo_url' => $institution->logo_url,
-                'primary_color' => $institution->primary_color,
             ] : null,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'csrfToken' => $request->session()->token(),

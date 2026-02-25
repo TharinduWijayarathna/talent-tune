@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->string('domain')->nullable()->unique(); // For custom domains
             $table->string('logo_url')->nullable();
-            $table->string('primary_color')->nullable(); // Hex color for branding
             $table->json('settings')->nullable(); // Additional settings
             $table->boolean('is_active')->default(false); // Requires admin approval
             $table->timestamps();
