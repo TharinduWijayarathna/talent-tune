@@ -20,7 +20,6 @@ const form = useForm({
     contact_person: '',
     phone: '',
     address: '',
-    primary_color: '#3b82f6',
 });
 
 const submit = () => {
@@ -174,34 +173,6 @@ const submit = () => {
                                     />
                                     <InputError
                                         :message="form.errors.address"
-                                    />
-                                </div>
-
-                                <div class="space-y-2">
-                                    <Label for="primary_color"
-                                        >Primary Brand Color</Label
-                                    >
-                                    <div class="flex items-center gap-4">
-                                        <Input
-                                            id="primary_color"
-                                            v-model="form.primary_color"
-                                            type="color"
-                                            class="h-12 w-24 cursor-pointer"
-                                        />
-                                        <Input
-                                            v-model="form.primary_color"
-                                            type="text"
-                                            placeholder="#3b82f6"
-                                            class="flex-1"
-                                            pattern="^#[0-9A-Fa-f]{6}$"
-                                        />
-                                    </div>
-                                    <p class="text-sm text-muted-foreground">
-                                        This color will be used for your
-                                        institution's branding.
-                                    </p>
-                                    <InputError
-                                        :message="form.errors.primary_color"
                                     />
                                 </div>
 

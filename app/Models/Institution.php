@@ -20,7 +20,6 @@ class Institution extends Model
         'slug',
         'domain',
         'logo_url',
-        'primary_color',
         'settings',
         'is_active',
         'email',

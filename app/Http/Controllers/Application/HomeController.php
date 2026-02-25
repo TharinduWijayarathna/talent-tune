@@ -52,7 +52,6 @@ class HomeController extends Controller
                     'name' => $institution->name,
                     'slug' => $institution->slug,
                     'logo_url' => $institution->logo_url,
-                    'primary_color' => $institution->primary_color,
                 ],
             ]);
         }

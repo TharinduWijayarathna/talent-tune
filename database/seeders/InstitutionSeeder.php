@@ -20,7 +20,6 @@ class InstitutionSeeder extends Seeder
         //         'contact_person' => 'Dr. John Smith',
         //         'phone' => '+1 (555) 123-4567',
         //         'address' => '123 University Street, Tech City, TC 12345',
-        //         'primary_color' => '#3b82f6',
         //         'is_active' => true, // Pre-activated for testing
         //     ],
         //     [
@@ -30,7 +29,6 @@ class InstitutionSeeder extends Seeder
         //         'contact_person' => 'Dr. Sarah Johnson',
         //         'phone' => '+1 (555) 987-6543',
         //         'address' => '456 State Avenue, Capital City, CC 67890',
-        //         'primary_color' => '#10b981',
         //         'is_active' => true, // Pre-activated for testing
         //     ],
         //     [
@@ -40,7 +38,6 @@ class InstitutionSeeder extends Seeder
         //         'contact_person' => 'Dr. Tamara Pratt',
         //         'phone' => '+1 (555) 555-5555',
         //         'address' => '789 Education Boulevard, Academic City, AC 54321',
-        //         'primary_color' => '#8b5cf6',
         //         'is_active' => true, // Pre-activated for testing
         //     ],
         // ];

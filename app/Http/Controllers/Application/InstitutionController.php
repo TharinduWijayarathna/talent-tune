@@ -35,7 +35,6 @@ class InstitutionController extends Controller
             'contact_person' => 'required|string|max:255',
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:500',
-            'primary_color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
         ]);
 
         $institution = $this->institutionService->create($validated);
@@ -83,7 +82,6 @@ class InstitutionController extends Controller
                 'contact_person' => $institution->contact_person ?? ($institution->settings['contact_person'] ?? null),
                 'phone' => $institution->phone ?? ($institution->settings['phone'] ?? null),
                 'address' => $institution->address ?? ($institution->settings['address'] ?? null),
-                'primary_color' => $institution->primary_color ?? '#3b82f6',
                 'is_active' => $institution->is_active,
                 'subscription_status' => $institution->subscription_status,
             ],
@@ -101,7 +99,6 @@ class InstitutionController extends Controller
             'contact_person' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:20'],
             'address' => ['nullable', 'string', 'max:500'],
-            'primary_color' => ['nullable', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'is_active' => ['required', 'boolean'],
         ]);
 
