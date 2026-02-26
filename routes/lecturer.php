@@ -16,4 +16,6 @@ Route::prefix('lecturer')->middleware(['auth', 'verified', EnsureInstitutionAcce
     Route::post('vivas', [LecturerController::class, 'storeViva'])->name('lecturer.vivas.store');
     Route::get('vivas/{id}', [LecturerController::class, 'showViva'])->name('lecturer.vivas.show');
     Route::post('vivas/{id}/close', [LecturerController::class, 'closeViva'])->name('lecturer.vivas.close');
+    Route::get('viva-submissions/{submissionId}/document', [LecturerController::class, 'streamSubmissionDocument'])->name('lecturer.viva-submissions.document');
+    Route::get('viva-submissions/{submissionId}/voice/{index}', [LecturerController::class, 'streamSubmissionVoice'])->name('lecturer.viva-submissions.voice');
 });

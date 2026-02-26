@@ -21,6 +21,7 @@ import {
     ChevronDown,
     ChevronRight,
     FileText,
+    Headphones,
     Lock,
     MessageSquare,
     User,
@@ -30,6 +31,7 @@ import { computed, ref } from 'vue';
 interface AnswerItem {
     question: string;
     answer: string;
+    voice_path?: string | null;
     score_1_10?: number;
     feedback?: string;
     correctPoints?: string[];
@@ -360,6 +362,24 @@ const pendingCount = () =>
                                                         >
                                                             {{ item.answer }}
                                                         </p>
+                                                        <div
+                                                            v-if="item.voice_path"
+                                                            class="mt-2 flex items-center gap-2 rounded-md border bg-muted/50 p-2"
+                                                        >
+                                                            <Headphones
+                                                                class="h-4 w-4 shrink-0 text-muted-foreground"
+                                                            />
+                                                            <span
+                                                                class="text-xs font-medium text-muted-foreground"
+                                                            >
+                                                                Hear student's voice:
+                                                            </span>
+                                                            <audio
+                                                                :src="`/lecturer/viva-submissions/${sub.id}/voice/${idx}`"
+                                                                controls
+                                                                class="h-8 max-w-full flex-1"
+                                                            />
+                                                        </div>
                                                         <div
                                                             v-if="
                                                                 item.score_1_10 !=

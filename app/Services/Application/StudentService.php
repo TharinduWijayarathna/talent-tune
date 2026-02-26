@@ -203,6 +203,38 @@ class StudentService
         ];
     }
 
+    /**
+     * Upload a voice recording for one answer. Stored under vivas/voice-recordings/{submission_id}/{index}.{ext}.
+     */
+    public function uploadVivaVoiceRecording(Institution $institution, User $user, int $vivaId, int $submissionId, int $questionIndex, UploadedFile $audio): array
+    {
+        $viva = Viva::where('institution_id', $institution->id)
+            ->where('id', $vivaId)
+            ->where('batch', $user->batch)
+            ->firstOrFail();
+
+        $submission = VivaStudentSubmission::where('viva_id', $viva->id)
+            ->where('student_id', $user->id)
+            ->where('id', $submissionId)
+            ->firstOrFail();
+
+        if ($questionIndex < 0 || $questionIndex > 9) {
+            abort(422, 'Invalid question index.');
+        }
+
+        $ext = $audio->getClientOriginalExtension() ?: 'webm';
+        $path = $audio->storeAs(
+            'vivas/voice-recordings/'.$submission->id,
+            $questionIndex.'.'.$ext,
+            'private'
+        );
+
+        return [
+            'success' => true,
+            'voice_path' => $path,
+        ];
+    }
+
     public function completeVivaSubmission(User $user, array $validated): array
     {
         $submission = VivaStudentSubmission::where('id', $validated['submission_id'])

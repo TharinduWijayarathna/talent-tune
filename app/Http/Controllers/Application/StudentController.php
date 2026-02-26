@@ -103,6 +103,30 @@ class StudentController extends Controller
         return response()->json($result);
     }
 
+    public function uploadVivaVoice(Request $request, int $id)
+    {
+        $institution = $this->institution($request);
+        $this->authorizeStudent($request);
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'submission_id' => ['required', 'integer', 'exists:viva_student_submissions,id'],
+            'question_index' => ['required', 'integer', 'min:0', 'max:9'],
+            'audio' => ['required', 'file', 'mimes:webm,mp3,mp4,m4a,ogg,wav', 'max:20480'],
+        ]);
+
+        $result = $this->studentService->uploadVivaVoiceRecording(
+            $institution,
+            $user,
+            $id,
+            $validated['submission_id'],
+            $validated['question_index'],
+            $validated['audio']
+        );
+
+        return response()->json($result);
+    }
+
     public function completeVivaSubmission(Request $request)
     {
         $this->authorizeStudent($request);
@@ -117,6 +141,7 @@ class StudentController extends Controller
             'answers.*.feedback' => ['nullable', 'string'],
             'answers.*.correctPoints' => ['nullable', 'array'],
             'answers.*.improvements' => ['nullable', 'array'],
+            'answers.*.voice_path' => ['nullable', 'string'],
         ]);
 
         $result = $this->studentService->completeVivaSubmission($user, $validated);
