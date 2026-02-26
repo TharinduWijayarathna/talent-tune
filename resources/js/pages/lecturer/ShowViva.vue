@@ -21,15 +21,27 @@ import {
     ChevronDown,
     ChevronRight,
     FileText,
+    Headphones,
     Lock,
     MessageSquare,
+    UserPlus,
     User,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from '@/components/ui/dialog';
 
 interface AnswerItem {
     question: string;
     answer: string;
+    voice_path?: string | null;
     score_1_10?: number;
     feedback?: string;
     correctPoints?: string[];
@@ -47,6 +59,13 @@ interface Submission {
     answers: AnswerItem[];
     document_path: string | null;
     completed_at: string | null;
+    allowed_after_close?: boolean;
+}
+
+interface StudentOption {
+    id: number;
+    name: string;
+    email: string | null;
 }
 
 const props = defineProps<{
@@ -84,6 +103,50 @@ const inProgressCount = () =>
     submissions.value.filter((s) => s.status === 'in_progress').length;
 const pendingCount = () =>
     submissions.value.filter((s) => s.status === 'pending').length;
+
+// One-time participation after viva closed
+const addLateOpen = ref(false);
+const lateStudents = ref<StudentOption[]>([]);
+const selectedLateStudentId = ref<number | null>(null);
+const loadingLateStudents = ref(false);
+const addingLate = ref(false);
+
+const fetchStudentsForLateParticipation = async () => {
+    loadingLateStudents.value = true;
+    selectedLateStudentId.value = null;
+    try {
+        const r = await fetch(
+            `/lecturer/vivas/${props.viva.id}/students-for-late-participation`,
+            { headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } }
+        );
+        const data = await r.json();
+        lateStudents.value = data.students ?? [];
+    } finally {
+        loadingLateStudents.value = false;
+    }
+};
+
+const openAddLateDialog = () => {
+    addLateOpen.value = true;
+    fetchStudentsForLateParticipation();
+};
+
+const addLateStudent = () => {
+    if (selectedLateStudentId.value == null) return;
+    addingLate.value = true;
+    router.post(
+        `/lecturer/vivas/${props.viva.id}/add-late-student`,
+        { student_id: selectedLateStudentId.value },
+        {
+            preserveScroll: true,
+            onFinish: () => {
+                addingLate.value = false;
+                addLateOpen.value = false;
+                selectedLateStudentId.value = null;
+            },
+        }
+    );
+};
 </script>
 
 <template>
@@ -153,6 +216,86 @@ const pendingCount = () =>
                             {{ viva.instructions }}
                         </p>
                     </div>
+                </CardContent>
+            </Card>
+
+            <!-- Add student for one-time participation (when viva is closed) -->
+            <Card v-if="viva.status === 'completed'">
+                <CardHeader>
+                    <CardTitle class="flex items-center gap-2">
+                        <UserPlus class="h-5 w-5" />
+                        One-time participation
+                    </CardTitle>
+                    <CardDescription>
+                        Add a student from this batch to participate once after the viva has closed. They will appear in the attendees list and can complete the viva one time.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Dialog :open="addLateOpen" @update:open="addLateOpen = $event">
+                        <DialogTrigger as-child>
+                            <Button variant="outline" @click="openAddLateDialog">
+                                <UserPlus class="mr-2 h-4 w-4" />
+                                Add student for one-time participation
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent class="sm:max-w-md">
+                            <DialogHeader>
+                                <DialogTitle>Add student</DialogTitle>
+                                <DialogDescription>
+                                    Choose a student from this batch who has not yet attended. They will be able to attend and complete the viva once.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div class="grid gap-4 py-4">
+                                <p
+                                    v-if="loadingLateStudents"
+                                    class="text-sm text-muted-foreground"
+                                >
+                                    Loading students…
+                                </p>
+                                <p
+                                    v-else-if="lateStudents.length === 0"
+                                    class="text-sm text-muted-foreground"
+                                >
+                                    No students available to add (all have already attended or been added).
+                                </p>
+                                <select
+                                    v-else
+                                    v-model="selectedLateStudentId"
+                                    class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                >
+                                    <option :value="null">
+                                        Select a student…
+                                    </option>
+                                    <option
+                                        v-for="s in lateStudents"
+                                        :key="s.id"
+                                        :value="s.id"
+                                    >
+                                        {{ s.name }}
+                                        <template v-if="s.email">
+                                            ({{ s.email }})
+                                        </template>
+                                    </option>
+                                </select>
+                            </div>
+                            <DialogFooter>
+                                <Button
+                                    variant="outline"
+                                    @click="addLateOpen = false"
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    :disabled="
+                                        selectedLateStudentId == null || addingLate
+                                    "
+                                    @click="addLateStudent"
+                                >
+                                    {{ addingLate ? 'Adding…' : 'Add student' }}
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                 </CardContent>
             </Card>
 
@@ -244,6 +387,13 @@ const pendingCount = () =>
                                             "
                                         >
                                             {{ sub.status.replace('_', ' ') }}
+                                        </Badge>
+                                        <Badge
+                                            v-if="sub.allowed_after_close"
+                                            variant="outline"
+                                            class="border-amber-500/50 text-amber-700 dark:text-amber-400"
+                                        >
+                                            One-time
                                         </Badge>
                                         <span
                                             v-if="
@@ -360,6 +510,24 @@ const pendingCount = () =>
                                                         >
                                                             {{ item.answer }}
                                                         </p>
+                                                        <div
+                                                            v-if="item.voice_path"
+                                                            class="mt-2 flex items-center gap-2 rounded-md border bg-muted/50 p-2"
+                                                        >
+                                                            <Headphones
+                                                                class="h-4 w-4 shrink-0 text-muted-foreground"
+                                                            />
+                                                            <span
+                                                                class="text-xs font-medium text-muted-foreground"
+                                                            >
+                                                                Hear student's voice:
+                                                            </span>
+                                                            <audio
+                                                                :src="`/lecturer/viva-submissions/${sub.id}/voice/${idx}`"
+                                                                controls
+                                                                class="h-8 max-w-full flex-1"
+                                                            />
+                                                        </div>
                                                         <div
                                                             v-if="
                                                                 item.score_1_10 !=

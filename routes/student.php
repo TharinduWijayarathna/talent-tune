@@ -14,5 +14,6 @@ Route::prefix('student')->middleware(['auth', 'verified', EnsureInstitutionAcces
     Route::get('vivas', [StudentController::class, 'vivas'])->name('student.vivas');
     Route::get('vivas/{id}/attend', [StudentController::class, 'attendViva'])->name('student.vivas.attend');
     Route::post('vivas/{id}/upload-document', [StudentController::class, 'uploadVivaDocument'])->name('student.vivas.upload-document');
+    Route::post('vivas/{id}/upload-voice', [StudentController::class, 'uploadVivaVoice'])->name('student.vivas.upload-voice');
     Route::post('vivas/complete-submission', [StudentController::class, 'completeVivaSubmission'])->name('student.vivas.complete-submission');
 });

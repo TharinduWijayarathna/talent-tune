@@ -74,6 +74,7 @@ const answers = ref<
     Array<{
         question: string;
         answer: string;
+        voice_path?: string | null;
         evaluation?: {
             score_1_10: number;
             feedback: string;
@@ -88,6 +89,11 @@ const conversationHistory = ref<Array<{ examiner: string; student: string }>>(
     [],
 );
 const isProcessingAnswer = ref(false);
+
+// Voice recording for lecturer playback: record actual audio per answer
+const mediaRecorder = ref<MediaRecorder | null>(null);
+const recordedChunks = ref<Blob[]>([]);
+const mediaStream = ref<MediaStream | null>(null);
 
 const page = usePage();
 const csrfToken = computed(() => (page.props as any).csrfToken || '');
@@ -528,12 +534,80 @@ const initializeSpeechRecognition = () => {
     return recognition;
 };
 
+// Start voice recording (MediaRecorder) for lecturer playback
+const startVoiceRecording = () => {
+    if (mediaStream.value) {
+        mediaStream.value.getTracks().forEach((t) => t.stop());
+        mediaStream.value = null;
+    }
+    if (mediaRecorder.value && mediaRecorder.value.state !== 'inactive') {
+        mediaRecorder.value.stop();
+    }
+    recordedChunks.value = [];
+    navigator.mediaDevices
+        ?.getUserMedia({ audio: true })
+        .then((stream) => {
+            mediaStream.value = stream;
+            const mime =
+                MediaRecorder.isTypeSupported('audio/webm')
+                    ? 'audio/webm'
+                    : MediaRecorder.isTypeSupported('audio/mp4')
+                      ? 'audio/mp4'
+                      : undefined;
+            const rec = new MediaRecorder(stream, mime ? { mimeType: mime } : {});
+            mediaRecorder.value = rec;
+            rec.ondataavailable = (e) => {
+                if (e.data.size > 0) recordedChunks.value.push(e.data);
+            };
+            rec.start(1000);
+        })
+        .catch(() => {
+            // Mic permission denied or unavailable; continue without voice recording
+        });
+};
+
+// Stop voice recording and return the blob and mime type (for upload). Resolves when recording is stopped.
+const stopVoiceRecording = (): Promise<{
+    blob: Blob | null;
+    mimeType: string;
+} | null> => {
+    return new Promise((resolve) => {
+        const finish = (blob: Blob | null, mime: string) => {
+            if (mediaStream.value) {
+                mediaStream.value.getTracks().forEach((t) => t.stop());
+                mediaStream.value = null;
+            }
+            resolve(blob ? { blob, mimeType: mime } : null);
+        };
+        if (!mediaRecorder.value || mediaRecorder.value.state === 'inactive') {
+            const mime = mediaRecorder.value?.mimeType ?? 'audio/webm';
+            const blob =
+                recordedChunks.value.length > 0
+                    ? new Blob(recordedChunks.value, { type: mime })
+                    : null;
+            finish(blob, mime);
+            return;
+        }
+        mediaRecorder.value.onstop = () => {
+            const mime = mediaRecorder.value?.mimeType ?? 'audio/webm';
+            const blob =
+                recordedChunks.value.length > 0
+                    ? new Blob(recordedChunks.value, { type: mime })
+                    : null;
+            finish(blob, mime);
+        };
+        mediaRecorder.value.stop();
+    });
+};
+
 // Start recording student's speech (continuous mode)
 const startRecording = () => {
     // Don't start recording if AI is speaking
     if (isSpeaking.value) {
         return;
     }
+
+    startVoiceRecording();
 
     if (!speechRecognition.value) {
         speechRecognition.value = initializeSpeechRecognition();
@@ -563,6 +637,13 @@ const stopRecording = () => {
     }
     if (speechRecognition.value && recognitionActive.value) {
         speechRecognition.value.stop();
+    }
+    if (mediaRecorder.value && mediaRecorder.value.state !== 'inactive') {
+        mediaRecorder.value.stop();
+    }
+    if (mediaStream.value) {
+        mediaStream.value.getTracks().forEach((t) => t.stop());
+        mediaStream.value = null;
     }
     isRecording.value = false;
     recognitionActive.value = false;
@@ -611,11 +692,67 @@ const evaluateAnswer = async (
     }
 };
 
+// Upload voice recording and return path for lecturer playback
+const uploadVoiceRecording = async (
+    blob: Blob,
+    submissionId: number,
+    questionIndex: number,
+    mimeType: string,
+): Promise<string | null> => {
+    try {
+        const ext =
+            mimeType.includes('webm')
+                ? 'webm'
+                : mimeType.includes('mp4') || mimeType.includes('m4a')
+                  ? 'm4a'
+                  : 'webm';
+        const formData = new FormData();
+        formData.append('submission_id', String(submissionId));
+        formData.append('question_index', String(questionIndex));
+        formData.append('audio', blob, `answer.${ext}`);
+        const response = await fetch(
+            `/student/vivas/${vivaSession.value.id}/upload-voice`,
+            {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken.value,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'same-origin',
+                body: formData,
+            },
+        );
+        if (!response.ok) return null;
+        const data = await response.json();
+        return data.voice_path ?? null;
+    } catch {
+        return null;
+    }
+};
+
 // Evaluate answer and move to next question
 const evaluateAndMoveOn = async (answerText: string, isSkipped: boolean) => {
     // Stop recording
     if (speechRecognition.value && recognitionActive.value) {
         speechRecognition.value.stop();
+    }
+
+    // Stop voice recording and upload for lecturer playback
+    const voiceResult = await stopVoiceRecording();
+    const submissionId = props.submission?.id;
+    let voicePath: string | null = null;
+    if (
+        voiceResult &&
+        voiceResult.blob &&
+        voiceResult.blob.size > 0 &&
+        submissionId
+    ) {
+        voicePath = await uploadVoiceRecording(
+            voiceResult.blob,
+            submissionId,
+            questionIndex.value,
+            voiceResult.mimeType,
+        );
     }
 
     // Show loading state
@@ -655,10 +792,11 @@ const evaluateAndMoveOn = async (answerText: string, isSkipped: boolean) => {
     const answerToStore =
         correctedAnswer !== undefined ? correctedAnswer : answerText;
 
-    // Store answer and evaluation (score_1_10 kept for backend, not displayed)
+    // Store answer and evaluation (score_1_10 kept for backend, not displayed); include voice_path for lecturer
     answers.value.push({
         question: currentQuestion.value!,
         answer: answerToStore,
+        voice_path: voicePath ?? undefined,
         evaluation: {
             score_1_10: evaluation.score_1_10,
             feedback: evaluation.feedback,
@@ -708,6 +846,7 @@ const completeAndShowRubric = async () => {
         answers: answers.value.map((a) => ({
             question: a.question,
             answer: a.answer,
+            voice_path: a.voice_path ?? null,
             score_1_10: a.evaluation?.score_1_10 ?? 5,
             feedback: a.evaluation?.feedback ?? '',
             correctPoints: a.evaluation?.correctPoints ?? [],
@@ -838,6 +977,15 @@ onUnmounted(() => {
     // Stop speech recognition
     if (speechRecognition.value && recognitionActive.value) {
         speechRecognition.value.stop();
+    }
+
+    // Stop voice recording
+    if (mediaRecorder.value && mediaRecorder.value.state !== 'inactive') {
+        mediaRecorder.value.stop();
+    }
+    if (mediaStream.value) {
+        mediaStream.value.getTracks().forEach((t) => t.stop());
+        mediaStream.value = null;
     }
 });
 </script>
