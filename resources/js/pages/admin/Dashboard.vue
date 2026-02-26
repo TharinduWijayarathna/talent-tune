@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import VueApexCharts from 'vue3-apexcharts';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,12 +14,16 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import {
     Activity,
+    BarChart3,
     Building2,
+    DollarSign,
     GraduationCap,
+    PieChart,
     Shield,
     TrendingUp,
     Users,
 } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -44,10 +49,82 @@ interface RecentActivityItem {
     institution: string;
 }
 
-defineProps<{
-    stats: DashboardStats;
-    recentActivity: RecentActivityItem[];
-}>();
+interface ChartData {
+    revenueByDay: { labels: string[]; series: number[][]; totalRevenue: number };
+    usersByRole: { labels: string[]; series: number[] };
+    vivasByStatus: { labels: string[]; series: number[] };
+    paymentsByStatus: { labels: string[]; series: number[] };
+}
+
+const props = withDefaults(
+    defineProps<{
+        stats: DashboardStats;
+        recentActivity: RecentActivityItem[];
+        charts?: ChartData;
+    }>(),
+    {
+        charts: () => ({
+            revenueByDay: { labels: [], series: [[]], totalRevenue: 0 },
+            usersByRole: { labels: [], series: [] },
+            vivasByStatus: { labels: [], series: [] },
+            paymentsByStatus: { labels: [], series: [] },
+        }),
+    },
+);
+
+const chartTheme = {
+    colors: ['#0ea5e9', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'],
+    fontFamily: 'inherit',
+};
+
+const revenueChartOptions = computed(() => ({
+    chart: { type: 'area', zoom: { enabled: false }, toolbar: { show: false } },
+    dataLabels: { enabled: false },
+    stroke: { curve: 'smooth', width: 2 },
+    fill: { type: 'gradient', gradient: { opacityFrom: 0.4, opacityTo: 0.1 } },
+    xaxis: { categories: props.charts.revenueByDay.labels },
+    yaxis: { labels: { formatter: (v: number) => `$${v}` } },
+    colors: ['#10b981'],
+    tooltip: { y: { formatter: (v: number) => `$${v}` } },
+    theme: chartTheme,
+}));
+
+const revenueChartSeries = computed(() => [
+    { name: 'Revenue', data: props.charts.revenueByDay.series[0] ?? [] },
+]);
+
+const usersByRoleOptions = computed(() => ({
+    chart: { type: 'donut' },
+    labels: props.charts.usersByRole.labels,
+    colors: ['#0ea5e9', '#8b5cf6'],
+    legend: { position: 'bottom' },
+    theme: chartTheme,
+}));
+
+const usersByRoleSeries = computed(() => props.charts.usersByRole.series);
+
+const vivasByStatusOptions = computed(() => ({
+    chart: { type: 'bar', toolbar: { show: false } },
+    plotOptions: { bar: { horizontal: false, columnWidth: '60%' } },
+    dataLabels: { enabled: true },
+    xaxis: { categories: props.charts.vivasByStatus.labels },
+    colors: ['#0ea5e9', '#8b5cf6', '#10b981'],
+    theme: chartTheme,
+}));
+
+const vivasByStatusSeries = computed(() => [
+    { name: 'Vivas', data: props.charts.vivasByStatus.series },
+]);
+
+const paymentsByStatusOptions = computed(() => ({
+    chart: { type: 'donut' },
+    labels: props.charts.paymentsByStatus.labels,
+    colors: ['#10b981', '#f59e0b', '#ef4444', '#6b7280'],
+    legend: { position: 'bottom' },
+    theme: chartTheme,
+}));
+
+const paymentsByStatusSeries = computed(() => props.charts.paymentsByStatus.series);
 </script>
 
 <template>
@@ -179,6 +256,85 @@ defineProps<{
                             {{ stats.totalUsers }}
                         </div>
                         <p class="text-xs text-muted-foreground">All users</p>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <!-- Analytics Charts -->
+            <div class="grid gap-6 md:grid-cols-2">
+                <Card>
+                    <CardHeader>
+                        <CardTitle class="flex items-center gap-2">
+                            <DollarSign class="h-5 w-5" />
+                            Revenue (last 30 days)
+                        </CardTitle>
+                        <CardDescription>
+                            Daily completed payment revenue
+                            <span v-if="charts.revenueByDay.totalRevenue >= 0" class="block font-medium text-foreground mt-1">
+                                Total: ${{ charts.revenueByDay.totalRevenue.toLocaleString() }}
+                            </span>
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <VueApexCharts
+                            type="area"
+                            height="280"
+                            :options="revenueChartOptions"
+                            :series="revenueChartSeries"
+                        />
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle class="flex items-center gap-2">
+                            <Users class="h-5 w-5" />
+                            Users by role
+                        </CardTitle>
+                        <CardDescription>Lecturers vs students</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <VueApexCharts
+                            type="donut"
+                            height="280"
+                            :options="usersByRoleOptions"
+                            :series="usersByRoleSeries"
+                        />
+                    </CardContent>
+                </Card>
+            </div>
+            <div class="grid gap-6 md:grid-cols-2">
+                <Card>
+                    <CardHeader>
+                        <CardTitle class="flex items-center gap-2">
+                            <BarChart3 class="h-5 w-5" />
+                            Vivas by status
+                        </CardTitle>
+                        <CardDescription>Upcoming, active, and completed</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <VueApexCharts
+                            type="bar"
+                            height="280"
+                            :options="vivasByStatusOptions"
+                            :series="vivasByStatusSeries"
+                        />
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle class="flex items-center gap-2">
+                            <PieChart class="h-5 w-5" />
+                            Payments by status
+                        </CardTitle>
+                        <CardDescription>Completed, pending, failed, refunded</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <VueApexCharts
+                            type="donut"
+                            height="280"
+                            :options="paymentsByStatusOptions"
+                            :series="paymentsByStatusSeries"
+                        />
                     </CardContent>
                 </Card>
             </div>

@@ -189,7 +189,7 @@ class LecturerController extends Controller
         $this->authorizeLecturer($request);
         $user = $request->user();
 
-        $submission = VivaStudentSubmission::with('viva')->findOrFail($submissionId);
+        $submission = VivaStudentSubmission::with('viva', 'student')->findOrFail($submissionId);
         if ($submission->viva->lecturer_id !== $user->id && $user->role !== 'admin') {
             abort(403, 'You do not have access to this submission.');
         }
@@ -197,9 +197,13 @@ class LecturerController extends Controller
             abort(404, 'Document not found.');
         }
 
+        $disposition = $request->boolean('download') ? 'attachment' : 'inline';
+        $filename = 'viva-document-'.($submission->student->name ?? 'student').'.pdf';
+        $filename = preg_replace('/[^a-zA-Z0-9._-]/', '-', $filename);
+
         return response()->file(Storage::disk('private')->path($submission->document_path), [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="viva-document.pdf"',
+            'Content-Disposition' => $disposition.'; filename="'.$filename.'"',
         ]);
     }
 

@@ -660,10 +660,25 @@ const addLateStudent = () => {
                                         </div>
                                         <div
                                             v-if="sub.document_path"
-                                            class="mt-4 flex items-center gap-2 text-sm text-muted-foreground"
+                                            class="mt-4 flex flex-wrap items-center gap-2 text-sm text-muted-foreground"
                                         >
                                             <FileText class="h-4 w-4" />
-                                            Document uploaded
+                                            <a
+                                                :href="`/lecturer/viva-submissions/${sub.id}/document`"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                class="text-primary underline hover:no-underline"
+                                            >
+                                                View document
+                                            </a>
+                                            <span class="text-muted-foreground">·</span>
+                                            <a
+                                                :href="`/lecturer/viva-submissions/${sub.id}/document?download=1`"
+                                                download
+                                                class="text-primary underline hover:no-underline"
+                                            >
+                                                Download
+                                            </a>
                                         </div>
                                     </div>
                                 </CollapsibleContent>

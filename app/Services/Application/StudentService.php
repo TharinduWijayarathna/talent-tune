@@ -281,6 +281,57 @@ class StudentService
         ];
     }
 
+    /**
+     * Get the student's own submission for a viva for the "View my answers" page.
+     * Returns the latest completed submission (or latest submission with answers).
+     * Only vivas in the student's batch; answers include question, answer, voice_path, and feedback (no score_1_10/correctPoints/improvements).
+     */
+    public function getMySubmissionForViva(Institution $institution, User $user, int $vivaId): ?array
+    {
+        $viva = Viva::where('institution_id', $institution->id)
+            ->where('id', $vivaId)
+            ->where('batch', $user->batch)
+            ->with('lecturer')
+            ->firstOrFail();
+
+        $submission = VivaStudentSubmission::where('viva_id', $viva->id)
+            ->where('student_id', $user->id)
+            ->where('status', 'completed')
+            ->orderByDesc('id')
+            ->first();
+
+        if (! $submission) {
+            return null;
+        }
+
+        $answers = $submission->answers ?? [];
+        $answersForStudent = array_map(function ($item) {
+            return [
+                'question' => $item['question'] ?? '',
+                'answer' => $item['answer'] ?? '',
+                'voice_path' => $item['voice_path'] ?? null,
+                'feedback' => $item['feedback'] ?? null,
+            ];
+        }, $answers);
+
+        return [
+            'viva' => [
+                'id' => $viva->id,
+                'title' => $viva->title,
+                'lecturer' => $viva->lecturer->name,
+            ],
+            'submission' => [
+                'id' => $submission->id,
+                'status' => $submission->status,
+                'total_score' => $submission->total_score,
+                'grade' => $submission->grade,
+                'feedback' => $submission->feedback,
+                'answers' => $answersForStudent,
+                'document_path' => $submission->document_path ? true : false,
+            ],
+        ];
+    }
+
     public function completeVivaSubmission(User $user, array $validated): array
     {
         $submission = VivaStudentSubmission::where('id', $validated['submission_id'])

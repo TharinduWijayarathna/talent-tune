@@ -1100,6 +1100,18 @@ onUnmounted(() => {
                             move on.
                         </p>
                     </div>
+                    <p
+                        v-if="submission?.id"
+                        class="text-sm text-muted-foreground"
+                    >
+                        <a
+                            :href="`/student/viva-submissions/${submission.id}/document?download=1`"
+                            download
+                            class="text-primary underline hover:no-underline"
+                        >
+                            Download your uploaded document
+                        </a>
+                    </p>
                     <ul
                         class="w-full space-y-2 text-left text-sm text-muted-foreground"
                     >

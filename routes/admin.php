@@ -27,4 +27,5 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
     Route::get('users/{user}/edit', [AdminUserController::class, 'edit'])->name('admin.users.edit');
     Route::put('users/{user}', [AdminUserController::class, 'update'])->name('admin.users.update');
     Route::get('payments', [AdminPaymentController::class, 'index'])->name('admin.payments');
+    Route::get('payments/{id}', [AdminPaymentController::class, 'show'])->name('admin.payments.show');
 });
