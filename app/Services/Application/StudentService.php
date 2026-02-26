@@ -102,7 +102,8 @@ class StudentService
             $scheduledAtUtc = $rawScheduled ? Carbon::parse($rawScheduled, 'UTC') : $viva->scheduled_at->copy()->utc();
             $scheduledReached = $scheduledAtUtc->lte($nowUtc);
             $notClosed = $viva->status !== 'completed';
-            $can_attend = $scheduledReached && $notClosed;
+            $allowedLateAndNotDone = $viva->status === 'completed' && $submission && $submission->allowed_after_close && $submission->status !== 'completed';
+            $can_attend = ($scheduledReached && $notClosed) || $allowedLateAndNotDone;
 
             return [
                 'id' => $viva->id,
@@ -124,6 +125,7 @@ class StudentService
 
     /**
      * Get viva for attend. Student may attend only on/after scheduled date and until lecturer closes the viva.
+     * When viva is closed, a student can attend only if the lecturer added them for one-time (late) participation (allowed_after_close).
      */
     public function getVivaForAttend(Institution $institution, User $user, int $id): array
     {
@@ -134,7 +136,32 @@ class StudentService
             ->firstOrFail();
 
         if ($viva->status === 'completed') {
-            abort(403, 'This viva has been closed by the lecturer. You can no longer attend.');
+            $submission = VivaStudentSubmission::where('viva_id', $viva->id)
+                ->where('student_id', $user->id)
+                ->first();
+
+            if (! $submission || ! $submission->allowed_after_close) {
+                abort(403, 'This viva has been closed by the lecturer. You can no longer attend.');
+            }
+            if ($submission->status === 'completed') {
+                abort(403, 'You have already completed your one-time participation for this viva.');
+            }
+
+            return [
+                'viva' => [
+                    'id' => $viva->id,
+                    'title' => $viva->title,
+                    'description' => $viva->description,
+                    'instructions' => $viva->instructions,
+                    'scheduled_at' => $viva->scheduled_at->format('Y-m-d H:i'),
+                    'lecturer' => $viva->lecturer->name,
+                ],
+                'submission' => [
+                    'id' => $submission->id,
+                    'document_path' => $submission->document_path,
+                    'status' => $submission->status,
+                ],
+            ];
         }
 
         $rawScheduled = $viva->getRawOriginal('scheduled_at');

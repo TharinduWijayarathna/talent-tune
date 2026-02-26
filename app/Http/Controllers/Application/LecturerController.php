@@ -141,6 +141,38 @@ class LecturerController extends Controller
     }
 
     /**
+     * Get students in the viva's batch who can be added for one-time participation (viva must be closed).
+     */
+    public function studentsForLateParticipation(Request $request, int $id)
+    {
+        $institution = $this->institution($request);
+        $this->authorizeLecturer($request);
+        $user = $request->user();
+
+        $students = $this->lecturerService->getStudentsForLateParticipation($institution, $user, $id);
+
+        return response()->json(['students' => $students]);
+    }
+
+    /**
+     * Add a student for one-time participation after the viva is closed.
+     */
+    public function addLateStudent(Request $request, int $id)
+    {
+        $institution = $this->institution($request);
+        $this->authorizeLecturer($request);
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'student_id' => ['required', 'integer', 'exists:users,id'],
+        ]);
+
+        $this->lecturerService->addStudentForLateParticipation($institution, $user, $id, (int) $validated['student_id']);
+
+        return redirect()->route('lecturer.vivas.show', ['id' => $id])->with('status', 'Student added for one-time participation. They can now attend and complete the viva once.');
+    }
+
+    /**
      * Stream a submission's uploaded document. Lecturer must own the viva.
      */
     public function streamSubmissionDocument(Request $request, int $submissionId): BinaryFileResponse

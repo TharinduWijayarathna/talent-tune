@@ -168,9 +168,71 @@ class LecturerService
                     'answers' => $sub->answers ?? [],
                     'document_path' => $sub->document_path,
                     'completed_at' => $sub->updated_at?->format('Y-m-d H:i'),
+                    'allowed_after_close' => (bool) $sub->allowed_after_close,
                 ];
             })
             ->all();
+    }
+
+    /**
+     * Get students in the viva's batch who are not yet attendees. Used to add a student for one-time participation after viva is closed.
+     */
+    public function getStudentsForLateParticipation(Institution $institution, User $user, int $vivaId): array
+    {
+        $viva = Viva::where('institution_id', $institution->id)
+            ->where('lecturer_id', $user->id)
+            ->findOrFail($vivaId);
+
+        if ($viva->status !== 'completed') {
+            return [];
+        }
+
+        $existingStudentIds = VivaStudentSubmission::where('viva_id', $viva->id)->pluck('student_id')->all();
+
+        return User::forInstitution($institution->id)
+            ->where('role', 'student')
+            ->where('batch', $viva->batch)
+            ->whereNotIn('id', $existingStudentIds)
+            ->orderBy('name')
+            ->get(['id', 'name', 'email'])
+            ->map(fn (User $u) => [
+                'id' => $u->id,
+                'name' => $u->name,
+                'email' => $u->email ?? null,
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Add a student for one-time participation after the viva is closed. Creates a pending submission with allowed_after_close.
+     */
+    public function addStudentForLateParticipation(Institution $institution, User $user, int $vivaId, int $studentId): VivaStudentSubmission
+    {
+        $viva = Viva::where('institution_id', $institution->id)
+            ->where('lecturer_id', $user->id)
+            ->findOrFail($vivaId);
+
+        if ($viva->status !== 'completed') {
+            abort(422, 'You can only add students for late participation when the viva is closed.');
+        }
+
+        $student = User::forInstitution($institution->id)
+            ->where('role', 'student')
+            ->where('batch', $viva->batch)
+            ->findOrFail($studentId);
+
+        $existing = VivaStudentSubmission::where('viva_id', $viva->id)->where('student_id', $studentId)->first();
+        if ($existing) {
+            abort(422, 'This student has already been added to this viva.');
+        }
+
+        return VivaStudentSubmission::create([
+            'viva_id' => $viva->id,
+            'student_id' => $student->id,
+            'status' => 'pending',
+            'allowed_after_close' => true,
+        ]);
     }
 
     /**
