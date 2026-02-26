@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Viva;
 use App\Models\VivaStudentSubmission;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class LecturerService
 {
@@ -53,9 +54,53 @@ class LecturerService
             })
             ->all();
 
+        $charts = $this->getLecturerChartData($institution, $user);
+
         return [
             'stats' => $stats,
             'recentSessions' => $recentSessions,
+            'charts' => $charts,
+        ];
+    }
+
+    /**
+     * Chart data for lecturer dashboard: sessions by status, sessions created over time.
+     */
+    private function getLecturerChartData(Institution $institution, User $user): array
+    {
+        $baseQuery = fn () => Viva::where('institution_id', $institution->id)->where('lecturer_id', $user->id);
+
+        $byStatus = $baseQuery()
+            ->select('status', DB::raw('count(*) as count'))
+            ->groupBy('status')
+            ->pluck('count', 'status');
+        $statusOrder = ['upcoming', 'active', 'completed'];
+        $sessionsByStatus = [
+            'labels' => array_map(fn ($s) => ucfirst($s), $statusOrder),
+            'series' => array_map(fn ($s) => (int) ($byStatus->get($s, 0)), $statusOrder),
+        ];
+
+        $days = 30;
+        $start = now()->subDays($days)->startOfDay();
+        $rows = $baseQuery()
+            ->where('created_at', '>=', $start)
+            ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+        $byDate = $rows->pluck('count', 'date');
+        $labels = [];
+        $data = [];
+        for ($i = $days - 1; $i >= 0; $i--) {
+            $d = now()->subDays($i)->format('Y-m-d');
+            $labels[] = now()->subDays($i)->format('M j');
+            $data[] = (int) ($byDate->get($d, 0));
+        }
+        $sessionsOverTime = ['labels' => $labels, 'series' => [$data]];
+
+        return [
+            'sessionsByStatus' => $sessionsByStatus,
+            'sessionsOverTime' => $sessionsOverTime,
         ];
     }
 

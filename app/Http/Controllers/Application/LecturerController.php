@@ -57,6 +57,7 @@ class LecturerController extends Controller
         return Inertia::render('lecturer/Dashboard', [
             'stats' => $data['stats'],
             'recentSessions' => $data['recentSessions'],
+            'charts' => $data['charts'],
         ]);
     }
 

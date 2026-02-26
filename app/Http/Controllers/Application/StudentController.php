@@ -56,6 +56,7 @@ class StudentController extends Controller
         return Inertia::render('student/Dashboard', [
             'stats' => $data['stats'],
             'upcomingVivas' => $data['upcomingVivas'],
+            'charts' => $data['charts'],
         ]);
     }
 

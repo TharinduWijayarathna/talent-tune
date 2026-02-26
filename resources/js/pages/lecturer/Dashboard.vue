@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import VueApexCharts from 'vue3-apexcharts';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -10,25 +11,39 @@ import {
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
-import { Calendar, FileText, Plus, Users } from 'lucide-vue-next';
+import { BarChart3, Calendar, FileText, Plus, TrendingUp, Users } from 'lucide-vue-next';
 import { computed } from 'vue';
 
-const props = defineProps<{
-    stats?: {
-        totalSessions: number;
-        activeSessions: number;
-        totalStudents: number;
-        completedSessions: number;
-    };
-    recentSessions?: Array<{
-        id: number;
-        title: string;
-        batch: string;
-        date: string;
-        students: number;
-        status: string;
-    }>;
-}>();
+interface LecturerCharts {
+    sessionsByStatus: { labels: string[]; series: number[] };
+    sessionsOverTime: { labels: string[]; series: number[][] };
+}
+
+const props = withDefaults(
+    defineProps<{
+        stats?: {
+            totalSessions: number;
+            activeSessions: number;
+            totalStudents: number;
+            completedSessions: number;
+        };
+        recentSessions?: Array<{
+            id: number;
+            title: string;
+            batch: string;
+            date: string;
+            students: number;
+            status: string;
+        }>;
+        charts?: LecturerCharts;
+    }>(),
+    {
+        charts: () => ({
+            sessionsByStatus: { labels: [], series: [] },
+            sessionsOverTime: { labels: [], series: [[]] },
+        }),
+    },
+);
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -48,6 +63,38 @@ const stats = computed(
 );
 
 const recentSessions = computed(() => props.recentSessions || []);
+
+const chartTheme = {
+    colors: ['#0ea5e9', '#8b5cf6', '#10b981'],
+    fontFamily: 'inherit',
+};
+
+const sessionsByStatusOptions = computed(() => ({
+    chart: { type: 'bar', toolbar: { show: false } },
+    plotOptions: { bar: { horizontal: false, columnWidth: '60%' } },
+    dataLabels: { enabled: true },
+    xaxis: { categories: props.charts.sessionsByStatus.labels },
+    colors: ['#0ea5e9', '#8b5cf6', '#10b981'],
+    theme: chartTheme,
+}));
+
+const sessionsByStatusSeries = computed(() => [
+    { name: 'Sessions', data: props.charts.sessionsByStatus.series },
+]);
+
+const sessionsOverTimeOptions = computed(() => ({
+    chart: { type: 'area', zoom: { enabled: false }, toolbar: { show: false } },
+    dataLabels: { enabled: false },
+    stroke: { curve: 'smooth', width: 2 },
+    fill: { type: 'gradient', gradient: { opacityFrom: 0.4, opacityTo: 0.1 } },
+    xaxis: { categories: props.charts.sessionsOverTime.labels },
+    colors: ['#8b5cf6'],
+    theme: chartTheme,
+}));
+
+const sessionsOverTimeSeries = computed(() => [
+    { name: 'Sessions created', data: props.charts.sessionsOverTime.series[0] ?? [] },
+]);
 </script>
 
 <template>
@@ -143,6 +190,44 @@ const recentSessions = computed(() => props.recentSessions || []);
                         <p class="text-xs text-muted-foreground">
                             Finished sessions
                         </p>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <!-- Charts -->
+            <div class="grid gap-6 md:grid-cols-2">
+                <Card>
+                    <CardHeader>
+                        <CardTitle class="flex items-center gap-2">
+                            <BarChart3 class="h-5 w-5" />
+                            Sessions by status
+                        </CardTitle>
+                        <CardDescription>Upcoming, active, and completed</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <VueApexCharts
+                            type="bar"
+                            height="280"
+                            :options="sessionsByStatusOptions"
+                            :series="sessionsByStatusSeries"
+                        />
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle class="flex items-center gap-2">
+                            <TrendingUp class="h-5 w-5" />
+                            Sessions created (last 30 days)
+                        </CardTitle>
+                        <CardDescription>Your viva sessions over time</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <VueApexCharts
+                            type="area"
+                            height="280"
+                            :options="sessionsOverTimeOptions"
+                            :series="sessionsOverTimeSeries"
+                        />
                     </CardContent>
                 </Card>
             </div>
