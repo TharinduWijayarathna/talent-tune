@@ -26,4 +26,20 @@ class AdminPaymentController extends Controller
             'filters' => $data['filters'],
         ]);
     }
+
+    /**
+     * Display a single payment's full details (admin only).
+     */
+    public function show(int $id)
+    {
+        $payment = $this->adminPaymentService->getPaymentById($id);
+
+        if (! $payment) {
+            abort(404);
+        }
+
+        return Inertia::render('admin/PaymentDetail', [
+            'payment' => $payment,
+        ]);
+    }
 }

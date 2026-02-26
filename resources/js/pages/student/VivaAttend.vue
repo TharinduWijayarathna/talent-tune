@@ -95,6 +95,9 @@ const mediaRecorder = ref<MediaRecorder | null>(null);
 const recordedChunks = ref<Blob[]>([]);
 const mediaStream = ref<MediaStream | null>(null);
 
+// Single timeout for restarting speech recognition (avoids double-start / "already started" errors)
+let recognitionRestartTimeout: ReturnType<typeof setTimeout> | null = null;
+
 const page = usePage();
 const csrfToken = computed(() => (page.props as any).csrfToken || '');
 
@@ -490,14 +493,9 @@ const initializeSpeechRecognition = () => {
     recognition.onerror = (event: any) => {
         console.error('Speech recognition error:', event.error);
         if (event.error === 'no-speech') {
-            // No speech detected - restart recognition
-            if (recognitionActive.value && sessionActive.value) {
-                setTimeout(() => {
-                    if (recognitionActive.value && sessionActive.value) {
-                        recognition.start();
-                    }
-                }, 500);
-            }
+            // Do not call recognition.start() here — it causes "recognition has already started".
+            // Let onend fire and use the single restart timeout there.
+            recognitionActive.value = false;
         } else {
             isRecording.value = false;
             recognitionActive.value = false;
@@ -505,28 +503,34 @@ const initializeSpeechRecognition = () => {
     };
 
     recognition.onend = () => {
-        // Auto-restart ONLY if AI is not speaking and session is active
+        recognitionActive.value = false;
+        // Auto-restart only if session is active and we're not speaking/processing
         if (
             sessionActive.value &&
             !isSpeaking.value &&
             !isProcessingAnswer.value
         ) {
-            setTimeout(() => {
-                // Double-check AI is still not speaking before restarting
+            if (recognitionRestartTimeout) {
+                clearTimeout(recognitionRestartTimeout);
+                recognitionRestartTimeout = null;
+            }
+            recognitionRestartTimeout = setTimeout(() => {
+                recognitionRestartTimeout = null;
                 if (
-                    sessionActive.value &&
-                    !isSpeaking.value &&
-                    !isProcessingAnswer.value
+                    !sessionActive.value ||
+                    isSpeaking.value ||
+                    isProcessingAnswer.value ||
+                    !speechRecognition.value
                 ) {
-                    try {
-                        recognition.start();
-                    } catch {
-                        // Recognition might already be running
-                    }
+                    return;
                 }
-            }, 100);
+                try {
+                    speechRecognition.value.start();
+                } catch (err) {
+                    // InvalidStateError: already started — ignore
+                }
+            }, 300);
         } else {
-            recognitionActive.value = false;
             isRecording.value = false;
         }
     };
@@ -634,6 +638,10 @@ const stopRecording = () => {
     if (silenceTimer) {
         clearTimeout(silenceTimer);
         silenceTimer = null;
+    }
+    if (recognitionRestartTimeout) {
+        clearTimeout(recognitionRestartTimeout);
+        recognitionRestartTimeout = null;
     }
     if (speechRecognition.value && recognitionActive.value) {
         speechRecognition.value.stop();
@@ -968,6 +976,11 @@ onUnmounted(() => {
         clearTimeout(silenceTimer);
     }
 
+    if (recognitionRestartTimeout) {
+        clearTimeout(recognitionRestartTimeout);
+        recognitionRestartTimeout = null;
+    }
+
     // Stop any playing audio
     if (currentAudio) {
         currentAudio.pause();
@@ -1087,6 +1100,18 @@ onUnmounted(() => {
                             move on.
                         </p>
                     </div>
+                    <p
+                        v-if="submission?.id"
+                        class="text-sm text-muted-foreground"
+                    >
+                        <a
+                            :href="`/student/viva-submissions/${submission.id}/document?download=1`"
+                            download
+                            class="text-primary underline hover:no-underline"
+                        >
+                            Download your uploaded document
+                        </a>
+                    </p>
                     <ul
                         class="w-full space-y-2 text-left text-sm text-muted-foreground"
                     >

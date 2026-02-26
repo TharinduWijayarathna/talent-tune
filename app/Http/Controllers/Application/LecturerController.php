@@ -7,6 +7,7 @@ use App\Models\Institution;
 use App\Models\VivaStudentSubmission;
 use App\Services\Application\LecturerService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -115,13 +116,18 @@ class LecturerController extends Controller
         $viva = $this->lecturerService->getVivaForShow($institution, $user, $id);
         $submissions = $this->lecturerService->getVivaSubmissionsForShow($institution, $user, $id);
 
+        $rawScheduled = $viva->getRawOriginal('scheduled_at');
+        $scheduledAtUtc = $rawScheduled
+            ? Carbon::parse($rawScheduled, 'UTC')
+            : $viva->scheduled_at->copy()->utc();
+
         return Inertia::render('lecturer/ShowViva', [
             'viva' => [
                 'id' => $viva->id,
                 'title' => $viva->title,
                 'description' => $viva->description,
                 'batch' => $viva->batch,
-                'scheduled_at' => $viva->scheduled_at->format('Y-m-d H:i'),
+                'scheduled_at' => $scheduledAtUtc->toIso8601String(),
                 'instructions' => $viva->instructions,
                 'status' => $viva->status,
             ],
@@ -142,6 +148,7 @@ class LecturerController extends Controller
 
     /**
      * Get students in the viva's batch who can be added for one-time participation (viva must be closed).
+     * Optional query: search (filter by name or email). Only students from the viva's batch are returned.
      */
     public function studentsForLateParticipation(Request $request, int $id)
     {
@@ -149,7 +156,9 @@ class LecturerController extends Controller
         $this->authorizeLecturer($request);
         $user = $request->user();
 
-        $students = $this->lecturerService->getStudentsForLateParticipation($institution, $user, $id);
+        $search = $request->query('search');
+
+        $students = $this->lecturerService->getStudentsForLateParticipation($institution, $user, $id, $search);
 
         return response()->json(['students' => $students]);
     }
@@ -180,7 +189,7 @@ class LecturerController extends Controller
         $this->authorizeLecturer($request);
         $user = $request->user();
 
-        $submission = VivaStudentSubmission::with('viva')->findOrFail($submissionId);
+        $submission = VivaStudentSubmission::with('viva', 'student')->findOrFail($submissionId);
         if ($submission->viva->lecturer_id !== $user->id && $user->role !== 'admin') {
             abort(403, 'You do not have access to this submission.');
         }
@@ -188,9 +197,13 @@ class LecturerController extends Controller
             abort(404, 'Document not found.');
         }
 
+        $disposition = $request->boolean('download') ? 'attachment' : 'inline';
+        $filename = 'viva-document-'.($submission->student->name ?? 'student').'.pdf';
+        $filename = preg_replace('/[^a-zA-Z0-9._-]/', '-', $filename);
+
         return response()->file(Storage::disk('private')->path($submission->document_path), [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="viva-document.pdf"',
+            'Content-Disposition' => $disposition.'; filename="'.$filename.'"',
         ]);
     }
 

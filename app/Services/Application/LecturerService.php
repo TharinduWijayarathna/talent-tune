@@ -71,12 +71,17 @@ class LecturerService
                     ->where('batch', $viva->batch)
                     ->count();
 
+                $rawScheduled = $viva->getRawOriginal('scheduled_at');
+                $scheduledAtUtc = $rawScheduled
+                    ? Carbon::parse($rawScheduled, 'UTC')
+                    : $viva->scheduled_at->copy()->utc();
+
                 return [
                     'id' => $viva->id,
                     'title' => $viva->title,
                     'description' => $viva->description,
                     'batch' => $viva->batch,
-                    'scheduled_at' => $viva->scheduled_at->format('Y-m-d H:i'),
+                    'scheduled_at' => $scheduledAtUtc->toIso8601String(),
                     'status' => $viva->status,
                     'students' => $studentsInBatch,
                 ];
@@ -175,9 +180,11 @@ class LecturerService
     }
 
     /**
-     * Get students in the viva's batch who are not yet attendees. Used to add a student for one-time participation after viva is closed.
+     * Get students in the viva's batch for late participation (viva must be closed).
+     * Only students from the viva's batch can participate. Supports search by name/email.
+     * Returns all batch students; has_attended indicates they have at least one submission (lecturer can add again for re-do).
      */
-    public function getStudentsForLateParticipation(Institution $institution, User $user, int $vivaId): array
+    public function getStudentsForLateParticipation(Institution $institution, User $user, int $vivaId, ?string $search = null): array
     {
         $viva = Viva::where('institution_id', $institution->id)
             ->where('lecturer_id', $user->id)
@@ -187,18 +194,30 @@ class LecturerService
             return [];
         }
 
-        $existingStudentIds = VivaStudentSubmission::where('viva_id', $viva->id)->pluck('student_id')->all();
+        $studentIdsWithSubmissions = VivaStudentSubmission::where('viva_id', $viva->id)
+            ->pluck('student_id')
+            ->unique()
+            ->all();
 
-        return User::forInstitution($institution->id)
+        $query = User::forInstitution($institution->id)
             ->where('role', 'student')
             ->where('batch', $viva->batch)
-            ->whereNotIn('id', $existingStudentIds)
-            ->orderBy('name')
-            ->get(['id', 'name', 'email'])
+            ->orderBy('name');
+
+        if ($search !== null && trim($search) !== '') {
+            $term = '%'.trim($search).'%';
+            $query->where(function ($q) use ($term) {
+                $q->where('name', 'like', $term)
+                    ->orWhere('email', 'like', $term);
+            });
+        }
+
+        return $query->get(['id', 'name', 'email'])
             ->map(fn (User $u) => [
                 'id' => $u->id,
                 'name' => $u->name,
                 'email' => $u->email ?? null,
+                'has_attended' => in_array($u->id, $studentIdsWithSubmissions, true),
             ])
             ->values()
             ->all();
@@ -206,6 +225,7 @@ class LecturerService
 
     /**
      * Add a student for one-time participation after the viva is closed. Creates a pending submission with allowed_after_close.
+     * Only students from the viva's batch can be added. Lecturer can add the same student again for a re-do (new attempt).
      */
     public function addStudentForLateParticipation(Institution $institution, User $user, int $vivaId, int $studentId): VivaStudentSubmission
     {
@@ -221,11 +241,6 @@ class LecturerService
             ->where('role', 'student')
             ->where('batch', $viva->batch)
             ->findOrFail($studentId);
-
-        $existing = VivaStudentSubmission::where('viva_id', $viva->id)->where('student_id', $studentId)->first();
-        if ($existing) {
-            abort(422, 'This student has already been added to this viva.');
-        }
 
         return VivaStudentSubmission::create([
             'viva_id' => $viva->id,
