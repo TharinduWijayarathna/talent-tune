@@ -37,6 +37,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 
 interface AnswerItem {
     question: string;
@@ -66,6 +67,7 @@ interface StudentOption {
     id: number;
     name: string;
     email: string | null;
+    has_attended?: boolean;
 }
 
 const props = defineProps<{
@@ -125,15 +127,21 @@ const lateStudents = ref<StudentOption[]>([]);
 const selectedLateStudentId = ref<number | null>(null);
 const loadingLateStudents = ref(false);
 const addingLate = ref(false);
+const lateSearch = ref('');
+let lateSearchTimeout: ReturnType<typeof setTimeout> | null = null;
 
-const fetchStudentsForLateParticipation = async () => {
+const fetchStudentsForLateParticipation = async (search?: string) => {
     loadingLateStudents.value = true;
     selectedLateStudentId.value = null;
     try {
-        const r = await fetch(
+        const url = new URL(
             `/lecturer/vivas/${props.viva.id}/students-for-late-participation`,
-            { headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } }
+            window.location.origin
         );
+        if (search && search.trim()) url.searchParams.set('search', search.trim());
+        const r = await fetch(url.toString(), {
+            headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        });
         const data = await r.json();
         lateStudents.value = data.students ?? [];
     } finally {
@@ -141,8 +149,16 @@ const fetchStudentsForLateParticipation = async () => {
     }
 };
 
+const onLateSearchInput = () => {
+    if (lateSearchTimeout) clearTimeout(lateSearchTimeout);
+    lateSearchTimeout = setTimeout(() => {
+        fetchStudentsForLateParticipation(lateSearch.value);
+    }, 250);
+};
+
 const openAddLateDialog = () => {
     addLateOpen.value = true;
+    lateSearch.value = '';
     fetchStudentsForLateParticipation();
 };
 
@@ -257,10 +273,20 @@ const addLateStudent = () => {
                             <DialogHeader>
                                 <DialogTitle>Add student</DialogTitle>
                                 <DialogDescription>
-                                    Choose a student from this batch who has not yet attended. They will be able to attend and complete the viva once.
+                                    Only students from this viva's batch can participate. Search and choose a student. They can attend once; you can add the same student again for a re-do.
                                 </DialogDescription>
                             </DialogHeader>
                             <div class="grid gap-4 py-4">
+                                <div class="space-y-2">
+                                    <label class="text-sm font-medium">Search students (batch: {{ viva.batch }})</label>
+                                    <Input
+                                        v-model="lateSearch"
+                                        type="search"
+                                        placeholder="Search by name or email…"
+                                        class="w-full"
+                                        @input="onLateSearchInput"
+                                    />
+                                </div>
                                 <p
                                     v-if="loadingLateStudents"
                                     class="text-sm text-muted-foreground"
@@ -271,27 +297,36 @@ const addLateStudent = () => {
                                     v-else-if="lateStudents.length === 0"
                                     class="text-sm text-muted-foreground"
                                 >
-                                    No students available to add (all have already attended or been added).
+                                    No students found. Try a different search or ensure the batch has students.
                                 </p>
-                                <select
+                                <div
                                     v-else
-                                    v-model="selectedLateStudentId"
-                                    class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                    class="max-h-56 space-y-1 overflow-y-auto rounded-md border border-input p-1"
                                 >
-                                    <option :value="null">
-                                        Select a student…
-                                    </option>
-                                    <option
+                                    <button
                                         v-for="s in lateStudents"
                                         :key="s.id"
-                                        :value="s.id"
+                                        type="button"
+                                        class="flex w-full flex-col items-start gap-0.5 rounded-sm px-2 py-2 text-left text-sm transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
+                                        :class="{
+                                            'bg-primary/10 ring-1 ring-primary': selectedLateStudentId === s.id,
+                                        }"
+                                        @click="selectedLateStudentId = s.id"
                                     >
-                                        {{ s.name }}
-                                        <template v-if="s.email">
-                                            ({{ s.email }})
-                                        </template>
-                                    </option>
-                                </select>
+                                        <span class="font-medium">{{ s.name }}</span>
+                                        <span
+                                            v-if="s.email"
+                                            class="text-muted-foreground"
+                                        >{{ s.email }}</span>
+                                        <Badge
+                                            v-if="s.has_attended"
+                                            variant="secondary"
+                                            class="mt-1 text-xs"
+                                        >
+                                            Add again for re-do
+                                        </Badge>
+                                    </button>
+                                </div>
                             </div>
                             <DialogFooter>
                                 <Button

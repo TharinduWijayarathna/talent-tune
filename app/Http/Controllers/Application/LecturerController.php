@@ -148,6 +148,7 @@ class LecturerController extends Controller
 
     /**
      * Get students in the viva's batch who can be added for one-time participation (viva must be closed).
+     * Optional query: search (filter by name or email). Only students from the viva's batch are returned.
      */
     public function studentsForLateParticipation(Request $request, int $id)
     {
@@ -155,7 +156,9 @@ class LecturerController extends Controller
         $this->authorizeLecturer($request);
         $user = $request->user();
 
-        $students = $this->lecturerService->getStudentsForLateParticipation($institution, $user, $id);
+        $search = $request->query('search');
+
+        $students = $this->lecturerService->getStudentsForLateParticipation($institution, $user, $id, $search);
 
         return response()->json(['students' => $students]);
     }
