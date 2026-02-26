@@ -9,6 +9,7 @@ use App\Models\VivaStudentSubmission;
 use App\Services\Ai\RubricService;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class StudentService
@@ -64,9 +65,59 @@ class StudentService
             'totalSessions' => $totalSessions,
         ];
 
+        $charts = $this->getStudentChartData($user);
+
         return [
             'stats' => $stats,
             'upcomingVivas' => $upcomingVivas,
+            'charts' => $charts,
+        ];
+    }
+
+    /**
+     * Chart data for student dashboard: completed vs upcoming, completions over time.
+     */
+    private function getStudentChartData(User $user): array
+    {
+        $completedCount = VivaStudentSubmission::where('student_id', $user->id)
+            ->where('status', 'completed')
+            ->count();
+
+        $upcomingCount = 0;
+        if ($user->batch) {
+            $upcomingCount = Viva::where('institution_id', $user->institution_id)
+                ->where('batch', $user->batch)
+                ->where('status', 'upcoming')
+                ->count();
+        }
+
+        $sessionsBreakdown = [
+            'labels' => ['Completed', 'Upcoming'],
+            'series' => [$completedCount, $upcomingCount],
+        ];
+
+        $days = 30;
+        $start = now()->subDays($days)->startOfDay();
+        $rows = VivaStudentSubmission::where('student_id', $user->id)
+            ->where('status', 'completed')
+            ->where('created_at', '>=', $start)
+            ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+        $byDate = $rows->pluck('count', 'date');
+        $labels = [];
+        $data = [];
+        for ($i = $days - 1; $i >= 0; $i--) {
+            $d = now()->subDays($i)->format('Y-m-d');
+            $labels[] = now()->subDays($i)->format('M j');
+            $data[] = (int) ($byDate->get($d, 0));
+        }
+        $completionsOverTime = ['labels' => $labels, 'series' => [$data]];
+
+        return [
+            'sessionsBreakdown' => $sessionsBreakdown,
+            'completionsOverTime' => $completionsOverTime,
         ];
     }
 

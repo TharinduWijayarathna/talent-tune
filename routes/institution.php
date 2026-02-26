@@ -1,12 +1,12 @@
 <?php
 
 use App\Http\Controllers\Application\BatchController;
+use App\Http\Controllers\Application\InstitutionDashboardController;
 use App\Http\Controllers\Application\InstitutionSubscriptionController;
 use App\Http\Controllers\Application\InstitutionUserController;
 use App\Http\Middleware\EnsureInstitutionAccess;
 use App\Http\Middleware\EnsureSubscriptionActive;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,9 +18,7 @@ Route::prefix('institution')->middleware(['auth', 'verified', EnsureInstitutionA
     Route::post('complete-subscription/checkout', [InstitutionSubscriptionController::class, 'checkout'])->name('institution.complete-subscription.checkout');
 
     Route::middleware(EnsureSubscriptionActive::class)->group(function () {
-        Route::get('dashboard', function () {
-            return Inertia::render('institution/Dashboard');
-        })->name('institution.dashboard');
+        Route::get('dashboard', [InstitutionDashboardController::class, 'index'])->name('institution.dashboard');
 
         Route::get('batches', [BatchController::class, 'index'])->name('institution.batches');
         Route::post('batches', [BatchController::class, 'store'])->name('institution.batches.store');
