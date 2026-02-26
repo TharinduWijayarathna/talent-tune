@@ -104,6 +104,21 @@ const inProgressCount = () =>
 const pendingCount = () =>
     submissions.value.filter((s) => s.status === 'pending').length;
 
+// Format ISO scheduled_at (UTC) in user's local time for display
+const formatScheduledLocal = (isoString: string) => {
+    if (!isoString) return '';
+    const d = new Date(isoString);
+    if (Number.isNaN(d.getTime())) return isoString;
+    return d.toLocaleString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+    });
+};
+
 // One-time participation after viva closed
 const addLateOpen = ref(false);
 const lateStudents = ref<StudentOption[]>([]);
@@ -174,7 +189,7 @@ const addLateStudent = () => {
                             }}</CardTitle>
                             <CardDescription class="mt-1">
                                 Batch: {{ viva.batch }} •
-                                {{ viva.scheduled_at }}
+                                {{ formatScheduledLocal(viva.scheduled_at) }}
                             </CardDescription>
                         </div>
                         <div class="flex items-center gap-2">

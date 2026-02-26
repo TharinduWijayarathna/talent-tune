@@ -71,12 +71,17 @@ class LecturerService
                     ->where('batch', $viva->batch)
                     ->count();
 
+                $rawScheduled = $viva->getRawOriginal('scheduled_at');
+                $scheduledAtUtc = $rawScheduled
+                    ? Carbon::parse($rawScheduled, 'UTC')
+                    : $viva->scheduled_at->copy()->utc();
+
                 return [
                     'id' => $viva->id,
                     'title' => $viva->title,
                     'description' => $viva->description,
                     'batch' => $viva->batch,
-                    'scheduled_at' => $viva->scheduled_at->format('Y-m-d H:i'),
+                    'scheduled_at' => $scheduledAtUtc->toIso8601String(),
                     'status' => $viva->status,
                     'students' => $studentsInBatch,
                 ];

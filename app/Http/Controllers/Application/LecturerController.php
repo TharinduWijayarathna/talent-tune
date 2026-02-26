@@ -7,6 +7,7 @@ use App\Models\Institution;
 use App\Models\VivaStudentSubmission;
 use App\Services\Application\LecturerService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -115,13 +116,18 @@ class LecturerController extends Controller
         $viva = $this->lecturerService->getVivaForShow($institution, $user, $id);
         $submissions = $this->lecturerService->getVivaSubmissionsForShow($institution, $user, $id);
 
+        $rawScheduled = $viva->getRawOriginal('scheduled_at');
+        $scheduledAtUtc = $rawScheduled
+            ? Carbon::parse($rawScheduled, 'UTC')
+            : $viva->scheduled_at->copy()->utc();
+
         return Inertia::render('lecturer/ShowViva', [
             'viva' => [
                 'id' => $viva->id,
                 'title' => $viva->title,
                 'description' => $viva->description,
                 'batch' => $viva->batch,
-                'scheduled_at' => $viva->scheduled_at->format('Y-m-d H:i'),
+                'scheduled_at' => $scheduledAtUtc->toIso8601String(),
                 'instructions' => $viva->instructions,
                 'status' => $viva->status,
             ],
