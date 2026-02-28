@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminAdminController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminPaymentController;
+use App\Http\Controllers\Admin\AdminReportController;
 use App\Http\Controllers\Admin\AdminSupportController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Application\InstitutionController;
@@ -35,6 +36,10 @@ Route::prefix('admin')->middleware(['auth', 'verified', EnsureAdminRole::class])
     Route::put('users/{user}', [AdminUserController::class, 'update'])->name('admin.users.update');
     Route::get('payments', [AdminPaymentController::class, 'index'])->name('admin.payments');
     Route::get('payments/{id}', [AdminPaymentController::class, 'show'])->name('admin.payments.show');
+
+    Route::get('reports', [AdminReportController::class, 'index'])->name('admin.reports');
+    Route::get('reports/payments-pdf', [AdminReportController::class, 'paymentsPdf'])->name('admin.reports.payments-pdf');
+    Route::get('reports/profit-loss-pdf', [AdminReportController::class, 'profitLossPdf'])->name('admin.reports.profit-loss-pdf');
 
     Route::get('support', [AdminSupportController::class, 'index'])->name('admin.support');
     Route::get('support/{id}', [AdminSupportController::class, 'show'])->name('admin.support.show');
