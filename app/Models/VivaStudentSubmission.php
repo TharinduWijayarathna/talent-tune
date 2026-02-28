@@ -18,10 +18,12 @@ class VivaStudentSubmission extends Model
         'grade',
         'feedback',
         'status',
+        'allowed_after_close',
     ];
 
     protected $casts = [
         'answers' => 'array',
+        'allowed_after_close' => 'boolean',
     ];
 
     public function viva(): BelongsTo

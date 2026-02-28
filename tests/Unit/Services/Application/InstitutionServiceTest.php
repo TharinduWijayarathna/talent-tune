@@ -5,7 +5,7 @@ use App\Services\Application\InstitutionService;
 use Illuminate\Http\Request;
 
 beforeEach(function () {
-    $this->service = new InstitutionService;
+    $this->service = app(InstitutionService::class);
 });
 
 test('create creates institution with generated slug', function () {

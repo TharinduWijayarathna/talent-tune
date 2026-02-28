@@ -218,12 +218,23 @@ const attendLabel = (viva: {
                                 </div>
                             </div>
 
-                            <div class="flex gap-2">
+                            <div class="flex flex-wrap gap-2">
                                 <Button v-if="viva.can_attend" as-child>
                                     <Link
                                         :href="`/student/vivas/${viva.id}/attend`"
                                     >
                                         Attend Viva
+                                    </Link>
+                                </Button>
+                                <Button
+                                    v-else-if="viva.marks != null || viva.grade"
+                                    variant="secondary"
+                                    as-child
+                                >
+                                    <Link
+                                        :href="`/student/vivas/${viva.id}/submission`"
+                                    >
+                                        View my answers
                                     </Link>
                                 </Button>
                                 <Button v-else variant="outline" disabled>

@@ -14,6 +14,7 @@ import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 import {
+    AlertTriangle,
     BookOpen,
     Building2,
     CreditCard,
@@ -21,6 +22,7 @@ import {
     GraduationCap,
     Layers,
     LayoutGrid,
+    MessageSquare,
     Plus,
     Shield,
     Users,
@@ -58,6 +60,11 @@ const mainNavItems = computed<NavItem[]>(() => {
                 href: '/student/vivas',
                 icon: BookOpen,
             },
+            {
+                title: 'Report Issue',
+                href: '/student/issues',
+                icon: AlertTriangle,
+            },
         ];
     }
 
@@ -77,6 +84,11 @@ const mainNavItems = computed<NavItem[]>(() => {
                 title: 'My Sessions',
                 href: '/lecturer/vivas',
                 icon: FileText,
+            },
+            {
+                title: 'Report Issue',
+                href: '/lecturer/issues',
+                icon: AlertTriangle,
             },
         ];
     }
@@ -107,6 +119,16 @@ const mainNavItems = computed<NavItem[]>(() => {
                 title: 'Students',
                 href: '/institution/students',
                 icon: GraduationCap,
+            },
+            {
+                title: 'Support',
+                href: '/institution/support',
+                icon: MessageSquare,
+            },
+            {
+                title: 'Reported Issues',
+                href: '/institution/reported-issues',
+                icon: AlertTriangle,
             },
         ];
     }
@@ -151,6 +173,11 @@ const mainNavItems = computed<NavItem[]>(() => {
                 title: 'Payments',
                 href: '/admin/payments',
                 icon: CreditCard,
+            },
+            {
+                title: 'Support Tickets',
+                href: '/admin/support',
+                icon: MessageSquare,
             },
         ];
     }

@@ -9,7 +9,48 @@ import {
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
-import { Building2, GraduationCap, UserPlus, Users } from 'lucide-vue-next';
+import {
+    BarChart3,
+    Building2,
+    GraduationCap,
+    PieChart,
+    TrendingUp,
+    UserPlus,
+    Users,
+} from 'lucide-vue-next';
+import { computed } from 'vue';
+import VueApexCharts from 'vue3-apexcharts';
+
+interface InstitutionCharts {
+    vivasByStatus: { labels: string[]; series: number[] };
+    usersByRole: { labels: string[]; series: number[] };
+    vivasOverTime: { labels: string[]; series: number[][] };
+}
+
+const props = withDefaults(
+    defineProps<{
+        stats?: {
+            totalLecturers: number;
+            totalStudents: number;
+            activeBatches: number;
+            totalVivas: number;
+        };
+        charts?: InstitutionCharts;
+    }>(),
+    {
+        stats: () => ({
+            totalLecturers: 0,
+            totalStudents: 0,
+            activeBatches: 0,
+            totalVivas: 0,
+        }),
+        charts: () => ({
+            vivasByStatus: { labels: [], series: [] },
+            usersByRole: { labels: [], series: [] },
+            vivasOverTime: { labels: [], series: [[]] },
+        }),
+    },
+);
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -18,13 +59,47 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-// Mock data
-const stats = {
-    totalLecturers: 25,
-    totalStudents: 500,
-    activeBatches: 12,
-    totalVivas: 150,
+const chartTheme = {
+    colors: ['#0ea5e9', '#8b5cf6', '#10b981'],
+    fontFamily: 'inherit',
 };
+
+const vivasByStatusOptions = computed(() => ({
+    chart: { type: 'bar', toolbar: { show: false } },
+    plotOptions: { bar: { horizontal: false, columnWidth: '60%' } },
+    dataLabels: { enabled: true },
+    xaxis: { categories: props.charts.vivasByStatus.labels },
+    colors: ['#0ea5e9', '#8b5cf6', '#10b981'],
+    theme: chartTheme,
+}));
+
+const vivasByStatusSeries = computed(() => [
+    { name: 'Vivas', data: props.charts.vivasByStatus.series },
+]);
+
+const usersByRoleOptions = computed(() => ({
+    chart: { type: 'donut' },
+    labels: props.charts.usersByRole.labels,
+    colors: ['#0ea5e9', '#8b5cf6'],
+    legend: { position: 'bottom' },
+    theme: chartTheme,
+}));
+
+const usersByRoleSeries = computed(() => props.charts.usersByRole.series);
+
+const vivasOverTimeOptions = computed(() => ({
+    chart: { type: 'area', zoom: { enabled: false }, toolbar: { show: false } },
+    dataLabels: { enabled: false },
+    stroke: { curve: 'smooth', width: 2 },
+    fill: { type: 'gradient', gradient: { opacityFrom: 0.4, opacityTo: 0.1 } },
+    xaxis: { categories: props.charts.vivasOverTime.labels },
+    colors: ['#10b981'],
+    theme: chartTheme,
+}));
+
+const vivasOverTimeSeries = computed(() => [
+    { name: 'Vivas created', data: props.charts.vivasOverTime.series[0] ?? [] },
+]);
 </script>
 
 <template>
@@ -119,6 +194,65 @@ const stats = {
                     </CardContent>
                 </Card>
             </div>
+
+            <!-- Charts -->
+            <div class="grid gap-6 md:grid-cols-2">
+                <Card>
+                    <CardHeader>
+                        <CardTitle class="flex items-center gap-2">
+                            <BarChart3 class="h-5 w-5" />
+                            Vivas by status
+                        </CardTitle>
+                        <CardDescription
+                            >Upcoming, active, and completed</CardDescription
+                        >
+                    </CardHeader>
+                    <CardContent>
+                        <VueApexCharts
+                            type="bar"
+                            height="280"
+                            :options="vivasByStatusOptions"
+                            :series="vivasByStatusSeries"
+                        />
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle class="flex items-center gap-2">
+                            <PieChart class="h-5 w-5" />
+                            Users by role
+                        </CardTitle>
+                        <CardDescription>Lecturers vs students</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <VueApexCharts
+                            type="donut"
+                            height="280"
+                            :options="usersByRoleOptions"
+                            :series="usersByRoleSeries"
+                        />
+                    </CardContent>
+                </Card>
+            </div>
+            <Card>
+                <CardHeader>
+                    <CardTitle class="flex items-center gap-2">
+                        <TrendingUp class="h-5 w-5" />
+                        Vivas created (last 30 days)
+                    </CardTitle>
+                    <CardDescription
+                        >New viva sessions over time</CardDescription
+                    >
+                </CardHeader>
+                <CardContent>
+                    <VueApexCharts
+                        type="area"
+                        height="280"
+                        :options="vivasOverTimeOptions"
+                        :series="vivasOverTimeSeries"
+                    />
+                </CardContent>
+            </Card>
 
             <!-- Quick Actions -->
             <div class="grid gap-4 md:grid-cols-2">

@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Viva;
 use App\Models\VivaStudentSubmission;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class LecturerService
 {
@@ -52,9 +53,53 @@ class LecturerService
             })
             ->all();
 
+        $charts = $this->getLecturerChartData($institution, $user);
+
         return [
             'stats' => $stats,
             'recentSessions' => $recentSessions,
+            'charts' => $charts,
+        ];
+    }
+
+    /**
+     * Chart data for lecturer dashboard: sessions by status, sessions created over time.
+     */
+    private function getLecturerChartData(Institution $institution, User $user): array
+    {
+        $baseQuery = fn () => Viva::where('institution_id', $institution->id)->where('lecturer_id', $user->id);
+
+        $byStatus = $baseQuery()
+            ->select('status', DB::raw('count(*) as count'))
+            ->groupBy('status')
+            ->pluck('count', 'status');
+        $statusOrder = ['upcoming', 'active', 'completed'];
+        $sessionsByStatus = [
+            'labels' => array_map(fn ($s) => ucfirst($s), $statusOrder),
+            'series' => array_map(fn ($s) => (int) ($byStatus->get($s, 0)), $statusOrder),
+        ];
+
+        $days = 30;
+        $start = now()->subDays($days)->startOfDay();
+        $rows = $baseQuery()
+            ->where('created_at', '>=', $start)
+            ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+        $byDate = $rows->pluck('count', 'date');
+        $labels = [];
+        $data = [];
+        for ($i = $days - 1; $i >= 0; $i--) {
+            $d = now()->subDays($i)->format('Y-m-d');
+            $labels[] = now()->subDays($i)->format('M j');
+            $data[] = (int) ($byDate->get($d, 0));
+        }
+        $sessionsOverTime = ['labels' => $labels, 'series' => [$data]];
+
+        return [
+            'sessionsByStatus' => $sessionsByStatus,
+            'sessionsOverTime' => $sessionsOverTime,
         ];
     }
 
@@ -70,12 +115,17 @@ class LecturerService
                     ->where('batch', $viva->batch)
                     ->count();
 
+                $rawScheduled = $viva->getRawOriginal('scheduled_at');
+                $scheduledAtUtc = $rawScheduled
+                    ? Carbon::parse($rawScheduled, 'UTC')
+                    : $viva->scheduled_at->copy()->utc();
+
                 return [
                     'id' => $viva->id,
                     'title' => $viva->title,
                     'description' => $viva->description,
                     'batch' => $viva->batch,
-                    'scheduled_at' => $viva->scheduled_at->format('Y-m-d H:i'),
+                    'scheduled_at' => $scheduledAtUtc->toIso8601String(),
                     'status' => $viva->status,
                     'students' => $studentsInBatch,
                 ];
@@ -167,9 +217,81 @@ class LecturerService
                     'answers' => $sub->answers ?? [],
                     'document_path' => $sub->document_path,
                     'completed_at' => $sub->updated_at?->format('Y-m-d H:i'),
+                    'allowed_after_close' => (bool) $sub->allowed_after_close,
                 ];
             })
             ->all();
+    }
+
+    /**
+     * Get students in the viva's batch for late participation (viva must be closed).
+     * Only students from the viva's batch can participate. Supports search by name/email.
+     * Returns all batch students; has_attended indicates they have at least one submission (lecturer can add again for re-do).
+     */
+    public function getStudentsForLateParticipation(Institution $institution, User $user, int $vivaId, ?string $search = null): array
+    {
+        $viva = Viva::where('institution_id', $institution->id)
+            ->where('lecturer_id', $user->id)
+            ->findOrFail($vivaId);
+
+        if ($viva->status !== 'completed') {
+            return [];
+        }
+
+        $studentIdsWithSubmissions = VivaStudentSubmission::where('viva_id', $viva->id)
+            ->pluck('student_id')
+            ->unique()
+            ->all();
+
+        $query = User::forInstitution($institution->id)
+            ->where('role', 'student')
+            ->where('batch', $viva->batch)
+            ->orderBy('name');
+
+        if ($search !== null && trim($search) !== '') {
+            $term = '%'.trim($search).'%';
+            $query->where(function ($q) use ($term) {
+                $q->where('name', 'like', $term)
+                    ->orWhere('email', 'like', $term);
+            });
+        }
+
+        return $query->get(['id', 'name', 'email'])
+            ->map(fn (User $u) => [
+                'id' => $u->id,
+                'name' => $u->name,
+                'email' => $u->email ?? null,
+                'has_attended' => in_array($u->id, $studentIdsWithSubmissions, true),
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Add a student for one-time participation after the viva is closed. Creates a pending submission with allowed_after_close.
+     * Only students from the viva's batch can be added. Lecturer can add the same student again for a re-do (new attempt).
+     */
+    public function addStudentForLateParticipation(Institution $institution, User $user, int $vivaId, int $studentId): VivaStudentSubmission
+    {
+        $viva = Viva::where('institution_id', $institution->id)
+            ->where('lecturer_id', $user->id)
+            ->findOrFail($vivaId);
+
+        if ($viva->status !== 'completed') {
+            abort(422, 'You can only add students for late participation when the viva is closed.');
+        }
+
+        $student = User::forInstitution($institution->id)
+            ->where('role', 'student')
+            ->where('batch', $viva->batch)
+            ->findOrFail($studentId);
+
+        return VivaStudentSubmission::create([
+            'viva_id' => $viva->id,
+            'student_id' => $student->id,
+            'status' => 'pending',
+            'allowed_after_close' => true,
+        ]);
     }
 
     /**

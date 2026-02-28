@@ -26,9 +26,7 @@ storage/framework/views/*
 bootstrap/cache/*
 npm-debug.log*
 
-# Tests and dev
-tests
-phpunit.xml
+# Tests and dev (tests + phpunit.xml needed for CI; excluded from runtime stage)
 .phpunit.result.cache
 coverage
 .phan

@@ -23,6 +23,7 @@ class AdminDashboardController extends Controller
         return Inertia::render('admin/Dashboard', [
             'stats' => $data['stats'],
             'recentActivity' => $data['recentActivity'],
+            'charts' => $data['charts'],
         ]);
     }
 }
