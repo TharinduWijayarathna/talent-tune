@@ -3,6 +3,7 @@
 use App\Http\Controllers\Application\BatchController;
 use App\Http\Controllers\Application\InstitutionDashboardController;
 use App\Http\Controllers\Application\InstitutionPaymentController;
+use App\Http\Controllers\Application\InstitutionReportController;
 use App\Http\Controllers\Application\InstitutionReportedIssuesController;
 use App\Http\Controllers\Application\InstitutionSubscriptionController;
 use App\Http\Controllers\Application\InstitutionSupportController;
@@ -48,6 +49,10 @@ Route::prefix('institution')->middleware(['auth', 'verified', EnsureInstitutionA
         Route::get('support/create', [InstitutionSupportController::class, 'create'])->name('institution.support.create');
         Route::post('support', [InstitutionSupportController::class, 'store'])->name('institution.support.store');
         Route::get('support/{id}', [InstitutionSupportController::class, 'show'])->name('institution.support.show');
+
+        Route::get('reports', [InstitutionReportController::class, 'index'])->name('institution.reports');
+        Route::get('reports/students-pdf', [InstitutionReportController::class, 'studentsPdf'])->name('institution.reports.students-pdf');
+        Route::get('reports/lecturers-pdf', [InstitutionReportController::class, 'lecturersPdf'])->name('institution.reports.lecturers-pdf');
 
         Route::get('reported-issues', [InstitutionReportedIssuesController::class, 'index'])->name('institution.reported-issues');
         Route::get('reported-issues/{id}', [InstitutionReportedIssuesController::class, 'show'])->name('institution.reported-issues.show');

@@ -18,6 +18,7 @@ import {
     BookOpen,
     Building2,
     CreditCard,
+    FileBarChart,
     FileText,
     GraduationCap,
     Layers,
@@ -178,6 +179,11 @@ const mainNavItems = computed<NavItem[]>(() => {
                 title: 'Support Tickets',
                 href: '/admin/support',
                 icon: MessageSquare,
+            },
+            {
+                title: 'Reports',
+                href: '/admin/reports',
+                icon: FileBarChart,
             },
         ];
     }
