@@ -1,8 +1,8 @@
-# Multi-stage: build frontend with Node 22, run with PHP 8.2 + nginx + supervisor
+# Multi-stage: build frontend with Node 22, run with PHP 8.3 + nginx + supervisor
 # ----------------------------
 # Stage 1: PHP + Composer (deps + app)
 # ----------------------------
-FROM php:8.2-cli-bookworm AS php-base
+FROM php:8.3-cli-bookworm AS php-base
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git unzip libzip-dev libpng-dev libonig-dev libxml2-dev \
     && docker-php-ext-install zip pdo_mysql mbstring exif pcntl bcmath gd \
@@ -27,7 +27,7 @@ RUN npm ci && npm run build
 # ----------------------------
 # Stage 3: Runtime (Alpine = smaller image)
 # ----------------------------
-FROM php:8.2-fpm-alpine3.20 AS runtime
+FROM php:8.3-fpm-alpine3.20 AS runtime
 # PHP extensions: install build deps, build, then remove build deps
 RUN apk add --no-cache \
     nginx supervisor \
