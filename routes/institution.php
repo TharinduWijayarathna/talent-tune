@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Application\BatchController;
 use App\Http\Controllers\Application\InstitutionDashboardController;
+use App\Http\Controllers\Application\InstitutionReportedIssuesController;
 use App\Http\Controllers\Application\InstitutionSubscriptionController;
 use App\Http\Controllers\Application\InstitutionSupportController;
 use App\Http\Controllers\Application\InstitutionUserController;
@@ -43,5 +44,10 @@ Route::prefix('institution')->middleware(['auth', 'verified', EnsureInstitutionA
         Route::get('support/create', [InstitutionSupportController::class, 'create'])->name('institution.support.create');
         Route::post('support', [InstitutionSupportController::class, 'store'])->name('institution.support.store');
         Route::get('support/{id}', [InstitutionSupportController::class, 'show'])->name('institution.support.show');
+
+        Route::get('reported-issues', [InstitutionReportedIssuesController::class, 'index'])->name('institution.reported-issues');
+        Route::get('reported-issues/{id}', [InstitutionReportedIssuesController::class, 'show'])->name('institution.reported-issues.show');
+        Route::post('reported-issues/{id}/reviewed', [InstitutionReportedIssuesController::class, 'markReviewed'])->name('institution.reported-issues.reviewed');
+        Route::post('reported-issues/{id}/escalate', [InstitutionReportedIssuesController::class, 'escalate'])->name('institution.reported-issues.escalate');
     });
 });
