@@ -35,7 +35,7 @@ class HomeController extends Controller
                 ]);
             }
 
-            if ($institution->subscription_status !== 'active') {
+            if (! $institution->hasAccess()) {
                 return Inertia::render('home/InstitutionPaymentRequired', [
                     'institution' => [
                         'name' => $institution->name,

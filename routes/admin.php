@@ -23,9 +23,11 @@ Route::prefix('admin')->middleware(['auth', 'verified', EnsureAdminRole::class])
     Route::post('talenttune-admins', [AdminAdminController::class, 'store'])->name('admin.talenttune-admins.store');
 
     Route::get('institutions', [InstitutionController::class, 'index'])->name('admin.institutions');
+    Route::get('institutions/{institution}', [InstitutionController::class, 'show'])->name('admin.institutions.show');
     Route::get('institutions/{institution}/edit', [InstitutionController::class, 'edit'])->name('admin.institutions.edit');
     Route::put('institutions/{institution}', [InstitutionController::class, 'update'])->name('admin.institutions.update');
     Route::patch('institutions/{institution}/status', [InstitutionController::class, 'updateStatus'])->name('admin.institutions.status');
+    Route::patch('institutions/{institution}/end-trial', [InstitutionController::class, 'endTrial'])->name('admin.institutions.end-trial');
     Route::delete('institutions/{institution}', [InstitutionController::class, 'destroy'])->name('admin.institutions.destroy');
 
     Route::get('users', [AdminUserController::class, 'index'])->name('admin.users');

@@ -21,7 +21,7 @@ class InstitutionSubscriptionController extends Controller
         if (! $institution) {
             abort(403);
         }
-        if ($institution->subscription_status === 'active') {
+        if ($institution->hasAccess()) {
             return redirect()->route('institution.dashboard');
         }
 
@@ -31,6 +31,7 @@ class InstitutionSubscriptionController extends Controller
                 'name' => $institution->name,
                 'slug' => $institution->slug,
             ],
+            'trial_ended' => $institution->trial_ends_at && $institution->trial_ends_at->isPast(),
         ]);
     }
 
@@ -40,7 +41,7 @@ class InstitutionSubscriptionController extends Controller
         if (! $institution) {
             abort(403);
         }
-        if ($institution->subscription_status === 'active') {
+        if ($institution->hasAccess()) {
             return redirect()->route('institution.dashboard');
         }
         $baseSuccessUrl = URL::route('subscription.success', ['institution' => $institution->slug]);

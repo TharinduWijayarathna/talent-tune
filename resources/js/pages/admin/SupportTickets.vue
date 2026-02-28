@@ -89,8 +89,8 @@ const formatDate = (iso: string) =>
             </div>
 
             <Card>
-                <CardContent class="pt-6">
-                    <div class="mb-4 flex flex-wrap gap-4">
+                <CardContent>
+                    <div class="flex flex-wrap items-center gap-4">
                         <div class="relative min-w-[200px] flex-1">
                             <Search
                                 class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground"

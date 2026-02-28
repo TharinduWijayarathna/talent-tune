@@ -29,6 +29,7 @@ class Institution extends Model
         'stripe_customer_id',
         'stripe_subscription_id',
         'subscription_status',
+        'trial_ends_at',
     ];
 
     /**
@@ -41,7 +42,28 @@ class Institution extends Model
         return [
             'settings' => 'array',
             'is_active' => 'boolean',
+            'trial_ends_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Whether the institution is currently within its free trial period.
+     */
+    public function hasActiveTrial(): bool
+    {
+        return $this->trial_ends_at && $this->trial_ends_at->isFuture();
+    }
+
+    /**
+     * Whether the institution has access (paid subscription or active trial).
+     */
+    public function hasAccess(): bool
+    {
+        if ($this->subscription_status === 'active') {
+            return true;
+        }
+
+        return $this->hasActiveTrial();
     }
 
     /**

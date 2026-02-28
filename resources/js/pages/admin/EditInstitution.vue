@@ -14,7 +14,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useDomain } from '@/composables/useDomain';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import { TimerOff } from 'lucide-vue-next';
 
 interface InstitutionForm {
     id: number;
@@ -26,6 +27,7 @@ interface InstitutionForm {
     address: string | null;
     is_active: boolean;
     subscription_status?: string | null;
+    trial_ends_at?: string | null;
 }
 
 const props = defineProps<{
@@ -51,6 +53,27 @@ const form = useForm({
 
 const submit = () => {
     form.put(`/admin/institutions/${props.institution.slug}`);
+};
+
+const hasActiveTrial = () =>
+    props.institution.trial_ends_at &&
+    new Date(props.institution.trial_ends_at) > new Date();
+const hasPaidSubscription = () =>
+    props.institution.subscription_status === 'active';
+
+const endTrial = () => {
+    if (
+        !confirm(
+            "End this institution's trial now? They will be asked to pay to continue access.",
+        )
+    ) {
+        return;
+    }
+    router.patch(
+        `/admin/institutions/${props.institution.slug}/end-trial`,
+        {},
+        { preserveScroll: true },
+    );
 };
 </script>
 
@@ -172,9 +195,45 @@ const submit = () => {
                         </div>
                         <InputError :message="form.errors.is_active" />
 
+                        <div
+                            v-if="
+                                institution.trial_ends_at &&
+                                (hasActiveTrial() || !hasPaidSubscription())
+                            "
+                            class="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30"
+                        >
+                            <p
+                                class="text-sm font-medium text-amber-800 dark:text-amber-200"
+                            >
+                                Trial
+                                {{
+                                    hasActiveTrial()
+                                        ? `ends ${new Date(institution.trial_ends_at!).toLocaleDateString()}`
+                                        : 'has ended'
+                                }}
+                            </p>
+                            <Button
+                                v-if="
+                                    hasActiveTrial() && !hasPaidSubscription()
+                                "
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                class="mt-2"
+                                @click="endTrial"
+                            >
+                                <TimerOff class="mr-2 h-4 w-4" />
+                                End trial now
+                            </Button>
+                        </div>
+
                         <div class="flex justify-end gap-4 pt-4">
                             <Button type="button" variant="outline" as-child>
-                                <Link href="/admin/institutions">Cancel</Link>
+                                <Link
+                                    :href="`/admin/institutions/${institution.slug}`"
+                                >
+                                    Cancel
+                                </Link>
                             </Button>
                             <Button type="submit" :disabled="form.processing">
                                 Update Institution

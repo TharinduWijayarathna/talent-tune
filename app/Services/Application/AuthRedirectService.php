@@ -27,7 +27,7 @@ class AuthRedirectService
         $scheme = $request->getScheme();
         $baseUrl = "{$scheme}://{$institution->slug}.{$baseDomain}";
 
-        if ($institution->subscription_status !== 'active') {
+        if (! $institution->hasAccess()) {
             return $baseUrl.'/institution/complete-subscription';
         }
 
