@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import SiteHeader from '@/components/SiteHeader.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import SiteHeader from '@/components/SiteHeader.vue';
 import { registerInstitution } from '@/routes';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { Building2, Target, Zap } from 'lucide-vue-next';
@@ -24,12 +24,14 @@ const isMainDomain = computed(() => !page.props.institution);
                     >
                         Built for education, powered by AI
                     </h1>
-                    <p class="mb-8 text-lg leading-relaxed text-muted-foreground">
+                    <p
+                        class="mb-8 text-lg leading-relaxed text-muted-foreground"
+                    >
                         TalentTune is an AI-powered viva management platform
                         designed for universities and colleges. We help
                         institutions run fairer, faster, and more consistent
-                        oral examinations while giving students clearer
-                        feedback and lecturers more time to teach.
+                        oral examinations while giving students clearer feedback
+                        and lecturers more time to teach.
                     </p>
 
                     <div class="space-y-8">
@@ -42,10 +44,10 @@ const isMainDomain = computed(() => !page.props.institution);
                             <div>
                                 <h2 class="mb-2 font-semibold">Our mission</h2>
                                 <p class="text-muted-foreground">
-                                    To make viva examinations scalable, consistent,
-                                    and insightful so every student gets a fair
-                                    assessment and every institution can focus
-                                    on learning outcomes.
+                                    To make viva examinations scalable,
+                                    consistent, and insightful so every student
+                                    gets a fair assessment and every institution
+                                    can focus on learning outcomes.
                                 </p>
                             </div>
                         </div>
@@ -73,12 +75,14 @@ const isMainDomain = computed(() => !page.props.institution);
                                 <Building2 class="h-5 w-5 text-primary" />
                             </div>
                             <div>
-                                <h2 class="mb-2 font-semibold">For institutions</h2>
+                                <h2 class="mb-2 font-semibold">
+                                    For institutions
+                                </h2>
                                 <p class="text-muted-foreground">
                                     Whether you're a single department or a
-                                    large university, TalentTune adapts. Register
-                                    your institution, get verified, and start
-                                    running vivas with AI support in days.
+                                    large university, TalentTune adapts.
+                                    Register your institution, get verified, and
+                                    start running vivas with AI support in days.
                                 </p>
                             </div>
                         </div>

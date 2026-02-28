@@ -37,7 +37,10 @@ const props = defineProps<{
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/institution/dashboard' },
     { title: 'Support', href: '/institution/support' },
-    { title: props.ticket.subject, href: `/institution/support/${props.ticket.id}` },
+    {
+        title: props.ticket.subject,
+        href: `/institution/support/${props.ticket.id}`,
+    },
 ];
 
 const statusVariant = (status: string) => {
@@ -120,10 +123,7 @@ const formatDateTime = (iso: string) =>
                                         : 'bg-muted text-muted-foreground'
                                 "
                             >
-                                <Shield
-                                    v-if="reply.is_staff"
-                                    class="h-4 w-4"
-                                />
+                                <Shield v-if="reply.is_staff" class="h-4 w-4" />
                                 <MessageSquare v-else class="h-4 w-4" />
                             </div>
                             <div class="min-w-0 flex-1 space-y-1">
@@ -138,15 +138,11 @@ const formatDateTime = (iso: string) =>
                                     >
                                         Support
                                     </Badge>
-                                    <span
-                                        class="text-xs text-muted-foreground"
-                                    >
+                                    <span class="text-xs text-muted-foreground">
                                         {{ formatDateTime(reply.created_at) }}
                                     </span>
                                 </div>
-                                <p
-                                    class="text-sm whitespace-pre-wrap"
-                                >
+                                <p class="text-sm whitespace-pre-wrap">
                                     {{ reply.body }}
                                 </p>
                             </div>

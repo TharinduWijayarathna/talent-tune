@@ -209,10 +209,7 @@ const formatDateTime = (iso: string) =>
                                         : 'bg-muted text-muted-foreground'
                                 "
                             >
-                                <Shield
-                                    v-if="reply.is_staff"
-                                    class="h-4 w-4"
-                                />
+                                <Shield v-if="reply.is_staff" class="h-4 w-4" />
                                 <MessageSquare v-else class="h-4 w-4" />
                             </div>
                             <div class="min-w-0 flex-1 space-y-1">
@@ -242,11 +239,10 @@ const formatDateTime = (iso: string) =>
                         v-if="props.ticket.status !== 'closed'"
                         class="rounded-lg border bg-muted/20 p-4"
                     >
-                        <h3 class="mb-3 text-sm font-medium">Reply to ticket</h3>
-                        <form
-                            @submit.prevent="submitReply"
-                            class="space-y-3"
-                        >
+                        <h3 class="mb-3 text-sm font-medium">
+                            Reply to ticket
+                        </h3>
+                        <form @submit.prevent="submitReply" class="space-y-3">
                             <div class="space-y-2">
                                 <Label for="body">Message</Label>
                                 <Textarea

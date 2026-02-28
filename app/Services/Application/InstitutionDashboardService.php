@@ -50,6 +50,7 @@ class InstitutionDashboardService
             ->groupBy('status')
             ->pluck('count', 'status');
         $statusOrder = ['upcoming', 'active', 'completed'];
+
         return [
             'labels' => array_map(fn ($s) => ucfirst($s), $statusOrder),
             'series' => array_map(fn ($s) => (int) ($counts->get($s, 0)), $statusOrder),
@@ -63,6 +64,7 @@ class InstitutionDashboardService
             ->select('role', DB::raw('count(*) as count'))
             ->groupBy('role')
             ->pluck('count', 'role');
+
         return [
             'labels' => ['Lecturers', 'Students'],
             'series' => [
@@ -90,6 +92,7 @@ class InstitutionDashboardService
             $labels[] = now()->subDays($i)->format('M j');
             $data[] = (int) ($byDate->get($d, 0));
         }
+
         return ['labels' => $labels, 'series' => [$data]];
     }
 }

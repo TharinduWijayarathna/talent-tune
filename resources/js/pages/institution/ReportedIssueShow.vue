@@ -132,9 +132,7 @@ const formatDateTime = (iso: string) =>
                             class="flex items-center gap-1"
                         >
                             <GraduationCap class="h-4 w-4" />
-                            {{
-                                reporterRoleLabel(props.issue.reporter_role)
-                            }}
+                            {{ reporterRoleLabel(props.issue.reporter_role) }}
                         </span>
                         <span
                             v-if="props.issue.reporter_email"

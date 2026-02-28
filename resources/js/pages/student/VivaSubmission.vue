@@ -134,9 +134,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
                     <!-- Your answers -->
                     <div>
-                        <h3 class="mb-3 text-sm font-semibold">
-                            Your answers
-                        </h3>
+                        <h3 class="mb-3 text-sm font-semibold">Your answers</h3>
                         <div
                             v-if="
                                 !submission.answers ||
@@ -165,9 +163,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                                         <p class="font-medium">
                                             {{ item.question }}
                                         </p>
-                                        <p
-                                            class="text-sm whitespace-pre-wrap"
-                                        >
+                                        <p class="text-sm whitespace-pre-wrap">
                                             {{ item.answer }}
                                         </p>
                                         <div

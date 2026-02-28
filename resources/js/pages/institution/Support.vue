@@ -45,7 +45,9 @@ const statusVariant = (status: string) => {
 };
 
 const formatDate = (iso: string) =>
-    iso ? new Date(iso).toLocaleDateString(undefined, { dateStyle: 'medium' }) : '';
+    iso
+        ? new Date(iso).toLocaleDateString(undefined, { dateStyle: 'medium' })
+        : '';
 </script>
 
 <template>
@@ -99,7 +101,9 @@ const formatDate = (iso: string) =>
                                             {{ ticket.subject }}
                                         </Link>
                                         <Badge
-                                            :variant="statusVariant(ticket.status)"
+                                            :variant="
+                                                statusVariant(ticket.status)
+                                            "
                                             class="capitalize"
                                         >
                                             {{ ticket.status }}
@@ -110,18 +114,26 @@ const formatDate = (iso: string) =>
                                     >
                                         <span
                                             >{{ ticket.replies_count }}
-                                            {{ ticket.replies_count === 1 ? 'reply' : 'replies' }}</span
+                                            {{
+                                                ticket.replies_count === 1
+                                                    ? 'reply'
+                                                    : 'replies'
+                                            }}</span
                                         >
                                         <span>•</span>
                                         <span
                                             >Updated
-                                            {{ formatDate(ticket.updated_at) }}</span
+                                            {{
+                                                formatDate(ticket.updated_at)
+                                            }}</span
                                         >
                                     </div>
                                 </div>
                             </div>
                             <Button variant="outline" size="sm" as-child>
-                                <Link :href="`/institution/support/${ticket.id}`">
+                                <Link
+                                    :href="`/institution/support/${ticket.id}`"
+                                >
                                     View
                                 </Link>
                             </Button>

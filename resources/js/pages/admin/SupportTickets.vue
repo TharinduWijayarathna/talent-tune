@@ -12,14 +12,7 @@ import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
-import {
-    Building2,
-    Eye,
-    Mail,
-    Search,
-    Ticket,
-    User,
-} from 'lucide-vue-next';
+import { Building2, Eye, Mail, Search, Ticket, User } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 interface InstitutionRef {
@@ -74,7 +67,9 @@ const statusVariant = (status: string) => {
 };
 
 const formatDate = (iso: string) =>
-    iso ? new Date(iso).toLocaleDateString(undefined, { dateStyle: 'medium' }) : '';
+    iso
+        ? new Date(iso).toLocaleDateString(undefined, { dateStyle: 'medium' })
+        : '';
 </script>
 
 <template>
@@ -96,7 +91,7 @@ const formatDate = (iso: string) =>
             <Card>
                 <CardContent class="pt-6">
                     <div class="mb-4 flex flex-wrap gap-4">
-                        <div class="relative flex-1 min-w-[200px]">
+                        <div class="relative min-w-[200px] flex-1">
                             <Search
                                 class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground"
                             />
@@ -150,7 +145,9 @@ const formatDate = (iso: string) =>
                                             {{ ticket.subject }}
                                         </Link>
                                         <Badge
-                                            :variant="statusVariant(ticket.status)"
+                                            :variant="
+                                                statusVariant(ticket.status)
+                                            "
                                             class="capitalize"
                                         >
                                             {{ ticket.status }}
@@ -182,12 +179,18 @@ const formatDate = (iso: string) =>
                                         </span>
                                         <span
                                             >{{ ticket.replies_count }}
-                                            {{ ticket.replies_count === 1 ? 'reply' : 'replies' }}</span
+                                            {{
+                                                ticket.replies_count === 1
+                                                    ? 'reply'
+                                                    : 'replies'
+                                            }}</span
                                         >
                                         <span>•</span>
                                         <span
                                             >Updated
-                                            {{ formatDate(ticket.updated_at) }}</span
+                                            {{
+                                                formatDate(ticket.updated_at)
+                                            }}</span
                                         >
                                     </div>
                                 </div>

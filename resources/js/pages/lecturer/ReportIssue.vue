@@ -43,7 +43,9 @@ const statusVariant = (status: string) => {
 };
 
 const formatDate = (iso: string) =>
-    iso ? new Date(iso).toLocaleDateString(undefined, { dateStyle: 'medium' }) : '';
+    iso
+        ? new Date(iso).toLocaleDateString(undefined, { dateStyle: 'medium' })
+        : '';
 </script>
 
 <template>
@@ -86,7 +88,9 @@ const formatDate = (iso: string) =>
                                 <div
                                     class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10"
                                 >
-                                    <AlertTriangle class="h-6 w-6 text-primary" />
+                                    <AlertTriangle
+                                        class="h-6 w-6 text-primary"
+                                    />
                                 </div>
                                 <div class="flex-1 space-y-1">
                                     <div class="flex items-center gap-2">
@@ -94,16 +98,17 @@ const formatDate = (iso: string) =>
                                             issue.subject
                                         }}</span>
                                         <Badge
-                                            :variant="statusVariant(issue.status)"
+                                            :variant="
+                                                statusVariant(issue.status)
+                                            "
                                             class="capitalize"
                                         >
                                             {{ issue.status }}
                                         </Badge>
                                     </div>
-                                    <div
-                                        class="text-sm text-muted-foreground"
-                                    >
-                                        Reported {{ formatDate(issue.created_at) }}
+                                    <div class="text-sm text-muted-foreground">
+                                        Reported
+                                        {{ formatDate(issue.created_at) }}
                                     </div>
                                 </div>
                             </div>

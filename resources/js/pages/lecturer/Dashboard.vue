@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import VueApexCharts from 'vue3-apexcharts';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -11,8 +10,16 @@ import {
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
-import { BarChart3, Calendar, FileText, Plus, TrendingUp, Users } from 'lucide-vue-next';
+import {
+    BarChart3,
+    Calendar,
+    FileText,
+    Plus,
+    TrendingUp,
+    Users,
+} from 'lucide-vue-next';
 import { computed } from 'vue';
+import VueApexCharts from 'vue3-apexcharts';
 
 interface LecturerCharts {
     sessionsByStatus: { labels: string[]; series: number[] };
@@ -93,7 +100,10 @@ const sessionsOverTimeOptions = computed(() => ({
 }));
 
 const sessionsOverTimeSeries = computed(() => [
-    { name: 'Sessions created', data: props.charts.sessionsOverTime.series[0] ?? [] },
+    {
+        name: 'Sessions created',
+        data: props.charts.sessionsOverTime.series[0] ?? [],
+    },
 ]);
 </script>
 
@@ -202,7 +212,9 @@ const sessionsOverTimeSeries = computed(() => [
                             <BarChart3 class="h-5 w-5" />
                             Sessions by status
                         </CardTitle>
-                        <CardDescription>Upcoming, active, and completed</CardDescription>
+                        <CardDescription
+                            >Upcoming, active, and completed</CardDescription
+                        >
                     </CardHeader>
                     <CardContent>
                         <VueApexCharts
@@ -219,7 +231,9 @@ const sessionsOverTimeSeries = computed(() => [
                             <TrendingUp class="h-5 w-5" />
                             Sessions created (last 30 days)
                         </CardTitle>
-                        <CardDescription>Your viva sessions over time</CardDescription>
+                        <CardDescription
+                            >Your viva sessions over time</CardDescription
+                        >
                     </CardHeader>
                     <CardContent>
                         <VueApexCharts

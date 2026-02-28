@@ -5,13 +5,7 @@ import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/vue3';
-import {
-    FileText,
-    Mic,
-    MicOff,
-    Upload,
-    Volume2,
-} from 'lucide-vue-next';
+import { FileText, Mic, MicOff, Upload, Volume2 } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 const props = defineProps<{
@@ -552,13 +546,15 @@ const startVoiceRecording = () => {
         ?.getUserMedia({ audio: true })
         .then((stream) => {
             mediaStream.value = stream;
-            const mime =
-                MediaRecorder.isTypeSupported('audio/webm')
-                    ? 'audio/webm'
-                    : MediaRecorder.isTypeSupported('audio/mp4')
-                      ? 'audio/mp4'
-                      : undefined;
-            const rec = new MediaRecorder(stream, mime ? { mimeType: mime } : {});
+            const mime = MediaRecorder.isTypeSupported('audio/webm')
+                ? 'audio/webm'
+                : MediaRecorder.isTypeSupported('audio/mp4')
+                  ? 'audio/mp4'
+                  : undefined;
+            const rec = new MediaRecorder(
+                stream,
+                mime ? { mimeType: mime } : {},
+            );
             mediaRecorder.value = rec;
             rec.ondataavailable = (e) => {
                 if (e.data.size > 0) recordedChunks.value.push(e.data);
@@ -708,12 +704,11 @@ const uploadVoiceRecording = async (
     mimeType: string,
 ): Promise<string | null> => {
     try {
-        const ext =
-            mimeType.includes('webm')
-                ? 'webm'
-                : mimeType.includes('mp4') || mimeType.includes('m4a')
-                  ? 'm4a'
-                  : 'webm';
+        const ext = mimeType.includes('webm')
+            ? 'webm'
+            : mimeType.includes('mp4') || mimeType.includes('m4a')
+              ? 'm4a'
+              : 'webm';
         const formData = new FormData();
         formData.append('submission_id', String(submissionId));
         formData.append('question_index', String(questionIndex));
@@ -1051,7 +1046,9 @@ onUnmounted(() => {
                     <FileText class="h-10 w-10 text-muted-foreground" />
                 </div>
                 <div class="max-w-sm text-center">
-                    <h2 class="text-lg font-medium">Upload your document (PDF)</h2>
+                    <h2 class="text-lg font-medium">
+                        Upload your document (PDF)
+                    </h2>
                     <p class="mt-1 text-sm text-muted-foreground">
                         Upload your PDF so questions can be based on the
                         lecturer’s instructions and your document. Max 10MB.
@@ -1071,7 +1068,9 @@ onUnmounted(() => {
                         @click="uploadDocument"
                     >
                         <Upload class="mr-2 h-4 w-4" />
-                        {{ isUploadingDocument ? 'Uploading...' : 'Upload PDF' }}
+                        {{
+                            isUploadingDocument ? 'Uploading...' : 'Upload PDF'
+                        }}
                     </Button>
                 </div>
             </div>

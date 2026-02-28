@@ -134,13 +134,13 @@ class InstitutionReportedIssuesController extends Controller
 
         $body = $issue->body;
         if (! empty($validated['message'])) {
-            $body .= "\n\n--- Institution admin note ---\n" . $validated['message'];
+            $body .= "\n\n--- Institution admin note ---\n".$validated['message'];
         }
 
         $ticket = SupportTicket::create([
             'institution_id' => $institution->id,
             'user_id' => $request->user()->id,
-            'subject' => '[Escalated] ' . $issue->subject,
+            'subject' => '[Escalated] '.$issue->subject,
             'body' => $body,
             'status' => 'open',
         ]);

@@ -50,7 +50,8 @@ const submitForm = () => {
                 <CardHeader>
                     <CardTitle>Submit an issue</CardTitle>
                     <CardDescription
-                        >Describe the issue you are experiencing</CardDescription
+                        >Describe the issue you are
+                        experiencing</CardDescription
                     >
                 </CardHeader>
                 <CardContent>
