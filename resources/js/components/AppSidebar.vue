@@ -24,6 +24,7 @@ import {
     LayoutGrid,
     MessageSquare,
     Plus,
+    Shield,
     Users,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
@@ -100,6 +101,11 @@ const mainNavItems = computed<NavItem[]>(() => {
                 icon: LayoutGrid,
             },
             {
+                title: 'Payment',
+                href: '/institution/payment',
+                icon: CreditCard,
+            },
+            {
                 title: 'Batches',
                 href: '/institution/batches',
                 icon: Layers,
@@ -133,6 +139,11 @@ const mainNavItems = computed<NavItem[]>(() => {
                 title: 'Dashboard',
                 href: '/admin/dashboard',
                 icon: LayoutGrid,
+            },
+            {
+                title: 'TalentTune Admins',
+                href: '/admin/talenttune-admins',
+                icon: Shield,
             },
             {
                 title: 'Institutions',

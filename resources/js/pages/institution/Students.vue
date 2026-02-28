@@ -125,7 +125,7 @@ const formatDate = (iso: string) =>
 
             <!-- Search and Filters -->
             <Card>
-                <CardContent class="pt-6">
+                <CardContent>
                     <div class="grid gap-4 md:grid-cols-3">
                         <div class="relative">
                             <Search

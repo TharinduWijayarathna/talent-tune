@@ -96,7 +96,7 @@ const formatDate = (iso: string) =>
 
             <!-- Search and Filters -->
             <Card>
-                <CardContent class="pt-6">
+                <CardContent>
                     <div class="flex gap-4">
                         <div class="relative flex-1">
                             <Search
