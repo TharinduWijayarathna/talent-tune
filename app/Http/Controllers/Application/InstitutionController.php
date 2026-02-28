@@ -69,6 +69,28 @@ class InstitutionController extends Controller
     }
 
     /**
+     * Show institution detail (admin only).
+     */
+    public function show(Institution $institution)
+    {
+        return Inertia::render('admin/InstitutionDetail', [
+            'institution' => [
+                'id' => $institution->id,
+                'name' => $institution->name,
+                'slug' => $institution->slug,
+                'email' => $institution->email ?? ($institution->settings['email'] ?? null),
+                'contact_person' => $institution->contact_person ?? ($institution->settings['contact_person'] ?? null),
+                'phone' => $institution->phone ?? ($institution->settings['phone'] ?? null),
+                'address' => $institution->address ?? ($institution->settings['address'] ?? null),
+                'is_active' => $institution->is_active,
+                'subscription_status' => $institution->subscription_status,
+                'trial_ends_at' => $institution->trial_ends_at?->toISOString(),
+                'created_at' => $institution->created_at->toISOString(),
+            ],
+        ]);
+    }
+
+    /**
      * Show the form for editing an institution (admin only).
      */
     public function edit(Institution $institution)
@@ -84,8 +106,19 @@ class InstitutionController extends Controller
                 'address' => $institution->address ?? ($institution->settings['address'] ?? null),
                 'is_active' => $institution->is_active,
                 'subscription_status' => $institution->subscription_status,
+                'trial_ends_at' => $institution->trial_ends_at?->toISOString(),
             ],
         ]);
+    }
+
+    /**
+     * End institution trial immediately (admin only).
+     */
+    public function endTrial(Institution $institution)
+    {
+        $this->institutionService->endTrial($institution);
+
+        return back()->with('success', 'Trial ended. Institution must complete payment to continue access.');
     }
 
     /**
@@ -104,7 +137,7 @@ class InstitutionController extends Controller
 
         $this->institutionService->update($institution, $validated);
 
-        return redirect()->route('admin.institutions')->with('success', 'Institution updated successfully.');
+        return redirect()->route('admin.institutions.show', $institution)->with('success', 'Institution updated successfully.');
     }
 
     /**

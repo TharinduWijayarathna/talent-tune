@@ -45,11 +45,12 @@ class InstitutionActivated extends Notification
             ->line('> **Important:** Please change your password after your first login.')
             ->line("Your portal: **{$this->institution->slug}.{$this->baseDomain}**");
 
+        $mail->line('## 14-day free trial')
+            ->line('You have **14 days of free access** to the dashboard and all features. Log in now to get started.');
+
         if ($this->paymentUrl) {
-            $mail->line('## Complete payment to access the workspace')
-                ->line('Before you can use the dashboard and other features, you must complete your monthly subscription payment.')
-                ->action('Complete payment', $this->paymentUrl)
-                ->line('You can also log in first, then complete payment from the subscription page.');
+            $mail->line('## After your trial')
+                ->line('When your trial ends, you will need to complete your monthly subscription payment to continue. You can do this from the subscription page after logging in.');
         }
 
         $mail->action('Log in', $loginUrl)

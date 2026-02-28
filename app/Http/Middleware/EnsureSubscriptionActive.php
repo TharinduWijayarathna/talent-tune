@@ -23,7 +23,7 @@ class EnsureSubscriptionActive
             return $next($request);
         }
         $institution = $user->institution;
-        if (! $institution || $institution->subscription_status === 'active') {
+        if (! $institution || $institution->hasAccess()) {
             return $next($request);
         }
 

@@ -16,9 +16,10 @@ import { ref } from 'vue';
 
 interface Props {
     institution: { id: number; name: string; slug: string };
+    trial_ended?: boolean;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 const submitting = ref(false);
 const page = usePage();
 
@@ -86,12 +87,23 @@ const handleLogout = () => {
                     <h1
                         class="mb-3 text-3xl font-bold tracking-tight sm:text-4xl"
                     >
-                        Complete payment to access your workspace
+                        {{
+                            props.trial_ended
+                                ? 'Your free trial has ended'
+                                : 'Complete payment to access your workspace'
+                        }}
                     </h1>
                     <p class="mb-12 text-lg text-muted-foreground">
-                        <strong>{{ institution.name }}</strong> has been
-                        activated. Complete your subscription payment to unlock
-                        the dashboard and all features.
+                        <template v-if="props.trial_ended">
+                            <strong>{{ institution.name }}</strong>'s free
+                            trial has ended. Subscribe now to continue
+                            accessing the dashboard and all features.
+                        </template>
+                        <template v-else>
+                            <strong>{{ institution.name }}</strong> has been
+                            activated. Complete your subscription payment to
+                            unlock the dashboard and all features.
+                        </template>
                     </p>
                 </div>
 

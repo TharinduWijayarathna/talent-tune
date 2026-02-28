@@ -62,20 +62,25 @@ class InstitutionService
      */
     public function update(Institution $institution, array $data): void
     {
-        $institution->update([
+        $isActive = $data['is_active'] ?? $institution->is_active;
+        $updates = [
             'name' => $data['name'],
             'email' => $data['email'],
             'contact_person' => $data['contact_person'],
             'phone' => $data['phone'] ?? null,
             'address' => $data['address'] ?? null,
-            'is_active' => $data['is_active'] ?? $institution->is_active,
+            'is_active' => $isActive,
             'settings' => array_merge($institution->settings ?? [], [
                 'email' => $data['email'],
                 'contact_person' => $data['contact_person'],
                 'phone' => $data['phone'] ?? null,
                 'address' => $data['address'] ?? null,
             ]),
-        ]);
+        ];
+        if (! $isActive) {
+            $updates['trial_ends_at'] = null;
+        }
+        $institution->update($updates);
     }
 
     public function getListForAdmin(): array
@@ -91,21 +96,39 @@ class InstitutionService
                 'address' => $institution->address ?? ($institution->settings['address'] ?? null),
                 'is_active' => $institution->is_active,
                 'subscription_status' => $institution->subscription_status,
+                'trial_ends_at' => $institution->trial_ends_at?->toISOString(),
                 'created_at' => $institution->created_at->toISOString(),
             ];
         })->all();
     }
+
+    public const TRIAL_DAYS = 14;
 
     public function updateStatus(Institution $institution, bool $isActive, Request $request): void
     {
         $wasInactive = ! $institution->is_active;
         $isActivating = $wasInactive && $isActive;
 
-        $institution->update(['is_active' => $isActive]);
+        $updates = ['is_active' => $isActive];
+        if ($isActivating) {
+            $updates['trial_ends_at'] = now()->addDays(self::TRIAL_DAYS);
+        }
+        if (! $isActive) {
+            $updates['trial_ends_at'] = null;
+        }
+        $institution->update($updates);
 
         if ($isActivating) {
             $this->activateInstitution($institution, $request);
         }
+    }
+
+    /**
+     * End the institution's trial immediately (admin only).
+     */
+    public function endTrial(Institution $institution): void
+    {
+        $institution->update(['trial_ends_at' => now()]);
     }
 
     public function activateInstitution(Institution $institution, Request $request): void
