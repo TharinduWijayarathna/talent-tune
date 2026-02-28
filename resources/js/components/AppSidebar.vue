@@ -142,7 +142,7 @@ const mainNavItems = computed<NavItem[]>(() => {
                 icon: LayoutGrid,
             },
             {
-                title: 'TalentTune Admins',
+                title: 'System Users',
                 href: '/admin/talenttune-admins',
                 icon: Shield,
             },
@@ -152,7 +152,7 @@ const mainNavItems = computed<NavItem[]>(() => {
                 icon: Building2,
             },
             {
-                title: 'User Management',
+                title: 'Institutional Users',
                 href: '/admin/users/students',
                 icon: Users,
                 children: [
