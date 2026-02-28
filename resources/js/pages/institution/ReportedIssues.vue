@@ -84,8 +84,8 @@ const formatDate = (iso: string) =>
             </div>
 
             <Card>
-                <CardContent class="pt-6">
-                    <div class="mb-4 flex flex-wrap gap-4">
+                <CardContent>
+                    <div class="flex flex-wrap items-center gap-4">
                         <select
                             v-model="statusFilter"
                             class="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
