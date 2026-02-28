@@ -146,4 +146,62 @@ class StripeSubscriptionService
 
         return $institution;
     }
+
+    /**
+     * Get subscription details from Stripe and sync institution status.
+     * Returns array with status, current_period_end, cancel_at_period_end, or null if no subscription.
+     */
+    public function getSubscriptionInfo(Institution $institution): ?array
+    {
+        if (! $this->stripe || ! $institution->stripe_subscription_id) {
+            return null;
+        }
+        try {
+            $subscription = $this->stripe->subscriptions->retrieve($institution->stripe_subscription_id);
+        } catch (\Throwable $e) {
+            Log::warning('Stripe retrieve subscription failed', ['institution_id' => $institution->id, 'error' => $e->getMessage()]);
+
+            return null;
+        }
+
+        $status = $subscription->status;
+        if (in_array($status, ['canceled', 'unpaid', 'incomplete_expired'], true)) {
+            $institution->update([
+                'subscription_status' => 'canceled',
+                'stripe_subscription_id' => null,
+            ]);
+
+            return null;
+        }
+
+        $institution->update(['subscription_status' => $status === 'active' ? 'active' : $status]);
+
+        return [
+            'status' => $subscription->status,
+            'current_period_end' => $subscription->current_period_end,
+            'cancel_at_period_end' => (bool) $subscription->cancel_at_period_end,
+        ];
+    }
+
+    /**
+     * Cancel subscription at the end of the current billing period.
+     */
+    public function cancelAtPeriodEnd(Institution $institution): bool
+    {
+        if (! $this->stripe || ! $institution->stripe_subscription_id) {
+            return false;
+        }
+        try {
+            $this->stripe->subscriptions->update($institution->stripe_subscription_id, [
+                'cancel_at_period_end' => true,
+            ]);
+            Log::info('Institution subscription set to cancel at period end', ['institution_id' => $institution->id]);
+
+            return true;
+        } catch (\Throwable $e) {
+            Log::error('Stripe cancel at period end failed', ['institution_id' => $institution->id, 'error' => $e->getMessage()]);
+
+            return false;
+        }
+    }
 }

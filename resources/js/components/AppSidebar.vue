@@ -89,6 +89,11 @@ const mainNavItems = computed<NavItem[]>(() => {
                 icon: LayoutGrid,
             },
             {
+                title: 'Payment',
+                href: '/institution/payment',
+                icon: CreditCard,
+            },
+            {
                 title: 'Batches',
                 href: '/institution/batches',
                 icon: Layers,

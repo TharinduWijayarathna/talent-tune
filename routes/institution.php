@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Application\BatchController;
+use App\Http\Controllers\Application\InstitutionPaymentController;
 use App\Http\Controllers\Application\InstitutionSubscriptionController;
 use App\Http\Controllers\Application\InstitutionUserController;
 use App\Http\Middleware\EnsureInstitutionAccess;
@@ -21,6 +22,9 @@ Route::prefix('institution')->middleware(['auth', 'verified', EnsureInstitutionA
         Route::get('dashboard', function () {
             return Inertia::render('institution/Dashboard');
         })->name('institution.dashboard');
+
+        Route::get('payment', [InstitutionPaymentController::class, 'index'])->name('institution.payment');
+        Route::post('payment/cancel', [InstitutionPaymentController::class, 'cancel'])->name('institution.payment.cancel');
 
         Route::get('batches', [BatchController::class, 'index'])->name('institution.batches');
         Route::post('batches', [BatchController::class, 'store'])->name('institution.batches.store');
