@@ -45,10 +45,8 @@ const formatDate = (iso: string) =>
         >
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-2xl font-bold">TalentTune Admins</h1>
-                    <p class="text-muted-foreground">
-                        Manage TalentTune platform administrators
-                    </p>
+                    <h1 class="text-2xl font-bold">System Users</h1>
+                    <p class="text-muted-foreground">Manage system users</p>
                 </div>
                 <Button as-child>
                     <Link href="/admin/talenttune-admins/add">
@@ -61,11 +59,11 @@ const formatDate = (iso: string) =>
             <Card>
                 <CardHeader>
                     <CardTitle
-                        >Administrators ({{ props.admins.length }})</CardTitle
+                        >System Users ({{ props.admins.length }})</CardTitle
                     >
                     <CardDescription
                         >Users with full access to manage institutions, users,
-                        payments, and support</CardDescription
+                        payments, reports, and support</CardDescription
                     >
                 </CardHeader>
                 <CardContent>

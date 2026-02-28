@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
@@ -8,25 +9,54 @@ import {
 } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/vue3';
-import { FileDown, GraduationCap, Users } from 'lucide-vue-next';
+import { Head } from '@inertiajs/vue3';
+import { FileDown, GraduationCap, Loader2, Users } from 'lucide-vue-next';
+import { ref } from 'vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/institution/dashboard' },
     { title: 'Reports', href: '/institution/reports' },
 ];
+
+const downloading = ref<'students' | 'lecturers' | null>(null);
+const dateStr = new Date().toISOString().slice(0, 10);
+
+async function downloadPdf(
+    url: string,
+    filename: string,
+    key: 'students' | 'lecturers',
+) {
+    downloading.value = key;
+    try {
+        const res = await fetch(url, { credentials: 'same-origin' });
+        if (!res.ok) throw new Error('Download failed');
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(blobUrl);
+    } finally {
+        downloading.value = null;
+    }
+}
 </script>
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Reports" />
-        <div class="space-y-6">
-            <div>
-                <h1 class="text-2xl font-semibold tracking-tight">Reports</h1>
-                <p class="text-muted-foreground">
-                    Download PDF reports for students (by batch) and lecturers
-                    (vivas and submissions).
-                </p>
+        <div
+            class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4"
+        >
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold">Reports</h1>
+                    <p class="text-muted-foreground">
+                        Download PDF reports for students (by batch) and
+                        lecturers (vivas and submissions).
+                    </p>
+                </div>
             </div>
 
             <div class="grid gap-4 md:grid-cols-2">
@@ -42,15 +72,24 @@ const breadcrumbs: BreadcrumbItem[] = [
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <Link
-                            :href="'/institution/reports/students-pdf'"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                        <Button
+                            :disabled="!!downloading"
+                            class="inline-flex items-center gap-2"
+                            @click="
+                                downloadPdf(
+                                    '/institution/reports/students-pdf',
+                                    `students-report-${dateStr}.pdf`,
+                                    'students',
+                                )
+                            "
                         >
-                            <FileDown class="h-4 w-4" />
+                            <Loader2
+                                v-if="downloading === 'students'"
+                                class="h-4 w-4 animate-spin"
+                            />
+                            <FileDown v-else class="h-4 w-4" />
                             Download PDF
-                        </Link>
+                        </Button>
                     </CardContent>
                 </Card>
 
@@ -66,15 +105,24 @@ const breadcrumbs: BreadcrumbItem[] = [
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <Link
-                            :href="'/institution/reports/lecturers-pdf'"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                        <Button
+                            :disabled="!!downloading"
+                            class="inline-flex items-center gap-2"
+                            @click="
+                                downloadPdf(
+                                    '/institution/reports/lecturers-pdf',
+                                    `lecturers-report-${dateStr}.pdf`,
+                                    'lecturers',
+                                )
+                            "
                         >
-                            <FileDown class="h-4 w-4" />
+                            <Loader2
+                                v-if="downloading === 'lecturers'"
+                                class="h-4 w-4 animate-spin"
+                            />
+                            <FileDown v-else class="h-4 w-4" />
                             Download PDF
-                        </Link>
+                        </Button>
                     </CardContent>
                 </Card>
             </div>
