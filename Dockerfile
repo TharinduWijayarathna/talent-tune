@@ -53,6 +53,13 @@ RUN rm -rf /app/node_modules /app/tests /app/.phpunit.result.cache \
     /app/storage/framework/views/* /app/storage/logs/* \
     /app/bootstrap/cache/* 2>/dev/null; true
 
+# Ensure storage structure exists and is writable by www-data (PHP-FPM)
+RUN mkdir -p /app/storage/logs /app/storage/framework/cache/data \
+    /app/storage/framework/sessions /app/storage/framework/views \
+    /app/storage/app/public /app/bootstrap/cache \
+    && chown -R www-data:www-data /app/storage /app/bootstrap/cache \
+    && chmod -R 775 /app/storage /app/bootstrap/cache
+
 COPY docker/assets/start.sh /assets/start.sh
 COPY docker/assets/start-nginx.sh /assets/start-nginx.sh
 COPY docker/assets/nginx.template.conf /assets/nginx.template.conf
