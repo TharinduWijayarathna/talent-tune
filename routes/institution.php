@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Controllers\Application\BatchController;
-use App\Http\Controllers\Application\InstitutionPaymentController;
 use App\Http\Controllers\Application\InstitutionDashboardController;
+use App\Http\Controllers\Application\InstitutionPaymentController;
 use App\Http\Controllers\Application\InstitutionReportedIssuesController;
 use App\Http\Controllers\Application\InstitutionSubscriptionController;
 use App\Http\Controllers\Application\InstitutionSupportController;
