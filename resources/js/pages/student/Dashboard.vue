@@ -10,23 +10,44 @@ import {
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
-import { BookOpen, Calendar, GraduationCap } from 'lucide-vue-next';
+import {
+    BookOpen,
+    Calendar,
+    GraduationCap,
+    PieChart,
+    TrendingUp,
+} from 'lucide-vue-next';
 import { computed } from 'vue';
+import VueApexCharts from 'vue3-apexcharts';
 
-const props = defineProps<{
-    stats?: {
-        upcomingVivas: number;
-        completedVivas: number;
-        totalSessions: number;
-    };
-    upcomingVivas?: Array<{
-        id: number;
-        title: string;
-        date: string;
-        time: string;
-        lecturer: string;
-    }>;
-}>();
+interface StudentCharts {
+    sessionsBreakdown: { labels: string[]; series: number[] };
+    completionsOverTime: { labels: string[]; series: number[][] };
+}
+
+const props = withDefaults(
+    defineProps<{
+        stats?: {
+            upcomingVivas: number;
+            completedVivas: number;
+            totalSessions: number;
+        };
+        upcomingVivas?: Array<{
+            id: number;
+            title: string;
+            date: string;
+            time: string;
+            lecturer: string;
+        }>;
+        charts?: StudentCharts;
+    }>(),
+    {
+        charts: () => ({
+            sessionsBreakdown: { labels: [], series: [] },
+            completionsOverTime: { labels: [], series: [[]] },
+        }),
+    },
+);
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -45,6 +66,40 @@ const stats = computed(
 );
 
 const upcomingVivas = computed(() => props.upcomingVivas ?? []);
+
+const chartTheme = {
+    colors: ['#10b981', '#0ea5e9'],
+    fontFamily: 'inherit',
+};
+
+const sessionsBreakdownOptions = computed(() => ({
+    chart: { type: 'donut' },
+    labels: props.charts.sessionsBreakdown.labels,
+    colors: ['#10b981', '#0ea5e9'],
+    legend: { position: 'bottom' },
+    theme: chartTheme,
+}));
+
+const sessionsBreakdownSeries = computed(
+    () => props.charts.sessionsBreakdown.series,
+);
+
+const completionsOverTimeOptions = computed(() => ({
+    chart: { type: 'area', zoom: { enabled: false }, toolbar: { show: false } },
+    dataLabels: { enabled: false },
+    stroke: { curve: 'smooth', width: 2 },
+    fill: { type: 'gradient', gradient: { opacityFrom: 0.4, opacityTo: 0.1 } },
+    xaxis: { categories: props.charts.completionsOverTime.labels },
+    colors: ['#10b981'],
+    theme: chartTheme,
+}));
+
+const completionsOverTimeSeries = computed(() => [
+    {
+        name: 'Vivas completed',
+        data: props.charts.completionsOverTime.series[0] ?? [],
+    },
+]);
 </script>
 
 <template>
@@ -117,6 +172,48 @@ const upcomingVivas = computed(() => props.upcomingVivas ?? []);
                             {{ stats.totalSessions }}
                         </div>
                         <p class="text-xs text-muted-foreground">All time</p>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <!-- Charts -->
+            <div class="grid gap-6 md:grid-cols-2">
+                <Card>
+                    <CardHeader>
+                        <CardTitle class="flex items-center gap-2">
+                            <PieChart class="h-5 w-5" />
+                            My sessions at a glance
+                        </CardTitle>
+                        <CardDescription
+                            >Completed vs upcoming vivas</CardDescription
+                        >
+                    </CardHeader>
+                    <CardContent>
+                        <VueApexCharts
+                            type="donut"
+                            height="280"
+                            :options="sessionsBreakdownOptions"
+                            :series="sessionsBreakdownSeries"
+                        />
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle class="flex items-center gap-2">
+                            <TrendingUp class="h-5 w-5" />
+                            Vivas completed (last 30 days)
+                        </CardTitle>
+                        <CardDescription
+                            >Your completion activity</CardDescription
+                        >
+                    </CardHeader>
+                    <CardContent>
+                        <VueApexCharts
+                            type="area"
+                            height="280"
+                            :options="completionsOverTimeOptions"
+                            :series="completionsOverTimeSeries"
+                        />
                     </CardContent>
                 </Card>
             </div>

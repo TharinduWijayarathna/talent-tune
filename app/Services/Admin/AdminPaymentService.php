@@ -61,4 +61,38 @@ class AdminPaymentService
             'filters' => $request->only(['search', 'status']),
         ];
     }
+
+    /**
+     * Get a single payment by ID with full details (for admin detail view).
+     */
+    public function getPaymentById(int $id): ?array
+    {
+        $payment = Payment::with('institution:id,name,slug,email')
+            ->find($id);
+
+        if (! $payment) {
+            return null;
+        }
+
+        return [
+            'id' => $payment->id,
+            'amount' => $payment->amount,
+            'currency' => $payment->currency,
+            'status' => $payment->status,
+            'gateway' => $payment->gateway,
+            'external_id' => $payment->external_id,
+            'paid_at' => $payment->paid_at?->toISOString(),
+            'created_at' => $payment->created_at->toISOString(),
+            'updated_at' => $payment->updated_at->toISOString(),
+            'metadata' => $payment->metadata,
+            'institution' => $payment->institution
+                ? [
+                    'id' => $payment->institution->id,
+                    'name' => $payment->institution->name,
+                    'slug' => $payment->institution->slug,
+                    'email' => $payment->institution->email ?? null,
+                ]
+                : null,
+        ];
+    }
 }

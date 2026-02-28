@@ -48,7 +48,10 @@ const form = useForm({
 const availableBatches = computed(() => props.batches || []);
 
 const submitForm = () => {
-    form.post('/lecturer/vivas', {
+    form.transform((data) => ({
+        ...data,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    })).post('/lecturer/vivas', {
         preserveScroll: true,
     });
 };

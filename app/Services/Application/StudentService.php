@@ -9,6 +9,7 @@ use App\Models\VivaStudentSubmission;
 use App\Services\Ai\RubricService;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class StudentService
@@ -64,9 +65,59 @@ class StudentService
             'totalSessions' => $totalSessions,
         ];
 
+        $charts = $this->getStudentChartData($user);
+
         return [
             'stats' => $stats,
             'upcomingVivas' => $upcomingVivas,
+            'charts' => $charts,
+        ];
+    }
+
+    /**
+     * Chart data for student dashboard: completed vs upcoming, completions over time.
+     */
+    private function getStudentChartData(User $user): array
+    {
+        $completedCount = VivaStudentSubmission::where('student_id', $user->id)
+            ->where('status', 'completed')
+            ->count();
+
+        $upcomingCount = 0;
+        if ($user->batch) {
+            $upcomingCount = Viva::where('institution_id', $user->institution_id)
+                ->where('batch', $user->batch)
+                ->where('status', 'upcoming')
+                ->count();
+        }
+
+        $sessionsBreakdown = [
+            'labels' => ['Completed', 'Upcoming'],
+            'series' => [$completedCount, $upcomingCount],
+        ];
+
+        $days = 30;
+        $start = now()->subDays($days)->startOfDay();
+        $rows = VivaStudentSubmission::where('student_id', $user->id)
+            ->where('status', 'completed')
+            ->where('created_at', '>=', $start)
+            ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+        $byDate = $rows->pluck('count', 'date');
+        $labels = [];
+        $data = [];
+        for ($i = $days - 1; $i >= 0; $i--) {
+            $d = now()->subDays($i)->format('Y-m-d');
+            $labels[] = now()->subDays($i)->format('M j');
+            $data[] = (int) ($byDate->get($d, 0));
+        }
+        $completionsOverTime = ['labels' => $labels, 'series' => [$data]];
+
+        return [
+            'sessionsBreakdown' => $sessionsBreakdown,
+            'completionsOverTime' => $completionsOverTime,
         ];
     }
 
@@ -85,24 +136,27 @@ class StudentService
             ->orderBy('scheduled_at', 'desc')
             ->get();
 
-        $submissionScores = VivaStudentSubmission::where('student_id', $user->id)
+        $allSubmissions = VivaStudentSubmission::where('student_id', $user->id)
             ->whereIn('viva_id', $vivas->pluck('id'))
-            ->get()
-            ->keyBy('viva_id');
+            ->get();
+        $submissionsByViva = $allSubmissions->groupBy('viva_id');
 
         // Compare in UTC: stored scheduled_at is in UTC
         $nowUtc = now()->utc();
 
-        return $vivas->map(function (Viva $viva) use ($submissionScores, $nowUtc) {
-            $submission = $submissionScores->get($viva->id);
-            $marks = $submission && $submission->status === 'completed' ? $submission->total_score : null;
-            $grade = $submission && $submission->status === 'completed' ? $submission->grade : null;
+        return $vivas->map(function (Viva $viva) use ($submissionsByViva, $nowUtc) {
+            $subs = $submissionsByViva->get($viva->id, collect());
+            $completedSub = $subs->where('status', 'completed')->sortByDesc('id')->first();
+            $marks = $completedSub ? $completedSub->total_score : null;
+            $grade = $completedSub ? $completedSub->grade : null;
+            $hasCompleted = $subs->contains('status', 'completed');
+            $hasPendingLate = $viva->status === 'completed' && $subs->contains(fn ($s) => $s->allowed_after_close && in_array($s->status, ['pending', 'in_progress'], true));
 
             $rawScheduled = $viva->getRawOriginal('scheduled_at');
             $scheduledAtUtc = $rawScheduled ? Carbon::parse($rawScheduled, 'UTC') : $viva->scheduled_at->copy()->utc();
             $scheduledReached = $scheduledAtUtc->lte($nowUtc);
             $notClosed = $viva->status !== 'completed';
-            $can_attend = $scheduledReached && $notClosed;
+            $can_attend = (($scheduledReached && $notClosed) && ! $hasCompleted) || $hasPendingLate;
 
             return [
                 'id' => $viva->id,
@@ -124,6 +178,7 @@ class StudentService
 
     /**
      * Get viva for attend. Student may attend only on/after scheduled date and until lecturer closes the viva.
+     * When viva is closed, a student can attend only if the lecturer added them for one-time (late) participation (allowed_after_close).
      */
     public function getVivaForAttend(Institution $institution, User $user, int $id): array
     {
@@ -134,7 +189,38 @@ class StudentService
             ->firstOrFail();
 
         if ($viva->status === 'completed') {
-            abort(403, 'This viva has been closed by the lecturer. You can no longer attend.');
+            $submission = VivaStudentSubmission::where('viva_id', $viva->id)
+                ->where('student_id', $user->id)
+                ->where('allowed_after_close', true)
+                ->whereIn('status', ['pending', 'in_progress'])
+                ->orderByDesc('id')
+                ->first();
+
+            if (! $submission) {
+                $anySubmission = VivaStudentSubmission::where('viva_id', $viva->id)
+                    ->where('student_id', $user->id)
+                    ->first();
+                if ($anySubmission && $anySubmission->allowed_after_close && $anySubmission->status === 'completed') {
+                    abort(403, 'You have already completed your one-time participation for this viva. Only the lecturer can add you again for another attempt.');
+                }
+                abort(403, 'This viva has been closed by the lecturer. You can no longer attend unless the lecturer adds you for one-time participation.');
+            }
+
+            return [
+                'viva' => [
+                    'id' => $viva->id,
+                    'title' => $viva->title,
+                    'description' => $viva->description,
+                    'instructions' => $viva->instructions,
+                    'scheduled_at' => $viva->scheduled_at->format('Y-m-d H:i'),
+                    'lecturer' => $viva->lecturer->name,
+                ],
+                'submission' => [
+                    'id' => $submission->id,
+                    'document_path' => $submission->document_path,
+                    'status' => $submission->status,
+                ],
+            ];
         }
 
         $rawScheduled = $viva->getRawOriginal('scheduled_at');
@@ -143,15 +229,26 @@ class StudentService
             abort(403, 'This viva opens on '.$scheduledAtUtc->format('M j, Y \a\t g:i A').' UTC. You cannot attend before the scheduled date and time.');
         }
 
-        $submission = VivaStudentSubmission::firstOrCreate(
-            [
+        // Use the regular (non-late) submission for the open window; only one per student per viva from this window
+        $submission = VivaStudentSubmission::where('viva_id', $viva->id)
+            ->where('student_id', $user->id)
+            ->where(function ($q) {
+                $q->whereNull('allowed_after_close')->orWhere('allowed_after_close', false);
+            })
+            ->first();
+
+        if ($submission && $submission->status === 'completed') {
+            abort(403, 'You have already completed this viva. You can only attend once.');
+        }
+
+        if (! $submission) {
+            $submission = VivaStudentSubmission::create([
                 'viva_id' => $viva->id,
                 'student_id' => $user->id,
-            ],
-            [
                 'status' => 'pending',
-            ]
-        );
+                'allowed_after_close' => false,
+            ]);
+        }
 
         return [
             'viva' => [
@@ -200,6 +297,89 @@ class StudentService
             'success' => true,
             'message' => 'Document uploaded successfully',
             'document_path' => $path,
+        ];
+    }
+
+    /**
+     * Upload a voice recording for one answer. Stored under vivas/voice-recordings/{submission_id}/{index}.{ext}.
+     */
+    public function uploadVivaVoiceRecording(Institution $institution, User $user, int $vivaId, int $submissionId, int $questionIndex, UploadedFile $audio): array
+    {
+        $viva = Viva::where('institution_id', $institution->id)
+            ->where('id', $vivaId)
+            ->where('batch', $user->batch)
+            ->firstOrFail();
+
+        $submission = VivaStudentSubmission::where('viva_id', $viva->id)
+            ->where('student_id', $user->id)
+            ->where('id', $submissionId)
+            ->firstOrFail();
+
+        if ($questionIndex < 0 || $questionIndex > 9) {
+            abort(422, 'Invalid question index.');
+        }
+
+        $ext = $audio->getClientOriginalExtension() ?: 'webm';
+        $path = $audio->storeAs(
+            'vivas/voice-recordings/'.$submission->id,
+            $questionIndex.'.'.$ext,
+            'private'
+        );
+
+        return [
+            'success' => true,
+            'voice_path' => $path,
+        ];
+    }
+
+    /**
+     * Get the student's own submission for a viva for the "View my answers" page.
+     * Returns the latest completed submission (or latest submission with answers).
+     * Only vivas in the student's batch; answers include question, answer, voice_path, and feedback (no score_1_10/correctPoints/improvements).
+     */
+    public function getMySubmissionForViva(Institution $institution, User $user, int $vivaId): ?array
+    {
+        $viva = Viva::where('institution_id', $institution->id)
+            ->where('id', $vivaId)
+            ->where('batch', $user->batch)
+            ->with('lecturer')
+            ->firstOrFail();
+
+        $submission = VivaStudentSubmission::where('viva_id', $viva->id)
+            ->where('student_id', $user->id)
+            ->where('status', 'completed')
+            ->orderByDesc('id')
+            ->first();
+
+        if (! $submission) {
+            return null;
+        }
+
+        $answers = $submission->answers ?? [];
+        $answersForStudent = array_map(function ($item) {
+            return [
+                'question' => $item['question'] ?? '',
+                'answer' => $item['answer'] ?? '',
+                'voice_path' => $item['voice_path'] ?? null,
+                'feedback' => $item['feedback'] ?? null,
+            ];
+        }, $answers);
+
+        return [
+            'viva' => [
+                'id' => $viva->id,
+                'title' => $viva->title,
+                'lecturer' => $viva->lecturer->name,
+            ],
+            'submission' => [
+                'id' => $submission->id,
+                'status' => $submission->status,
+                'total_score' => $submission->total_score,
+                'grade' => $submission->grade,
+                'feedback' => $submission->feedback,
+                'answers' => $answersForStudent,
+                'document_path' => $submission->document_path ? true : false,
+            ],
         ];
     }
 

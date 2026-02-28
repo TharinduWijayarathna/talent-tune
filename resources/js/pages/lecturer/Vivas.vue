@@ -14,6 +14,21 @@ import { Head, Link } from '@inertiajs/vue3';
 import { ArrowRight, FileText, Plus } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+// Format ISO scheduled_at (UTC) in user's local time for display
+const formatScheduledLocal = (isoString: string) => {
+    if (!isoString) return '';
+    const d = new Date(isoString);
+    if (Number.isNaN(d.getTime())) return isoString;
+    return d.toLocaleString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+    });
+};
+
 const props = defineProps<{
     vivas: Array<{
         id: number;
@@ -115,8 +130,10 @@ const statusVariant = (status: string) => {
                                 </div>
                                 <p class="text-sm text-muted-foreground">
                                     Batch: {{ viva.batch }} •
-                                    {{ viva.scheduled_at }} •
-                                    {{ viva.students }} student(s)
+                                    {{
+                                        formatScheduledLocal(viva.scheduled_at)
+                                    }}
+                                    • {{ viva.students }} student(s)
                                 </p>
                                 <p
                                     v-if="viva.description"
