@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Institution;
 use App\Models\ReportedIssue;
-use App\Models\SupportTicket;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
