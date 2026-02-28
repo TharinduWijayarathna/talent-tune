@@ -11,33 +11,31 @@ import {
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
-import { MessageSquarePlus, Plus, Ticket } from 'lucide-vue-next';
+import { AlertTriangle, Plus } from 'lucide-vue-next';
 
-interface TicketItem {
+interface IssueItem {
     id: number;
     subject: string;
     status: string;
-    replies_count: number;
     created_at: string;
-    updated_at: string;
 }
 
 const props = defineProps<{
-    tickets: TicketItem[];
+    issues: IssueItem[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: '/institution/dashboard' },
-    { title: 'Support', href: '/institution/support' },
+    { title: 'Dashboard', href: '/student/dashboard' },
+    { title: 'Report Issue', href: '/student/issues' },
 ];
 
 const statusVariant = (status: string) => {
     switch (status) {
-        case 'open':
+        case 'pending':
             return 'default';
-        case 'answered':
+        case 'reviewed':
             return 'secondary';
-        case 'closed':
+        case 'escalated':
             return 'outline';
         default:
             return 'outline';
@@ -51,7 +49,7 @@ const formatDate = (iso: string) =>
 </script>
 
 <template>
-    <Head title="Support" />
+    <Head title="Report Issue" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div
@@ -59,103 +57,81 @@ const formatDate = (iso: string) =>
         >
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-2xl font-bold">Support</h1>
+                    <h1 class="text-2xl font-bold">Report Issue</h1>
                     <p class="text-muted-foreground">
-                        Submit and track support tickets
+                        Report issues to your institution admin
                     </p>
                 </div>
                 <Button as-child>
-                    <Link href="/institution/support/create">
+                    <Link href="/student/issues/create">
                         <Plus class="mr-2 h-4 w-4" />
-                        New Ticket
+                        Report Issue
                     </Link>
                 </Button>
             </div>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Your support tickets</CardTitle>
+                    <CardTitle>Your reported issues</CardTitle>
                     <CardDescription
-                        >View and manage your submitted tickets</CardDescription
+                        >Issues you have submitted for review</CardDescription
                     >
                 </CardHeader>
                 <CardContent>
                     <div class="space-y-4">
                         <div
-                            v-for="ticket in props.tickets"
-                            :key="ticket.id"
+                            v-for="issue in props.issues"
+                            :key="issue.id"
                             class="flex items-center justify-between rounded-lg border p-4 transition-all hover:bg-muted/50"
                         >
                             <div class="flex flex-1 items-center gap-4">
                                 <div
                                     class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10"
                                 >
-                                    <Ticket class="h-6 w-6 text-primary" />
+                                    <AlertTriangle
+                                        class="h-6 w-6 text-primary"
+                                    />
                                 </div>
                                 <div class="flex-1 space-y-1">
                                     <div class="flex items-center gap-2">
-                                        <Link
-                                            :href="`/institution/support/${ticket.id}`"
-                                            class="font-semibold hover:underline"
-                                        >
-                                            {{ ticket.subject }}
-                                        </Link>
+                                        <span class="font-semibold">{{
+                                            issue.subject
+                                        }}</span>
                                         <Badge
                                             :variant="
-                                                statusVariant(ticket.status)
+                                                statusVariant(issue.status)
                                             "
                                             class="capitalize"
                                         >
-                                            {{ ticket.status }}
+                                            {{ issue.status }}
                                         </Badge>
                                     </div>
-                                    <div
-                                        class="flex items-center gap-4 text-sm text-muted-foreground"
-                                    >
-                                        <span
-                                            >{{ ticket.replies_count }}
-                                            {{
-                                                ticket.replies_count === 1
-                                                    ? 'reply'
-                                                    : 'replies'
-                                            }}</span
-                                        >
-                                        <span>•</span>
-                                        <span
-                                            >Updated
-                                            {{
-                                                formatDate(ticket.updated_at)
-                                            }}</span
-                                        >
+                                    <div class="text-sm text-muted-foreground">
+                                        Reported
+                                        {{ formatDate(issue.created_at) }}
                                     </div>
                                 </div>
                             </div>
-                            <Button variant="outline" size="sm" as-child>
-                                <Link
-                                    :href="`/institution/support/${ticket.id}`"
-                                >
-                                    View
-                                </Link>
-                            </Button>
                         </div>
 
                         <div
-                            v-if="props.tickets.length === 0"
+                            v-if="props.issues.length === 0"
                             class="py-12 text-center"
                         >
-                            <MessageSquarePlus
+                            <AlertTriangle
                                 class="mx-auto mb-4 h-12 w-12 text-muted-foreground"
                             />
                             <p class="text-muted-foreground">
-                                No support tickets yet
+                                No issues reported yet
                             </p>
                             <p class="mt-2 text-sm text-muted-foreground">
-                                Submit a ticket if you need help from our team
+                                Report an issue if you need help from your
+                                institution
                             </p>
                             <Button as-child class="mt-4">
-                                <Link href="/institution/support/create">
+                                <Link href="/student/issues/create">
                                     <Plus class="mr-2 h-4 w-4" />
-                                    New Ticket
+                                    Report Issue
                                 </Link>
                             </Button>
                         </div>

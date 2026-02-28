@@ -48,7 +48,7 @@ function closeMobileMenu() {
             <div class="relative flex h-16 items-center justify-between">
                 <Link
                     href="/"
-                    class="flex shrink-0 items-center gap-2 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                    class="flex shrink-0 items-center gap-2 rounded-md focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:outline-none"
                     aria-label="TalentTune home"
                 >
                     <img
@@ -87,7 +87,7 @@ function closeMobileMenu() {
                 <!-- Mobile: hamburger menu -->
                 <Sheet v-model:open="mobileMenuOpen">
                     <SheetTrigger
-                        class="inline-flex h-10 w-10 items-center justify-center rounded-md md:hidden hover:bg-muted"
+                        class="inline-flex h-10 w-10 items-center justify-center rounded-md hover:bg-muted md:hidden"
                         aria-label="Open menu"
                     >
                         <Menu class="h-5 w-5" />
@@ -97,7 +97,7 @@ function closeMobileMenu() {
                         class="flex w-[300px] flex-col border-l border-border/50 bg-background/98 px-0 sm:w-[340px]"
                     >
                         <SheetHeader
-                            class="border-b border-border/40 px-6 pb-4 pt-6 pr-14"
+                            class="border-b border-border/40 px-6 pt-6 pr-14 pb-4"
                         >
                             <div class="flex items-center gap-2">
                                 <img

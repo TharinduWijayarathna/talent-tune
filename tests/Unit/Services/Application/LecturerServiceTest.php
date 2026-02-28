@@ -16,8 +16,7 @@ beforeEach(function () {
     ]);
 });
 
-afterEach(function () {
-});
+afterEach(function () {});
 
 test('getDashboardData returns stats and recent sessions for lecturer', function () {
     $lecturer = User::create([

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import VueApexCharts from 'vue3-apexcharts';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -19,6 +18,7 @@ import {
     TrendingUp,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
+import VueApexCharts from 'vue3-apexcharts';
 
 interface StudentCharts {
     sessionsBreakdown: { labels: string[]; series: number[] };
@@ -184,7 +184,9 @@ const completionsOverTimeSeries = computed(() => [
                             <PieChart class="h-5 w-5" />
                             My sessions at a glance
                         </CardTitle>
-                        <CardDescription>Completed vs upcoming vivas</CardDescription>
+                        <CardDescription
+                            >Completed vs upcoming vivas</CardDescription
+                        >
                     </CardHeader>
                     <CardContent>
                         <VueApexCharts
@@ -201,7 +203,9 @@ const completionsOverTimeSeries = computed(() => [
                             <TrendingUp class="h-5 w-5" />
                             Vivas completed (last 30 days)
                         </CardTitle>
-                        <CardDescription>Your completion activity</CardDescription>
+                        <CardDescription
+                            >Your completion activity</CardDescription
+                        >
                     </CardHeader>
                     <CardContent>
                         <VueApexCharts

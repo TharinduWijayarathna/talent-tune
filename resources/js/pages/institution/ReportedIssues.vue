@@ -8,62 +8,57 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Building2, Eye, Mail, Search, Ticket, User } from 'lucide-vue-next';
+import { AlertTriangle, Eye, GraduationCap, User } from 'lucide-vue-next';
 import { ref } from 'vue';
 
-interface InstitutionRef {
-    id: number;
-    name: string;
-    slug: string;
-}
-
-interface TicketItem {
+interface IssueItem {
     id: number;
     subject: string;
     status: string;
-    institution: InstitutionRef | null;
-    user_name: string | null;
-    user_email: string | null;
-    replies_count: number;
+    reporter_name: string | null;
+    reporter_role: string | null;
     created_at: string;
-    updated_at: string;
+    support_ticket_id: number | null;
 }
 
 const props = defineProps<{
-    tickets: TicketItem[];
-    filters: { search?: string; status?: string };
+    issues: IssueItem[];
+    filters: { status?: string };
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: '/admin/dashboard' },
-    { title: 'Support Tickets', href: '/admin/support' },
+    { title: 'Dashboard', href: '/institution/dashboard' },
+    { title: 'Reported Issues', href: '/institution/reported-issues' },
 ];
 
-const searchQuery = ref(props.filters.search ?? '');
 const statusFilter = ref(props.filters.status ?? '');
 
 const applyFilters = () => {
-    router.get('/admin/support', {
-        search: searchQuery.value || undefined,
+    router.get('/institution/reported-issues', {
         status: statusFilter.value || undefined,
     });
 };
 
 const statusVariant = (status: string) => {
     switch (status) {
-        case 'open':
+        case 'pending':
             return 'default';
-        case 'answered':
+        case 'reviewed':
             return 'secondary';
-        case 'closed':
+        case 'escalated':
             return 'outline';
         default:
             return 'outline';
     }
+};
+
+const reporterRoleLabel = (role: string | null) => {
+    if (role === 'student') return 'Student';
+    if (role === 'lecturer') return 'Lecturer';
+    return role ?? '';
 };
 
 const formatDate = (iso: string) =>
@@ -73,7 +68,7 @@ const formatDate = (iso: string) =>
 </script>
 
 <template>
-    <Head title="Support Tickets - Admin" />
+    <Head title="Reported Issues" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div
@@ -81,9 +76,9 @@ const formatDate = (iso: string) =>
         >
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-2xl font-bold">Support tickets</h1>
+                    <h1 class="text-2xl font-bold">Reported Issues</h1>
                     <p class="text-muted-foreground">
-                        View and respond to institution support requests
+                        Issues reported by students and lecturers
                     </p>
                 </div>
             </div>
@@ -91,25 +86,14 @@ const formatDate = (iso: string) =>
             <Card>
                 <CardContent class="pt-6">
                     <div class="mb-4 flex flex-wrap gap-4">
-                        <div class="relative min-w-[200px] flex-1">
-                            <Search
-                                class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-                            />
-                            <Input
-                                v-model="searchQuery"
-                                placeholder="Search subject or message..."
-                                class="pl-10"
-                                @keydown.enter="applyFilters"
-                            />
-                        </div>
                         <select
                             v-model="statusFilter"
                             class="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                         >
                             <option value="">All statuses</option>
-                            <option value="open">Open</option>
-                            <option value="answered">Answered</option>
-                            <option value="closed">Closed</option>
+                            <option value="pending">Pending</option>
+                            <option value="reviewed">Reviewed</option>
+                            <option value="escalated">Escalated</option>
                         </select>
                         <Button @click="applyFilters">Apply</Button>
                     </div>
@@ -118,85 +102,85 @@ const formatDate = (iso: string) =>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Tickets ({{ props.tickets.length }})</CardTitle>
+                    <CardTitle>Issues ({{ props.issues.length }})</CardTitle>
                     <CardDescription
-                        >Submitted by institution admins</CardDescription
+                        >Review and escalate to TalentTune support when
+                        needed</CardDescription
                     >
                 </CardHeader>
                 <CardContent>
                     <div class="space-y-4">
                         <div
-                            v-for="ticket in props.tickets"
-                            :key="ticket.id"
+                            v-for="issue in props.issues"
+                            :key="issue.id"
                             class="flex items-center justify-between rounded-lg border p-4 transition-all hover:bg-muted/50"
                         >
                             <div class="flex flex-1 items-center gap-4">
                                 <div
                                     class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10"
                                 >
-                                    <Ticket class="h-6 w-6 text-primary" />
+                                    <AlertTriangle
+                                        class="h-6 w-6 text-primary"
+                                    />
                                 </div>
                                 <div class="flex-1 space-y-1">
                                     <div class="flex items-center gap-2">
                                         <Link
-                                            :href="`/admin/support/${ticket.id}`"
+                                            :href="`/institution/reported-issues/${issue.id}`"
                                             class="font-semibold hover:underline"
                                         >
-                                            {{ ticket.subject }}
+                                            {{ issue.subject }}
                                         </Link>
                                         <Badge
                                             :variant="
-                                                statusVariant(ticket.status)
+                                                statusVariant(issue.status)
                                             "
                                             class="capitalize"
                                         >
-                                            {{ ticket.status }}
+                                            {{ issue.status }}
+                                        </Badge>
+                                        <Badge
+                                            v-if="issue.support_ticket_id"
+                                            variant="outline"
+                                            class="text-xs"
+                                        >
+                                            Escalated
                                         </Badge>
                                     </div>
                                     <div
                                         class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground"
                                     >
                                         <span
-                                            v-if="ticket.institution"
-                                            class="flex items-center gap-1"
-                                        >
-                                            <Building2 class="h-4 w-4" />
-                                            {{ ticket.institution.name }}
-                                        </span>
-                                        <span
-                                            v-if="ticket.user_name"
+                                            v-if="issue.reporter_name"
                                             class="flex items-center gap-1"
                                         >
                                             <User class="h-4 w-4" />
-                                            {{ ticket.user_name }}
+                                            {{ issue.reporter_name }}
                                         </span>
                                         <span
-                                            v-if="ticket.user_email"
+                                            v-if="issue.reporter_role"
                                             class="flex items-center gap-1"
                                         >
-                                            <Mail class="h-4 w-4" />
-                                            {{ ticket.user_email }}
+                                            <GraduationCap class="h-4 w-4" />
+                                            {{
+                                                reporterRoleLabel(
+                                                    issue.reporter_role,
+                                                )
+                                            }}
                                         </span>
                                         <span
-                                            >{{ ticket.replies_count }}
+                                            >Reported
                                             {{
-                                                ticket.replies_count === 1
-                                                    ? 'reply'
-                                                    : 'replies'
-                                            }}</span
-                                        >
-                                        <span>•</span>
-                                        <span
-                                            >Updated
-                                            {{
-                                                formatDate(ticket.updated_at)
+                                                formatDate(issue.created_at)
                                             }}</span
                                         >
                                     </div>
                                 </div>
                             </div>
                             <Button variant="outline" size="sm" as-child>
-                                <Link :href="`/admin/support/${ticket.id}`">
+                                <Link
+                                    :href="`/institution/reported-issues/${issue.id}`"
+                                >
                                     <Eye class="mr-2 h-4 w-4" />
                                     View
                                 </Link>
@@ -204,11 +188,13 @@ const formatDate = (iso: string) =>
                         </div>
 
                         <div
-                            v-if="props.tickets.length === 0"
+                            v-if="props.issues.length === 0"
                             class="py-12 text-center text-muted-foreground"
                         >
-                            <Ticket class="mx-auto mb-4 h-12 w-12 opacity-50" />
-                            <p>No support tickets match your filters.</p>
+                            <AlertTriangle
+                                class="mx-auto mb-4 h-12 w-12 opacity-50"
+                            />
+                            <p>No reported issues match your filters.</p>
                         </div>
                     </div>
                 </CardContent>

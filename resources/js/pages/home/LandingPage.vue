@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SiteHeader from '@/components/SiteHeader.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -8,7 +9,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import SiteHeader from '@/components/SiteHeader.vue';
 import { useDomain } from '@/composables/useDomain';
 import { login } from '@/routes';
 import { Head, Link, usePage } from '@inertiajs/vue3';

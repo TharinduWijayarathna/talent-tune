@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Application\ReportedIssueController;
 use App\Http\Controllers\Application\StudentController;
 use App\Http\Middleware\EnsureInstitutionAccess;
 use Illuminate\Support\Facades\Route;
@@ -19,4 +20,8 @@ Route::prefix('student')->middleware(['auth', 'verified', EnsureInstitutionAcces
     Route::post('vivas/{id}/upload-document', [StudentController::class, 'uploadVivaDocument'])->name('student.vivas.upload-document');
     Route::post('vivas/{id}/upload-voice', [StudentController::class, 'uploadVivaVoice'])->name('student.vivas.upload-voice');
     Route::post('vivas/complete-submission', [StudentController::class, 'completeVivaSubmission'])->name('student.vivas.complete-submission');
+
+    Route::get('issues', [ReportedIssueController::class, 'index'])->name('student.issues');
+    Route::get('issues/create', [ReportedIssueController::class, 'create'])->name('student.issues.create');
+    Route::post('issues', [ReportedIssueController::class, 'store'])->name('student.issues.store');
 });

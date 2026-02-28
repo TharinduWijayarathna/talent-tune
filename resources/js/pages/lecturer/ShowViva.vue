@@ -13,6 +13,16 @@ import {
     CollapsibleContent,
     CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
@@ -24,20 +34,10 @@ import {
     Headphones,
     Lock,
     MessageSquare,
-    UserPlus,
     User,
+    UserPlus,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 
 interface AnswerItem {
     question: string;
@@ -136,11 +136,15 @@ const fetchStudentsForLateParticipation = async (search?: string) => {
     try {
         const url = new URL(
             `/lecturer/vivas/${props.viva.id}/students-for-late-participation`,
-            window.location.origin
+            window.location.origin,
         );
-        if (search && search.trim()) url.searchParams.set('search', search.trim());
+        if (search && search.trim())
+            url.searchParams.set('search', search.trim());
         const r = await fetch(url.toString(), {
-            headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            headers: {
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
         });
         const data = await r.json();
         lateStudents.value = data.students ?? [];
@@ -175,7 +179,7 @@ const addLateStudent = () => {
                 addLateOpen.value = false;
                 selectedLateStudentId.value = null;
             },
-        }
+        },
     );
 };
 </script>
@@ -258,13 +262,21 @@ const addLateStudent = () => {
                         One-time participation
                     </CardTitle>
                     <CardDescription>
-                        Add a student from this batch to participate once after the viva has closed. They will appear in the attendees list and can complete the viva one time.
+                        Add a student from this batch to participate once after
+                        the viva has closed. They will appear in the attendees
+                        list and can complete the viva one time.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <Dialog :open="addLateOpen" @update:open="addLateOpen = $event">
+                    <Dialog
+                        :open="addLateOpen"
+                        @update:open="addLateOpen = $event"
+                    >
                         <DialogTrigger as-child>
-                            <Button variant="outline" @click="openAddLateDialog">
+                            <Button
+                                variant="outline"
+                                @click="openAddLateDialog"
+                            >
                                 <UserPlus class="mr-2 h-4 w-4" />
                                 Add student for one-time participation
                             </Button>
@@ -273,12 +285,18 @@ const addLateStudent = () => {
                             <DialogHeader>
                                 <DialogTitle>Add student</DialogTitle>
                                 <DialogDescription>
-                                    Only students from this viva's batch can participate. Search and choose a student. They can attend once; you can add the same student again for a re-do.
+                                    Only students from this viva's batch can
+                                    participate. Search and choose a student.
+                                    They can attend once; you can add the same
+                                    student again for a re-do.
                                 </DialogDescription>
                             </DialogHeader>
                             <div class="grid gap-4 py-4">
                                 <div class="space-y-2">
-                                    <label class="text-sm font-medium">Search students (batch: {{ viva.batch }})</label>
+                                    <label class="text-sm font-medium"
+                                        >Search students (batch:
+                                        {{ viva.batch }})</label
+                                    >
                                     <Input
                                         v-model="lateSearch"
                                         type="search"
@@ -297,7 +315,8 @@ const addLateStudent = () => {
                                     v-else-if="lateStudents.length === 0"
                                     class="text-sm text-muted-foreground"
                                 >
-                                    No students found. Try a different search or ensure the batch has students.
+                                    No students found. Try a different search or
+                                    ensure the batch has students.
                                 </p>
                                 <div
                                     v-else
@@ -309,15 +328,19 @@ const addLateStudent = () => {
                                         type="button"
                                         class="flex w-full flex-col items-start gap-0.5 rounded-sm px-2 py-2 text-left text-sm transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
                                         :class="{
-                                            'bg-primary/10 ring-1 ring-primary': selectedLateStudentId === s.id,
+                                            'bg-primary/10 ring-1 ring-primary':
+                                                selectedLateStudentId === s.id,
                                         }"
                                         @click="selectedLateStudentId = s.id"
                                     >
-                                        <span class="font-medium">{{ s.name }}</span>
+                                        <span class="font-medium">{{
+                                            s.name
+                                        }}</span>
                                         <span
                                             v-if="s.email"
                                             class="text-muted-foreground"
-                                        >{{ s.email }}</span>
+                                            >{{ s.email }}</span
+                                        >
                                         <Badge
                                             v-if="s.has_attended"
                                             variant="secondary"
@@ -337,7 +360,8 @@ const addLateStudent = () => {
                                 </Button>
                                 <Button
                                     :disabled="
-                                        selectedLateStudentId == null || addingLate
+                                        selectedLateStudentId == null ||
+                                        addingLate
                                     "
                                     @click="addLateStudent"
                                 >
@@ -561,7 +585,9 @@ const addLateStudent = () => {
                                                             {{ item.answer }}
                                                         </p>
                                                         <div
-                                                            v-if="item.voice_path"
+                                                            v-if="
+                                                                item.voice_path
+                                                            "
                                                             class="mt-2 flex items-center gap-2 rounded-md border bg-muted/50 p-2"
                                                         >
                                                             <Headphones
@@ -570,7 +596,8 @@ const addLateStudent = () => {
                                                             <span
                                                                 class="text-xs font-medium text-muted-foreground"
                                                             >
-                                                                Hear student's voice:
+                                                                Hear student's
+                                                                voice:
                                                             </span>
                                                             <audio
                                                                 :src="`/lecturer/viva-submissions/${sub.id}/voice/${idx}`"
@@ -671,7 +698,9 @@ const addLateStudent = () => {
                                             >
                                                 View document
                                             </a>
-                                            <span class="text-muted-foreground">·</span>
+                                            <span class="text-muted-foreground"
+                                                >·</span
+                                            >
                                             <a
                                                 :href="`/lecturer/viva-submissions/${sub.id}/document?download=1`"
                                                 download

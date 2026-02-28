@@ -20,8 +20,8 @@ import {
     Clock,
     CreditCard,
     DollarSign,
-    Search,
     Eye,
+    Search,
 } from 'lucide-vue-next';
 import { ref } from 'vue';
 
@@ -236,7 +236,7 @@ const statusVariant: Record<
                             :key="payment.id"
                             class="flex items-start justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
                         >
-                            <div class="flex-1 space-y-2 min-w-0">
+                            <div class="min-w-0 flex-1 space-y-2">
                                 <div class="flex items-center gap-3">
                                     <div>
                                         <p class="font-semibold">

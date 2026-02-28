@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import VueApexCharts from 'vue3-apexcharts';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,6 +23,7 @@ import {
     Users,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
+import VueApexCharts from 'vue3-apexcharts';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -50,7 +50,11 @@ interface RecentActivityItem {
 }
 
 interface ChartData {
-    revenueByDay: { labels: string[]; series: number[][]; totalRevenue: number };
+    revenueByDay: {
+        labels: string[];
+        series: number[][];
+        totalRevenue: number;
+    };
     usersByRole: { labels: string[]; series: number[] };
     vivasByStatus: { labels: string[]; series: number[] };
     paymentsByStatus: { labels: string[]; series: number[] };
@@ -124,7 +128,9 @@ const paymentsByStatusOptions = computed(() => ({
     theme: chartTheme,
 }));
 
-const paymentsByStatusSeries = computed(() => props.charts.paymentsByStatus.series);
+const paymentsByStatusSeries = computed(
+    () => props.charts.paymentsByStatus.series,
+);
 </script>
 
 <template>
@@ -270,8 +276,13 @@ const paymentsByStatusSeries = computed(() => props.charts.paymentsByStatus.seri
                         </CardTitle>
                         <CardDescription>
                             Daily completed payment revenue
-                            <span v-if="charts.revenueByDay.totalRevenue >= 0" class="block font-medium text-foreground mt-1">
-                                Total: ${{ charts.revenueByDay.totalRevenue.toLocaleString() }}
+                            <span
+                                v-if="charts.revenueByDay.totalRevenue >= 0"
+                                class="mt-1 block font-medium text-foreground"
+                            >
+                                Total: ${{
+                                    charts.revenueByDay.totalRevenue.toLocaleString()
+                                }}
                             </span>
                         </CardDescription>
                     </CardHeader>
@@ -309,7 +320,9 @@ const paymentsByStatusSeries = computed(() => props.charts.paymentsByStatus.seri
                             <BarChart3 class="h-5 w-5" />
                             Vivas by status
                         </CardTitle>
-                        <CardDescription>Upcoming, active, and completed</CardDescription>
+                        <CardDescription
+                            >Upcoming, active, and completed</CardDescription
+                        >
                     </CardHeader>
                     <CardContent>
                         <VueApexCharts
@@ -326,7 +339,10 @@ const paymentsByStatusSeries = computed(() => props.charts.paymentsByStatus.seri
                             <PieChart class="h-5 w-5" />
                             Payments by status
                         </CardTitle>
-                        <CardDescription>Completed, pending, failed, refunded</CardDescription>
+                        <CardDescription
+                            >Completed, pending, failed,
+                            refunded</CardDescription
+                        >
                     </CardHeader>
                     <CardContent>
                         <VueApexCharts

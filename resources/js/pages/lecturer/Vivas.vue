@@ -130,8 +130,10 @@ const statusVariant = (status: string) => {
                                 </div>
                                 <p class="text-sm text-muted-foreground">
                                     Batch: {{ viva.batch }} •
-                                    {{ formatScheduledLocal(viva.scheduled_at) }} •
-                                    {{ viva.students }} student(s)
+                                    {{
+                                        formatScheduledLocal(viva.scheduled_at)
+                                    }}
+                                    • {{ viva.students }} student(s)
                                 </p>
                                 <p
                                     v-if="viva.description"

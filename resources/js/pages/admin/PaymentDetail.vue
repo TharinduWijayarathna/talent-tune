@@ -90,11 +90,7 @@ const statusVariant: Record<
                         </p>
                     </div>
                 </div>
-                <Badge
-                    :variant="
-                        statusVariant[payment.status] ?? 'secondary'
-                    "
-                >
+                <Badge :variant="statusVariant[payment.status] ?? 'secondary'">
                     {{ payment.status }}
                 </Badge>
             </div>
@@ -107,13 +103,20 @@ const statusVariant: Record<
                             <CreditCard class="h-5 w-5" />
                             Payment summary
                         </CardTitle>
-                        <CardDescription>Amount and gateway info</CardDescription>
+                        <CardDescription
+                            >Amount and gateway info</CardDescription
+                        >
                     </CardHeader>
                     <CardContent class="space-y-4">
                         <div class="flex justify-between">
                             <span class="text-muted-foreground">Amount</span>
                             <span class="font-semibold">
-                                {{ formatAmount(payment.amount, payment.currency) }}
+                                {{
+                                    formatAmount(
+                                        payment.amount,
+                                        payment.currency,
+                                    )
+                                }}
                             </span>
                         </div>
                         <div class="flex justify-between">
@@ -126,13 +129,13 @@ const statusVariant: Record<
                         </div>
                         <div
                             v-if="payment.external_id"
-                            class="flex justify-between items-center gap-2"
+                            class="flex items-center justify-between gap-2"
                         >
                             <span class="text-muted-foreground"
                                 >External ID</span
                             >
                             <span
-                                class="truncate font-mono text-sm max-w-[180px]"
+                                class="max-w-[180px] truncate font-mono text-sm"
                                 :title="payment.external_id"
                             >
                                 {{ payment.external_id }}
@@ -154,11 +157,7 @@ const statusVariant: Record<
                         >
                             <span class="text-muted-foreground">Paid at</span>
                             <span class="text-sm">
-                                {{
-                                    new Date(
-                                        payment.paid_at,
-                                    ).toLocaleString()
-                                }}
+                                {{ new Date(payment.paid_at).toLocaleString() }}
                             </span>
                         </div>
                         <div class="flex justify-between">
@@ -206,7 +205,7 @@ const statusVariant: Record<
                                 <span class="text-muted-foreground">Email</span>
                                 <a
                                     :href="`mailto:${payment.institution.email}`"
-                                    class="text-primary hover:underline text-sm"
+                                    class="text-sm text-primary hover:underline"
                                 >
                                     {{ payment.institution.email }}
                                 </a>
@@ -214,13 +213,17 @@ const statusVariant: Record<
                             <Link
                                 :href="`/admin/institutions/${payment.institution.id}/edit`"
                             >
-                                <Button variant="outline" size="sm" class="w-full">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    class="w-full"
+                                >
                                     <ExternalLink class="mr-2 h-4 w-4" />
                                     View institution
                                 </Button>
                             </Link>
                         </template>
-                        <p v-else class="text-muted-foreground text-sm">
+                        <p v-else class="text-sm text-muted-foreground">
                             No institution linked.
                         </p>
                     </CardContent>
@@ -228,18 +231,25 @@ const statusVariant: Record<
             </div>
 
             <!-- Metadata -->
-            <Card v-if="payment.metadata && Object.keys(payment.metadata).length > 0">
+            <Card
+                v-if="
+                    payment.metadata && Object.keys(payment.metadata).length > 0
+                "
+            >
                 <CardHeader>
                     <CardTitle class="flex items-center gap-2">
                         <FileJson class="h-5 w-5" />
                         Metadata
                     </CardTitle>
-                    <CardDescription>Gateway or custom metadata</CardDescription>
+                    <CardDescription
+                        >Gateway or custom metadata</CardDescription
+                    >
                 </CardHeader>
                 <CardContent>
                     <pre
-                        class="rounded-lg border bg-muted/50 p-4 text-xs overflow-x-auto"
-                    >{{ JSON.stringify(payment.metadata, null, 2) }}</pre>
+                        class="overflow-x-auto rounded-lg border bg-muted/50 p-4 text-xs"
+                        >{{ JSON.stringify(payment.metadata, null, 2) }}</pre
+                    >
                 </CardContent>
             </Card>
         </div>

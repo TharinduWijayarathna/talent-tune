@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import VueApexCharts from 'vue3-apexcharts';
 import {
     Card,
     CardContent,
@@ -20,6 +19,7 @@ import {
     Users,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
+import VueApexCharts from 'vue3-apexcharts';
 
 interface InstitutionCharts {
     vivasByStatus: { labels: string[]; series: number[] };
@@ -203,7 +203,9 @@ const vivasOverTimeSeries = computed(() => [
                             <BarChart3 class="h-5 w-5" />
                             Vivas by status
                         </CardTitle>
-                        <CardDescription>Upcoming, active, and completed</CardDescription>
+                        <CardDescription
+                            >Upcoming, active, and completed</CardDescription
+                        >
                     </CardHeader>
                     <CardContent>
                         <VueApexCharts
@@ -238,7 +240,9 @@ const vivasOverTimeSeries = computed(() => [
                         <TrendingUp class="h-5 w-5" />
                         Vivas created (last 30 days)
                     </CardTitle>
-                    <CardDescription>New viva sessions over time</CardDescription>
+                    <CardDescription
+                        >New viva sessions over time</CardDescription
+                    >
                 </CardHeader>
                 <CardContent>
                     <VueApexCharts

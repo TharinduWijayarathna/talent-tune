@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\DB;
 
 class LecturerService
 {
-
     public function getDashboardData(Institution $institution, User $user): array
     {
         $stats = [
