@@ -9,180 +9,149 @@ use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Get institutions
-        // $institution1 = Institution::where('slug', 'university-tech')->first();
-        // $institution2 = Institution::where('slug', 'state-university')->first();
+        $inst1 = Institution::where('slug', 'university-tech')->first();
+        $inst2 = Institution::where('slug', 'state-university')->first();
 
-        // Admin User (no institution)
-        User::create([
-            'name' => 'Admin User',
-            'email' => 'admin@talenttune.com',
-            'password' => Hash::make('password'),
-            'role' => 'admin',
-            'institution_id' => null,
-            'email_verified_at' => now(),
-        ]);
+        // Admin (no institution)
+        User::firstOrCreate(
+            ['email' => 'admin@talenttune.com'],
+            [
+                'name' => 'Admin User',
+                'password' => Hash::make('password'),
+                'role' => 'admin',
+                'institution_id' => null,
+                'email_verified_at' => now(),
+            ]
+        );
 
-        // // Institution Users
-        // if ($institution1) {
-        //     User::create([
-        //         'name' => 'University of Technology',
-        //         'email' => 'institution1@talenttune.com',
-        //         'password' => Hash::make('password'),
-        //         'role' => 'institution',
-        //         'institution_id' => $institution1->id,
-        //         'department' => 'Administration',
-        //         'email_verified_at' => now(),
-        //     ]);
-        // }
+        // Institution admins
+        if ($inst1) {
+            User::firstOrCreate(
+                ['email' => 'institution1@talenttune.com'],
+                [
+                    'name' => 'University Admin',
+                    'password' => Hash::make('password'),
+                    'role' => 'institution',
+                    'institution_id' => $inst1->id,
+                    'department' => 'Administration',
+                    'email_verified_at' => now(),
+                ]
+            );
+        }
+        if ($inst2) {
+            User::firstOrCreate(
+                ['email' => 'institution2@talenttune.com'],
+                [
+                    'name' => 'State University Admin',
+                    'password' => Hash::make('password'),
+                    'role' => 'institution',
+                    'institution_id' => $inst2->id,
+                    'department' => 'Administration',
+                    'email_verified_at' => now(),
+                ]
+            );
+        }
 
-        // if ($institution2) {
-        //     User::create([
-        //         'name' => 'State University',
-        //         'email' => 'institution2@talenttune.com',
-        //         'password' => Hash::make('password'),
-        //         'role' => 'institution',
-        //         'institution_id' => $institution2->id,
-        //         'department' => 'Administration',
-        //         'email_verified_at' => now(),
-        //     ]);
-        // }
+        // Lecturers
+        $lecturers = [
+            ['name' => 'Dr. John Smith', 'email' => 'lecturer1@talenttune.com', 'employee_id' => 'EMP001', 'department' => 'Computer Science', 'inst' => $inst1],
+            ['name' => 'Dr. Sarah Johnson', 'email' => 'lecturer2@talenttune.com', 'employee_id' => 'EMP002', 'department' => 'Software Engineering', 'inst' => $inst1],
+            ['name' => 'Dr. Michael Williams', 'email' => 'lecturer3@talenttune.com', 'employee_id' => 'EMP003', 'department' => 'Web Development', 'inst' => $inst1],
+            ['name' => 'Dr. Emily Brown', 'email' => 'lecturer4@talenttune.com', 'employee_id' => 'EMP004', 'department' => 'Data Structures', 'inst' => $inst2],
+            ['name' => 'Dr. David Davis', 'email' => 'lecturer5@talenttune.com', 'employee_id' => 'EMP005', 'department' => 'Operating Systems', 'inst' => $inst2],
+        ];
+        foreach ($lecturers as $l) {
+            if ($l['inst']) {
+                User::firstOrCreate(
+                    ['email' => $l['email']],
+                    [
+                        'name' => $l['name'],
+                        'password' => Hash::make('password'),
+                        'role' => 'lecturer',
+                        'institution_id' => $l['inst']->id,
+                        'employee_id' => $l['employee_id'],
+                        'department' => $l['department'],
+                        'email_verified_at' => now(),
+                    ]
+                );
+            }
+        }
 
-        // // Lecturer Users (assign to institution1)
-        // $lecturers = [
-        //     [
-        //         'name' => 'Dr. John Smith',
-        //         'email' => 'lecturer1@talenttune.com',
-        //         'password' => Hash::make('password'),
-        //         'role' => 'lecturer',
-        //         'institution_id' => $institution1?->id,
-        //         'employee_id' => 'EMP001',
-        //         'department' => 'Computer Science',
-        //         'email_verified_at' => now(),
-        //     ],
-        //     [
-        //         'name' => 'Dr. Sarah Johnson',
-        //         'email' => 'lecturer2@talenttune.com',
-        //         'password' => Hash::make('password'),
-        //         'role' => 'lecturer',
-        //         'institution_id' => $institution1?->id,
-        //         'employee_id' => 'EMP002',
-        //         'department' => 'Software Engineering',
-        //         'email_verified_at' => now(),
-        //     ],
-        //     [
-        //         'name' => 'Dr. Michael Williams',
-        //         'email' => 'lecturer3@talenttune.com',
-        //         'password' => Hash::make('password'),
-        //         'role' => 'lecturer',
-        //         'institution_id' => $institution1?->id,
-        //         'employee_id' => 'EMP003',
-        //         'department' => 'Web Development',
-        //         'email_verified_at' => now(),
-        //     ],
-        //     [
-        //         'name' => 'Dr. Emily Brown',
-        //         'email' => 'lecturer4@talenttune.com',
-        //         'password' => Hash::make('password'),
-        //         'role' => 'lecturer',
-        //         'institution_id' => $institution2?->id,
-        //         'employee_id' => 'EMP004',
-        //         'department' => 'Data Structures',
-        //         'email_verified_at' => now(),
-        //     ],
-        //     [
-        //         'name' => 'Dr. David Davis',
-        //         'email' => 'lecturer5@talenttune.com',
-        //         'password' => Hash::make('password'),
-        //         'role' => 'lecturer',
-        //         'institution_id' => $institution2?->id,
-        //         'employee_id' => 'EMP005',
-        //         'department' => 'Operating Systems',
-        //         'email_verified_at' => now(),
-        //     ],
-        // ];
+        // Students – batch CS-2024 (inst1)
+        $studentsBatch1 = [
+            ['name' => 'Alice Johnson', 'email' => 'student1@talenttune.com', 'student_id' => 'STU001'],
+            ['name' => 'Bob Williams', 'email' => 'student2@talenttune.com', 'student_id' => 'STU002'],
+            ['name' => 'Charlie Brown', 'email' => 'student3@talenttune.com', 'student_id' => 'STU003'],
+            ['name' => 'Diana Martinez', 'email' => 'student4@talenttune.com', 'student_id' => 'STU004'],
+            ['name' => 'Ethan Davis', 'email' => 'student5@talenttune.com', 'student_id' => 'STU005'],
+            ['name' => 'Fiona Wilson', 'email' => 'student6@talenttune.com', 'student_id' => 'STU006'],
+        ];
+        foreach ($studentsBatch1 as $s) {
+            if ($inst1) {
+                User::firstOrCreate(
+                    ['email' => $s['email']],
+                    [
+                        'name' => $s['name'],
+                        'password' => Hash::make('password'),
+                        'role' => 'student',
+                        'institution_id' => $inst1->id,
+                        'student_id' => $s['student_id'],
+                        'batch' => 'CS-2024',
+                        'department' => 'Computer Science',
+                        'email_verified_at' => now(),
+                    ]
+                );
+            }
+        }
 
-        // foreach ($lecturers as $lecturer) {
-        //     User::create($lecturer);
-        // }
+        // Students – batch CS-2023 (inst1)
+        $studentsBatch2 = [
+            ['name' => 'Kevin White', 'email' => 'student11@talenttune.com', 'student_id' => 'STU011'],
+            ['name' => 'Lily Harris', 'email' => 'student12@talenttune.com', 'student_id' => 'STU012'],
+            ['name' => 'Marcus Clark', 'email' => 'student13@talenttune.com', 'student_id' => 'STU013'],
+        ];
+        foreach ($studentsBatch2 as $s) {
+            if ($inst1) {
+                User::firstOrCreate(
+                    ['email' => $s['email']],
+                    [
+                        'name' => $s['name'],
+                        'password' => Hash::make('password'),
+                        'role' => 'student',
+                        'institution_id' => $inst1->id,
+                        'student_id' => $s['student_id'],
+                        'batch' => 'CS-2023',
+                        'department' => 'Computer Science',
+                        'email_verified_at' => now(),
+                    ]
+                );
+            }
+        }
 
-        // // Student Users - Batch CS-2024 (assign to institution1)
-        // $studentsBatch1 = [
-        //     ['name' => 'Alice Johnson', 'email' => 'student1@talenttune.com', 'student_id' => 'STU001'],
-        //     ['name' => 'Bob Williams', 'email' => 'student2@talenttune.com', 'student_id' => 'STU002'],
-        //     ['name' => 'Charlie Brown', 'email' => 'student3@talenttune.com', 'student_id' => 'STU003'],
-        //     ['name' => 'Diana Martinez', 'email' => 'student4@talenttune.com', 'student_id' => 'STU004'],
-        //     ['name' => 'Ethan Davis', 'email' => 'student5@talenttune.com', 'student_id' => 'STU005'],
-        //     ['name' => 'Fiona Wilson', 'email' => 'student6@talenttune.com', 'student_id' => 'STU006'],
-        //     ['name' => 'George Taylor', 'email' => 'student7@talenttune.com', 'student_id' => 'STU007'],
-        //     ['name' => 'Hannah Anderson', 'email' => 'student8@talenttune.com', 'student_id' => 'STU008'],
-        //     ['name' => 'Ian Thomas', 'email' => 'student9@talenttune.com', 'student_id' => 'STU009'],
-        //     ['name' => 'Julia Jackson', 'email' => 'student10@talenttune.com', 'student_id' => 'STU010'],
-        // ];
-
-        // foreach ($studentsBatch1 as $student) {
-        //     User::create([
-        //         'name' => $student['name'],
-        //         'email' => $student['email'],
-        //         'password' => Hash::make('password'),
-        //         'role' => 'student',
-        //         'institution_id' => $institution1?->id,
-        //         'student_id' => $student['student_id'],
-        //         'batch' => 'CS-2024',
-        //         'department' => 'Computer Science',
-        //         'email_verified_at' => now(),
-        //     ]);
-        // }
-
-        // // Student Users - Batch CS-2023 (assign to institution1)
-        // $studentsBatch2 = [
-        //     ['name' => 'Kevin White', 'email' => 'student11@talenttune.com', 'student_id' => 'STU011'],
-        //     ['name' => 'Lily Harris', 'email' => 'student12@talenttune.com', 'student_id' => 'STU012'],
-        //     ['name' => 'Marcus Clark', 'email' => 'student13@talenttune.com', 'student_id' => 'STU013'],
-        //     ['name' => 'Nora Lewis', 'email' => 'student14@talenttune.com', 'student_id' => 'STU014'],
-        //     ['name' => 'Oscar Walker', 'email' => 'student15@talenttune.com', 'student_id' => 'STU015'],
-        // ];
-
-        // foreach ($studentsBatch2 as $student) {
-        //     User::create([
-        //         'name' => $student['name'],
-        //         'email' => $student['email'],
-        //         'password' => Hash::make('password'),
-        //         'role' => 'student',
-        //         'institution_id' => $institution1?->id,
-        //         'student_id' => $student['student_id'],
-        //         'batch' => 'CS-2023',
-        //         'department' => 'Computer Science',
-        //         'email_verified_at' => now(),
-        //     ]);
-        // }
-
-        // // Student Users - Batch SE-2024 (assign to institution2)
-        // $studentsBatch3 = [
-        //     ['name' => 'Penelope Hall', 'email' => 'student16@talenttune.com', 'student_id' => 'STU016'],
-        //     ['name' => 'Quinn Allen', 'email' => 'student17@talenttune.com', 'student_id' => 'STU017'],
-        //     ['name' => 'Rachel Young', 'email' => 'student18@talenttune.com', 'student_id' => 'STU018'],
-        //     ['name' => 'Samuel King', 'email' => 'student19@talenttune.com', 'student_id' => 'STU019'],
-        //     ['name' => 'Tina Wright', 'email' => 'student20@talenttune.com', 'student_id' => 'STU020'],
-        // ];
-
-        // foreach ($studentsBatch3 as $student) {
-        //     User::create([
-        //         'name' => $student['name'],
-        //         'email' => $student['email'],
-        //         'password' => Hash::make('password'),
-        //         'role' => 'student',
-        //         'institution_id' => $institution2?->id,
-        //         'student_id' => $student['student_id'],
-        //         'batch' => 'SE-2024',
-        //         'department' => 'Software Engineering',
-        //         'email_verified_at' => now(),
-        //     ]);
-        // }
+        // Students – batch SE-2024 (inst2)
+        $studentsBatch3 = [
+            ['name' => 'Penelope Hall', 'email' => 'student16@talenttune.com', 'student_id' => 'STU016'],
+            ['name' => 'Quinn Allen', 'email' => 'student17@talenttune.com', 'student_id' => 'STU017'],
+            ['name' => 'Rachel Young', 'email' => 'student18@talenttune.com', 'student_id' => 'STU018'],
+        ];
+        foreach ($studentsBatch3 as $s) {
+            if ($inst2) {
+                User::firstOrCreate(
+                    ['email' => $s['email']],
+                    [
+                        'name' => $s['name'],
+                        'password' => Hash::make('password'),
+                        'role' => 'student',
+                        'institution_id' => $inst2->id,
+                        'student_id' => $s['student_id'],
+                        'batch' => 'SE-2024',
+                        'department' => 'Software Engineering',
+                        'email_verified_at' => now(),
+                    ]
+                );
+            }
+        }
     }
 }
