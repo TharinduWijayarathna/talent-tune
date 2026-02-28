@@ -93,6 +93,14 @@ class Institution extends Model
     }
 
     /**
+     * Get all support tickets for this institution.
+     */
+    public function supportTickets(): HasMany
+    {
+        return $this->hasMany(SupportTicket::class);
+    }
+
+    /**
      * Scope a query to only include active institutions.
      */
     public function scopeActive($query)

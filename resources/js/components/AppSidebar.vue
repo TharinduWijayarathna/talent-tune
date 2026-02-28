@@ -21,6 +21,7 @@ import {
     GraduationCap,
     Layers,
     LayoutGrid,
+    MessageSquareQuestion,
     Plus,
     Users,
 } from 'lucide-vue-next';
@@ -102,6 +103,11 @@ const mainNavItems = computed<NavItem[]>(() => {
                 href: '/institution/students',
                 icon: GraduationCap,
             },
+            {
+                title: 'Support',
+                href: '/institution/support',
+                icon: MessageSquareQuestion,
+            },
         ];
     }
 
@@ -140,6 +146,11 @@ const mainNavItems = computed<NavItem[]>(() => {
                 title: 'Payments',
                 href: '/admin/payments',
                 icon: CreditCard,
+            },
+            {
+                title: 'Support Tickets',
+                href: '/admin/support',
+                icon: MessageSquareQuestion,
             },
         ];
     }

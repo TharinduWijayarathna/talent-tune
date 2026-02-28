@@ -2,8 +2,10 @@
 
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminPaymentController;
+use App\Http\Controllers\Admin\AdminSupportController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Application\InstitutionController;
+use App\Http\Middleware\EnsureAdminRole;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -11,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 | Admin Routes (no institution context required)
 |--------------------------------------------------------------------------
 */
-Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
+Route::prefix('admin')->middleware(['auth', 'verified', EnsureAdminRole::class])->group(function () {
     Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
     Route::get('institutions', [InstitutionController::class, 'index'])->name('admin.institutions');
@@ -28,4 +30,9 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
     Route::put('users/{user}', [AdminUserController::class, 'update'])->name('admin.users.update');
     Route::get('payments', [AdminPaymentController::class, 'index'])->name('admin.payments');
     Route::get('payments/{id}', [AdminPaymentController::class, 'show'])->name('admin.payments.show');
+
+    Route::get('support', [AdminSupportController::class, 'index'])->name('admin.support');
+    Route::get('support/{id}', [AdminSupportController::class, 'show'])->name('admin.support.show');
+    Route::post('support/{id}/reply', [AdminSupportController::class, 'reply'])->name('admin.support.reply');
+    Route::patch('support/{id}/status', [AdminSupportController::class, 'updateStatus'])->name('admin.support.status');
 });
