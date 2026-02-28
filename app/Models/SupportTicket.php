@@ -22,6 +22,7 @@ class SupportTicket extends Model
         'subject',
         'body',
         'status',
+        'institution_note',
     ];
 
     /**
@@ -38,6 +39,14 @@ class SupportTicket extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the reported issue when this ticket was escalated from one.
+     */
+    public function reportedIssue(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(ReportedIssue::class);
     }
 
     /**

@@ -132,17 +132,13 @@ class InstitutionReportedIssuesController extends Controller
             'message' => ['nullable', 'string', 'max:5000'],
         ]);
 
-        $body = $issue->body;
-        if (! empty($validated['message'])) {
-            $body .= "\n\n--- Institution admin note ---\n".$validated['message'];
-        }
-
         $ticket = SupportTicket::create([
             'institution_id' => $institution->id,
             'user_id' => $request->user()->id,
             'subject' => '[Escalated] '.$issue->subject,
-            'body' => $body,
+            'body' => $issue->body,
             'status' => 'open',
+            'institution_note' => $validated['message'] ?? null,
         ]);
 
         $issue->update([

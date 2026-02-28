@@ -17,10 +17,12 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import {
     ArrowLeft,
     Building2,
+    GraduationCap,
     MessageSquare,
     Shield,
     User,
 } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 interface InstitutionRef {
     id: number;
@@ -36,6 +38,12 @@ interface Reply {
     created_at: string;
 }
 
+interface EscalatedFrom {
+    reporter_name: string | null;
+    reporter_email: string | null;
+    reporter_role: string | null;
+}
+
 interface Ticket {
     id: number;
     subject: string;
@@ -46,6 +54,8 @@ interface Ticket {
     user_email: string | null;
     created_at: string;
     updated_at: string;
+    escalated_from?: EscalatedFrom | null;
+    institution_note?: string | null;
 }
 
 const props = defineProps<{
@@ -95,6 +105,14 @@ const statusVariant = (status: string) => {
             return 'outline';
     }
 };
+
+const reporterRoleLabel = (role: string | null | undefined) => {
+    if (role === 'student') return 'Student';
+    if (role === 'lecturer') return 'Lecturer';
+    return role ?? '';
+};
+
+const isEscalated = computed(() => !!props.ticket.escalated_from);
 
 const formatDateTime = (iso: string) =>
     iso
@@ -162,7 +180,7 @@ const formatDateTime = (iso: string) =>
                             {{ props.ticket.institution.name }}
                         </span>
                         <span
-                            v-if="props.ticket.user_name"
+                            v-if="!isEscalated && props.ticket.user_name"
                             class="flex items-center gap-1"
                         >
                             <User class="h-4 w-4" />
@@ -181,7 +199,110 @@ const formatDateTime = (iso: string) =>
                     </CardDescription>
                 </CardHeader>
                 <CardContent class="space-y-4">
+                    <!-- Escalated issue: structured layout -->
+                    <template v-if="isEscalated">
+                        <div class="space-y-3">
+                            <div
+                                class="flex flex-wrap gap-4 rounded-lg border bg-muted/20 p-4"
+                            >
+                                <div
+                                    v-if="props.ticket.institution"
+                                    class="flex items-center gap-2"
+                                >
+                                    <Building2
+                                        class="h-4 w-4 text-muted-foreground"
+                                    />
+                                    <div>
+                                        <p
+                                            class="text-xs font-medium text-muted-foreground"
+                                        >
+                                            Institution
+                                        </p>
+                                        <p class="font-medium">
+                                            {{ props.ticket.institution.name }}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div
+                                    v-if="
+                                        props.ticket.escalated_from
+                                            ?.reporter_name
+                                    "
+                                    class="flex items-center gap-2"
+                                >
+                                    <GraduationCap
+                                        class="h-4 w-4 text-muted-foreground"
+                                    />
+                                    <div>
+                                        <p
+                                            class="text-xs font-medium text-muted-foreground"
+                                        >
+                                            Reported by
+                                        </p>
+                                        <p class="font-medium">
+                                            {{
+                                                props.ticket.escalated_from
+                                                    .reporter_name
+                                            }}
+                                            <Badge
+                                                variant="outline"
+                                                class="ml-1 text-xs capitalize"
+                                            >
+                                                {{
+                                                    reporterRoleLabel(
+                                                        props.ticket
+                                                            .escalated_from
+                                                            .reporter_role,
+                                                    )
+                                                }}
+                                            </Badge>
+                                        </p>
+                                        <p
+                                            v-if="
+                                                props.ticket.escalated_from
+                                                    .reporter_email
+                                            "
+                                            class="text-xs text-muted-foreground"
+                                        >
+                                            {{
+                                                props.ticket.escalated_from
+                                                    .reporter_email
+                                            }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <h4
+                                    class="mb-2 text-sm font-medium text-muted-foreground"
+                                >
+                                    Issue description
+                                </h4>
+                                <div
+                                    class="rounded-lg border bg-muted/30 p-4 text-sm whitespace-pre-wrap"
+                                >
+                                    {{ props.ticket.body }}
+                                </div>
+                            </div>
+                            <div
+                                v-if="props.ticket.institution_note"
+                                class="rounded-lg border border-primary/20 bg-primary/5 p-4"
+                            >
+                                <h4
+                                    class="mb-2 flex items-center gap-2 text-sm font-medium"
+                                >
+                                    <User class="h-4 w-4" />
+                                    Institution admin note
+                                </h4>
+                                <p class="text-sm whitespace-pre-wrap">
+                                    {{ props.ticket.institution_note }}
+                                </p>
+                            </div>
+                        </div>
+                    </template>
+                    <!-- Regular support ticket -->
                     <div
+                        v-else
                         class="rounded-lg border bg-muted/30 p-4 whitespace-pre-wrap"
                     >
                         {{ props.ticket.body }}
