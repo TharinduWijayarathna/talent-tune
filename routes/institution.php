@@ -3,6 +3,7 @@
 use App\Http\Controllers\Application\BatchController;
 use App\Http\Controllers\Application\InstitutionDashboardController;
 use App\Http\Controllers\Application\InstitutionSubscriptionController;
+use App\Http\Controllers\Application\InstitutionSupportController;
 use App\Http\Controllers\Application\InstitutionUserController;
 use App\Http\Middleware\EnsureInstitutionAccess;
 use App\Http\Middleware\EnsureSubscriptionActive;
@@ -37,5 +38,10 @@ Route::prefix('institution')->middleware(['auth', 'verified', EnsureInstitutionA
         Route::get('students/{id}/edit', [InstitutionUserController::class, 'editStudent'])->name('institution.students.edit');
         Route::put('students/{id}', [InstitutionUserController::class, 'updateStudent'])->name('institution.students.update');
         Route::delete('students/{id}', [InstitutionUserController::class, 'destroyStudent'])->name('institution.students.destroy');
+
+        Route::get('support', [InstitutionSupportController::class, 'index'])->name('institution.support');
+        Route::get('support/create', [InstitutionSupportController::class, 'create'])->name('institution.support.create');
+        Route::post('support', [InstitutionSupportController::class, 'store'])->name('institution.support.store');
+        Route::get('support/{id}', [InstitutionSupportController::class, 'show'])->name('institution.support.show');
     });
 });
