@@ -184,6 +184,15 @@ class InstitutionService
     }
 
     /**
+     * Create institution subdomain via Dockploy API (e.g. when seeding in production or on activation).
+     * No-op if Dockploy is not configured or APP_DOMAIN is missing.
+     */
+    public function createSubdomainForInstitution(Institution $institution): void
+    {
+        $this->createSubdomainIfConfigured($institution);
+    }
+
+    /**
      * Create institution subdomain (e.g. {slug}.talenttune.site) via Dockploy/Vintorr API in production.
      */
     protected function createSubdomainIfConfigured(Institution $institution): void
