@@ -61,6 +61,7 @@ class AdminSupportController extends Controller
     {
         $ticket = SupportTicket::with(['institution:id,name,slug', 'user:id,name,email'])
             ->with(['replies' => fn ($q) => $q->with('user:id,name,role')])
+            ->with(['reportedIssue' => fn ($q) => $q->with('user:id,name,email,role')])
             ->findOrFail($id);
 
         $replies = $ticket->replies->map(fn ($r) => [
@@ -71,11 +72,31 @@ class AdminSupportController extends Controller
             'created_at' => $r->created_at->toIso8601String(),
         ]);
 
+        $escalatedFrom = null;
+        if ($ticket->reportedIssue) {
+            $escalatedFrom = [
+                'reporter_name' => $ticket->reportedIssue->user?->name,
+                'reporter_email' => $ticket->reportedIssue->user?->email,
+                'reporter_role' => $ticket->reportedIssue->user?->role,
+            ];
+        }
+
+        $body = $ticket->body;
+        $institutionNote = $ticket->institution_note;
+        if ($institutionNote === null && $ticket->reportedIssue) {
+            $separator = "\n\n--- Institution admin note ---\n";
+            if (str_contains($body, $separator)) {
+                [$body, $institutionNote] = explode($separator, $body, 2);
+                $body = trim($body);
+                $institutionNote = trim($institutionNote) ?: null;
+            }
+        }
+
         return Inertia::render('admin/SupportTicketDetail', [
             'ticket' => [
                 'id' => $ticket->id,
                 'subject' => $ticket->subject,
-                'body' => $ticket->body,
+                'body' => $body,
                 'status' => $ticket->status,
                 'institution' => $ticket->institution ? [
                     'id' => $ticket->institution->id,
@@ -86,6 +107,8 @@ class AdminSupportController extends Controller
                 'user_email' => $ticket->user?->email,
                 'created_at' => $ticket->created_at->toIso8601String(),
                 'updated_at' => $ticket->updated_at->toIso8601String(),
+                'escalated_from' => $escalatedFrom,
+                'institution_note' => $institutionNote,
             ],
             'replies' => $replies,
         ]);
