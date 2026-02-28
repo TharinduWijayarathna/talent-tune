@@ -1,2 +1,5 @@
 resources/js/components/ui/*
 resources/views/mail/*
+# Generated at build time (wayfinder)
+resources/js/routes
+resources/js/wayfinder
