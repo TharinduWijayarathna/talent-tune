@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SiteHeader from '@/components/SiteHeader.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -8,7 +9,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import SiteHeader from '@/components/SiteHeader.vue';
 import { registerInstitution } from '@/routes';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { Check, Mail } from 'lucide-vue-next';
@@ -39,7 +39,8 @@ const plans = [
     },
     {
         name: 'Institution',
-        description: 'For universities and colleges. Custom pricing—contact us for a tailored quote.',
+        description:
+            'For universities and colleges. Custom pricing—contact us for a tailored quote.',
         price: 'Custom',
         pricePeriod: 'Contact us',
         features: [
@@ -75,9 +76,7 @@ const plans = [
                         custom needs? We'll tailor a solution.
                     </p>
                 </div>
-                <div
-                    class="mx-auto grid max-w-4xl gap-8 sm:grid-cols-2"
-                >
+                <div class="mx-auto grid max-w-4xl gap-8 sm:grid-cols-2">
                     <Card
                         v-for="(plan, index) in plans"
                         :key="index"
@@ -89,8 +88,12 @@ const plans = [
                         ]"
                     >
                         <CardHeader>
-                            <CardTitle class="text-xl">{{ plan.name }}</CardTitle>
-                            <CardDescription>{{ plan.description }}</CardDescription>
+                            <CardTitle class="text-xl">{{
+                                plan.name
+                            }}</CardTitle>
+                            <CardDescription>{{
+                                plan.description
+                            }}</CardDescription>
                             <div class="mt-4 flex items-baseline gap-1.5">
                                 <span class="text-2xl font-bold">{{
                                     plan.price
@@ -110,7 +113,9 @@ const plans = [
                                     :key="i"
                                     class="flex items-center gap-2 text-sm"
                                 >
-                                    <Check class="h-4 w-4 shrink-0 text-primary" />
+                                    <Check
+                                        class="h-4 w-4 shrink-0 text-primary"
+                                    />
                                     {{ feature }}
                                 </li>
                             </ul>
@@ -128,11 +133,7 @@ const plans = [
                                     {{ plan.cta }}
                                 </Button>
                             </Link>
-                            <a
-                                v-else
-                                :href="plan.mailto"
-                                class="mt-auto"
-                            >
+                            <a v-else :href="plan.mailto" class="mt-auto">
                                 <Button
                                     :variant="
                                         plan.highlighted ? 'default' : 'outline'

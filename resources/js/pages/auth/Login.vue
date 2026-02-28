@@ -54,7 +54,11 @@ const allErrors = computed(() => {
 
 // When adminLoginOnly, default to institution so we show email/password form only
 const selectedRole = ref<'institution' | 'lecturer' | 'student' | null>(
-    props.showRoleSelection ? (props.adminLoginOnly ? 'institution' : null) : null,
+    props.showRoleSelection
+        ? props.adminLoginOnly
+            ? 'institution'
+            : null
+        : null,
 );
 
 const allRoles = [
@@ -80,7 +84,9 @@ const allRoles = [
 
 // When payment is required, show only institution admin role
 const roles = computed(() =>
-    props.adminLoginOnly ? allRoles.filter((r) => r.value === 'institution') : allRoles,
+    props.adminLoginOnly
+        ? allRoles.filter((r) => r.value === 'institution')
+        : allRoles,
 );
 
 const form = useForm({

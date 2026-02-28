@@ -52,7 +52,8 @@ const submitForm = () => {
                     <CardTitle>Admin Information</CardTitle>
                     <CardDescription
                         >Enter the details of the new administrator. They will
-                        receive an email with login credentials.</CardDescription
+                        receive an email with login
+                        credentials.</CardDescription
                     >
                 </CardHeader>
                 <CardContent>

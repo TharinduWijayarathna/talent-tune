@@ -11,7 +11,6 @@ use Illuminate\Support\Carbon;
 
 class LecturerService
 {
-
     public function getDashboardData(Institution $institution, User $user): array
     {
         $stats = [

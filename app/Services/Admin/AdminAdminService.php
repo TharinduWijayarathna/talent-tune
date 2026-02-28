@@ -40,7 +40,7 @@ class AdminAdminService
             'institution_id' => null,
         ]);
 
-        $loginUrl = rtrim(config('app.url'), '/') . '/login';
+        $loginUrl = rtrim(config('app.url'), '/').'/login';
 
         Notification::route('mail', $user->email)
             ->notify(new AdminCredentialsSent(

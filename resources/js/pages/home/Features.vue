@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SiteHeader from '@/components/SiteHeader.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -7,7 +8,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import SiteHeader from '@/components/SiteHeader.vue';
 import { registerInstitution } from '@/routes';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import {
@@ -109,9 +109,7 @@ const features = [
                             >
                                 {{ feature.title }}
                             </CardTitle>
-                            <CardDescription
-                                class="text-base leading-relaxed"
-                            >
+                            <CardDescription class="text-base leading-relaxed">
                                 {{ feature.description }}
                             </CardDescription>
                         </CardHeader>

@@ -224,8 +224,8 @@ const submitForm = () => {
                             <CardTitle>Instructions for the viva</CardTitle>
                             <CardDescription
                                 >Type instructions that define the scope and
-                                focus of this viva. Questions will be
-                                generated for students based on these
+                                focus of this viva. Questions will be generated
+                                for students based on these
                                 instructions.</CardDescription
                             >
                         </CardHeader>

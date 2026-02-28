@@ -31,7 +31,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const formatDate = (iso: string) =>
-    iso ? new Date(iso).toLocaleDateString(undefined, { dateStyle: 'medium' }) : '';
+    iso
+        ? new Date(iso).toLocaleDateString(undefined, { dateStyle: 'medium' })
+        : '';
 </script>
 
 <template>
@@ -58,7 +60,9 @@ const formatDate = (iso: string) =>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Administrators ({{ props.admins.length }})</CardTitle>
+                    <CardTitle
+                        >Administrators ({{ props.admins.length }})</CardTitle
+                    >
                     <CardDescription
                         >Users with full access to manage institutions, users,
                         payments, and support</CardDescription

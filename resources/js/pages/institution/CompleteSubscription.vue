@@ -52,14 +52,18 @@ const handleLogout = () => {
         <header
             class="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md"
         >
-            <div class="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+            <div
+                class="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8"
+            >
                 <Link href="/" class="flex items-center gap-3">
                     <img
                         src="/images/logo.png"
                         alt="TalentTune"
                         class="h-9 w-auto object-contain"
                     />
-                    <span class="hidden text-sm font-medium text-muted-foreground sm:inline">
+                    <span
+                        class="hidden text-sm font-medium text-muted-foreground sm:inline"
+                    >
                         {{ institution.name }}
                     </span>
                 </Link>
@@ -79,7 +83,9 @@ const handleLogout = () => {
                     >
                         <CreditCard class="h-10 w-10 text-primary" />
                     </div>
-                    <h1 class="mb-3 text-3xl font-bold tracking-tight sm:text-4xl">
+                    <h1
+                        class="mb-3 text-3xl font-bold tracking-tight sm:text-4xl"
+                    >
                         Complete payment to access your workspace
                     </h1>
                     <p class="mb-12 text-lg text-muted-foreground">
@@ -109,7 +115,9 @@ const handleLogout = () => {
                                         <span class="font-medium"
                                             >Full dashboard access</span
                                         >
-                                        <p class="text-sm text-muted-foreground">
+                                        <p
+                                            class="text-sm text-muted-foreground"
+                                        >
                                             Manage batches, lecturers, and
                                             students
                                         </p>
@@ -125,7 +133,9 @@ const handleLogout = () => {
                                         <span class="font-medium"
                                             >Secure payment</span
                                         >
-                                        <p class="text-sm text-muted-foreground">
+                                        <p
+                                            class="text-sm text-muted-foreground"
+                                        >
                                             Powered by Stripe – your data is
                                             protected
                                         </p>
@@ -141,7 +151,9 @@ const handleLogout = () => {
                                         <span class="font-medium"
                                             >Instant access</span
                                         >
-                                        <p class="text-sm text-muted-foreground">
+                                        <p
+                                            class="text-sm text-muted-foreground"
+                                        >
                                             Redirect to dashboard immediately
                                             after payment
                                         </p>
@@ -160,17 +172,16 @@ const handleLogout = () => {
                                         v-if="submitting"
                                         class="mr-2 h-4 w-4 animate-spin"
                                     />
-                                    <ArrowRight
-                                        v-else
-                                        class="mr-2 h-4 w-4"
-                                    />
+                                    <ArrowRight v-else class="mr-2 h-4 w-4" />
                                     {{
                                         submitting
                                             ? 'Redirecting to payment...'
                                             : 'Continue to payment'
                                     }}
                                 </Button>
-                                <p class="mt-4 text-center text-xs text-muted-foreground">
+                                <p
+                                    class="mt-4 text-center text-xs text-muted-foreground"
+                                >
                                     You will be redirected to Stripe to complete
                                     payment securely.
                                 </p>

@@ -11,7 +11,7 @@ import {
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { AlertTriangle, CreditCard, Calendar, Loader2 } from 'lucide-vue-next';
+import { AlertTriangle, Calendar, CreditCard, Loader2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 interface SubscriptionInfo {
@@ -26,7 +26,9 @@ const props = defineProps<{
 }>();
 
 const page = usePage();
-const flash = computed(() => (page.props.flash as { success?: string; error?: string }) ?? {});
+const flash = computed(
+    () => (page.props.flash as { success?: string; error?: string }) ?? {},
+);
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/institution/dashboard' },
@@ -38,20 +40,33 @@ const cancelling = ref(false);
 const periodEndDate = computed(() => {
     const sub = props.subscription;
     if (!sub?.current_period_end) return null;
-    return new Date(sub.current_period_end * 1000).toLocaleDateString(undefined, {
-        dateStyle: 'long',
-    });
+    return new Date(sub.current_period_end * 1000).toLocaleDateString(
+        undefined,
+        {
+            dateStyle: 'long',
+        },
+    );
 });
 
 const endSubscription = () => {
-    if (!confirm('Are you sure you want to end your subscription? You will keep access until the end of the current billing period, then you will need to subscribe again to continue using the workspace.')) {
+    if (
+        !confirm(
+            'Are you sure you want to end your subscription? You will keep access until the end of the current billing period, then you will need to subscribe again to continue using the workspace.',
+        )
+    ) {
         return;
     }
     cancelling.value = true;
-    router.post('/institution/payment/cancel', {}, {
-        preserveScroll: true,
-        onFinish: () => { cancelling.value = false; },
-    });
+    router.post(
+        '/institution/payment/cancel',
+        {},
+        {
+            preserveScroll: true,
+            onFinish: () => {
+                cancelling.value = false;
+            },
+        },
+    );
 };
 </script>
 
@@ -69,10 +84,16 @@ const endSubscription = () => {
                 </p>
             </div>
 
-            <div v-if="flash.success" class="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200">
+            <div
+                v-if="flash.success"
+                class="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200"
+            >
                 {{ flash.success }}
             </div>
-            <div v-if="flash.error" class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200">
+            <div
+                v-if="flash.error"
+                class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200"
+            >
                 {{ flash.error }}
             </div>
 
@@ -100,11 +121,15 @@ const endSubscription = () => {
                             </Badge>
                         </div>
 
-                        <div v-if="periodEndDate" class="flex items-center gap-2 text-sm">
+                        <div
+                            v-if="periodEndDate"
+                            class="flex items-center gap-2 text-sm"
+                        >
                             <Calendar class="h-4 w-4 text-muted-foreground" />
                             <span v-if="subscription.cancel_at_period_end">
                                 Your subscription will end on
-                                <strong>{{ periodEndDate }}</strong>. You will keep access until then.
+                                <strong>{{ periodEndDate }}</strong
+                                >. You will keep access until then.
                             </span>
                             <span v-else>
                                 Current period ends on
@@ -116,12 +141,19 @@ const endSubscription = () => {
                             v-if="!subscription.cancel_at_period_end"
                             class="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950"
                         >
-                            <p class="mb-3 flex items-center gap-2 text-sm font-medium text-amber-800 dark:text-amber-200">
+                            <p
+                                class="mb-3 flex items-center gap-2 text-sm font-medium text-amber-800 dark:text-amber-200"
+                            >
                                 <AlertTriangle class="h-4 w-4" />
                                 End subscription
                             </p>
-                            <p class="mb-4 text-sm text-amber-700 dark:text-amber-300">
-                                If you end your subscription, you will keep access until the end of the current billing period. After that, you will need to complete payment again to access the workspace.
+                            <p
+                                class="mb-4 text-sm text-amber-700 dark:text-amber-300"
+                            >
+                                If you end your subscription, you will keep
+                                access until the end of the current billing
+                                period. After that, you will need to complete
+                                payment again to access the workspace.
                             </p>
                             <Button
                                 variant="outline"
@@ -138,9 +170,13 @@ const endSubscription = () => {
                         </div>
                     </div>
 
-                    <div v-else class="rounded-lg border bg-muted/30 p-6 text-center">
+                    <div
+                        v-else
+                        class="rounded-lg border bg-muted/30 p-6 text-center"
+                    >
                         <p class="text-muted-foreground">
-                            No active subscription. Complete payment to access the workspace.
+                            No active subscription. Complete payment to access
+                            the workspace.
                         </p>
                         <Button as-child class="mt-4">
                             <Link href="/institution/complete-subscription">

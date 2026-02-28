@@ -5,13 +5,7 @@ import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/vue3';
-import {
-    FileText,
-    Mic,
-    MicOff,
-    Upload,
-    Volume2,
-} from 'lucide-vue-next';
+import { FileText, Mic, MicOff, Upload, Volume2 } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 const props = defineProps<{
@@ -890,7 +884,9 @@ onUnmounted(() => {
                     <FileText class="h-10 w-10 text-muted-foreground" />
                 </div>
                 <div class="max-w-sm text-center">
-                    <h2 class="text-lg font-medium">Upload your document (PDF)</h2>
+                    <h2 class="text-lg font-medium">
+                        Upload your document (PDF)
+                    </h2>
                     <p class="mt-1 text-sm text-muted-foreground">
                         Upload your PDF so questions can be based on the
                         lecturer’s instructions and your document. Max 10MB.
@@ -910,7 +906,9 @@ onUnmounted(() => {
                         @click="uploadDocument"
                     >
                         <Upload class="mr-2 h-4 w-4" />
-                        {{ isUploadingDocument ? 'Uploading...' : 'Upload PDF' }}
+                        {{
+                            isUploadingDocument ? 'Uploading...' : 'Upload PDF'
+                        }}
                     </Button>
                 </div>
             </div>
