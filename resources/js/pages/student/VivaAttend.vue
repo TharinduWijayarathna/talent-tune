@@ -520,7 +520,7 @@ const initializeSpeechRecognition = () => {
                 }
                 try {
                     speechRecognition.value.start();
-                } catch (err) {
+                } catch {
                     // InvalidStateError: already started — ignore
                 }
             }, 300);
