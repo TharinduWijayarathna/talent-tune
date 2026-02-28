@@ -169,10 +169,12 @@ const activeCount = computed(
                             class="flex items-center justify-between gap-4 px-4 py-3 transition-colors hover:bg-muted/50"
                         >
                             <div class="min-w-0 flex-1">
-                                <p class="font-medium truncate">
+                                <p class="truncate font-medium">
                                     {{ institution.name }}
                                 </p>
-                                <p class="text-sm text-muted-foreground truncate">
+                                <p
+                                    class="truncate text-sm text-muted-foreground"
+                                >
                                     {{ institution.slug }}.{{ baseDomain }}
                                 </p>
                             </div>
@@ -201,7 +203,7 @@ const activeCount = computed(
                                 <Badge
                                     v-else-if="hasActiveTrial(institution)"
                                     variant="secondary"
-                                    class="border-amber-500 text-amber-700 text-xs"
+                                    class="border-amber-500 text-xs text-amber-700"
                                 >
                                     Trial
                                 </Badge>
@@ -216,9 +218,7 @@ const activeCount = computed(
                         v-if="filteredInstitutions.length === 0"
                         class="py-12 text-center text-muted-foreground"
                     >
-                        <Building2
-                            class="mx-auto mb-3 h-10 w-10 opacity-50"
-                        />
+                        <Building2 class="mx-auto mb-3 h-10 w-10 opacity-50" />
                         <p>No institutions found.</p>
                     </div>
                 </CardContent>

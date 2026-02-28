@@ -101,7 +101,9 @@ const deleteInstitution = () => {
         <div
             class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4"
         >
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div
+                class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+            >
                 <div class="flex items-center gap-3">
                     <Button variant="ghost" size="icon" as-child>
                         <Link :href="'/admin/institutions'">
@@ -109,7 +111,9 @@ const deleteInstitution = () => {
                         </Link>
                     </Button>
                     <div>
-                        <h1 class="text-2xl font-bold">{{ institution.name }}</h1>
+                        <h1 class="text-2xl font-bold">
+                            {{ institution.name }}
+                        </h1>
                         <p class="text-sm text-muted-foreground">
                             {{ institution.slug }}.{{ baseDomain }}
                         </p>
@@ -117,15 +121,15 @@ const deleteInstitution = () => {
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
                     <Button variant="outline" size="sm" as-child>
-                        <Link :href="`/admin/institutions/${institution.slug}/edit`">
+                        <Link
+                            :href="`/admin/institutions/${institution.slug}/edit`"
+                        >
                             <Pencil class="mr-2 h-4 w-4" />
                             Edit
                         </Link>
                     </Button>
                     <Button
-                        v-if="
-                            hasActiveTrial() && !hasPaidSubscription()
-                        "
+                        v-if="hasActiveTrial() && !hasPaidSubscription()"
                         variant="outline"
                         size="sm"
                         @click="endTrial"
@@ -143,11 +147,7 @@ const deleteInstitution = () => {
                             class="mr-2 h-4 w-4"
                         />
                         <X v-else class="mr-2 h-4 w-4" />
-                        {{
-                            institution.is_active
-                                ? 'Deactivate'
-                                : 'Activate'
-                        }}
+                        {{ institution.is_active ? 'Deactivate' : 'Activate' }}
                     </Button>
                     <Button
                         variant="destructive"
@@ -181,13 +181,14 @@ const deleteInstitution = () => {
                 >
                     Trial until
                     {{
-                        new Date(institution.trial_ends_at!).toLocaleDateString()
+                        new Date(
+                            institution.trial_ends_at!,
+                        ).toLocaleDateString()
                     }}
                 </Badge>
                 <Badge
                     v-else-if="
-                        institution.trial_ends_at &&
-                        !hasPaidSubscription()
+                        institution.trial_ends_at && !hasPaidSubscription()
                     "
                     variant="secondary"
                 >
@@ -215,7 +216,9 @@ const deleteInstitution = () => {
                             <Mail class="h-4 w-4 text-muted-foreground" />
                             <div>
                                 <p class="text-muted-foreground">Email</p>
-                                <p class="font-medium">{{ institution.email }}</p>
+                                <p class="font-medium">
+                                    {{ institution.email }}
+                                </p>
                             </div>
                         </div>
                         <div
@@ -224,12 +227,12 @@ const deleteInstitution = () => {
                         >
                             <User class="h-4 w-4 text-muted-foreground" />
                             <div>
-                                <p class="text-muted-foreground"
-                                    >Contact person</p
-                                >
-                                <p class="font-medium">{{
-                                    institution.contact_person
-                                }}</p>
+                                <p class="text-muted-foreground">
+                                    Contact person
+                                </p>
+                                <p class="font-medium">
+                                    {{ institution.contact_person }}
+                                </p>
                             </div>
                         </div>
                         <div
@@ -239,9 +242,9 @@ const deleteInstitution = () => {
                             <Phone class="h-4 w-4 text-muted-foreground" />
                             <div>
                                 <p class="text-muted-foreground">Phone</p>
-                                <p class="font-medium">{{
-                                    institution.phone
-                                }}</p>
+                                <p class="font-medium">
+                                    {{ institution.phone }}
+                                </p>
                             </div>
                         </div>
                         <div
@@ -253,9 +256,9 @@ const deleteInstitution = () => {
                             />
                             <div>
                                 <p class="text-muted-foreground">Address</p>
-                                <p class="font-medium">{{
-                                    institution.address
-                                }}</p>
+                                <p class="font-medium">
+                                    {{ institution.address }}
+                                </p>
                             </div>
                         </div>
                     </div>

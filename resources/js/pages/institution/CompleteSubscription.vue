@@ -95,8 +95,8 @@ const handleLogout = () => {
                     </h1>
                     <p class="mb-12 text-lg text-muted-foreground">
                         <template v-if="props.trial_ended">
-                            <strong>{{ institution.name }}</strong>'s free
-                            trial has ended. Subscribe now to continue
+                            <strong>{{ institution.name }}</strong
+                            >'s free trial has ended. Subscribe now to continue
                             accessing the dashboard and all features.
                         </template>
                         <template v-else>

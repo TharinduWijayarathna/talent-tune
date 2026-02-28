@@ -64,7 +64,7 @@ const hasPaidSubscription = () =>
 const endTrial = () => {
     if (
         !confirm(
-            'End this institution\'s trial now? They will be asked to pay to continue access.',
+            "End this institution's trial now? They will be asked to pay to continue access.",
         )
     ) {
         return;
@@ -202,7 +202,9 @@ const endTrial = () => {
                             "
                             class="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30"
                         >
-                            <p class="text-sm font-medium text-amber-800 dark:text-amber-200">
+                            <p
+                                class="text-sm font-medium text-amber-800 dark:text-amber-200"
+                            >
                                 Trial
                                 {{
                                     hasActiveTrial()
@@ -211,7 +213,9 @@ const endTrial = () => {
                                 }}
                             </p>
                             <Button
-                                v-if="hasActiveTrial() && !hasPaidSubscription()"
+                                v-if="
+                                    hasActiveTrial() && !hasPaidSubscription()
+                                "
                                 type="button"
                                 variant="outline"
                                 size="sm"
