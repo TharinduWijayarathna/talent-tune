@@ -22,6 +22,7 @@ import {
     Layers,
     LayoutGrid,
     Plus,
+    Shield,
     Users,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
@@ -111,6 +112,11 @@ const mainNavItems = computed<NavItem[]>(() => {
                 title: 'Dashboard',
                 href: '/admin/dashboard',
                 icon: LayoutGrid,
+            },
+            {
+                title: 'TalentTune Admins',
+                href: '/admin/talenttune-admins',
+                icon: Shield,
             },
             {
                 title: 'Institutions',
