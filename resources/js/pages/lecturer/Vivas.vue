@@ -36,6 +36,7 @@ const props = defineProps<{
         description?: string;
         batch: string;
         scheduled_at: string;
+        due_at?: string | null;
         status: string;
         students: number;
     }>;
@@ -133,6 +134,10 @@ const statusVariant = (status: string) => {
                                     {{
                                         formatScheduledLocal(viva.scheduled_at)
                                     }}
+                                    <template v-if="viva.due_at">
+                                        • Due:
+                                        {{ formatScheduledLocal(viva.due_at) }}
+                                    </template>
                                     • {{ viva.students }} student(s)
                                 </p>
                                 <p

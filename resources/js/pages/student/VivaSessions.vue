@@ -22,6 +22,8 @@ const props = defineProps<{
         date: string;
         time: string;
         scheduled_at?: string;
+        due_at?: string | null;
+        closed_by_due?: boolean;
         lecturer: string;
         status: string;
         batch?: string;
@@ -75,14 +77,38 @@ const formatScheduledLocal = (viva: {
     return { date: viva.date ?? '', time: viva.time ?? '' };
 };
 
+// Format due_at (ISO) for display
+const formatDueLocal = (dueAt: string | null | undefined) => {
+    if (!dueAt) return null;
+    try {
+        const d = new Date(dueAt);
+        if (Number.isNaN(d.getTime())) return null;
+        return d.toLocaleString(undefined, {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+        });
+    } catch {
+        return null;
+    }
+};
+
 const attendLabel = (viva: {
     status: string;
     can_attend?: boolean;
+    closed_by_due?: boolean;
     date?: string;
     time?: string;
     scheduled_at?: string;
 }) => {
-    if (viva.status === 'completed') return 'Closed by lecturer';
+    if (viva.status === 'completed') {
+        return viva.closed_by_due
+            ? 'Closed (due date passed)'
+            : 'Closed by lecturer';
+    }
     if (viva.can_attend) return 'Attend Viva';
     const { date, time } = formatScheduledLocal(viva);
     return `Opens on ${date} at ${time}`;
@@ -167,6 +193,16 @@ const attendLabel = (viva: {
                                     class="flex items-center gap-2 text-sm text-muted-foreground"
                                 >
                                     <span>Batch: {{ viva.batch }}</span>
+                                </div>
+                                <div
+                                    v-if="viva.due_at"
+                                    class="flex items-center gap-2 text-sm text-muted-foreground"
+                                >
+                                    <Clock class="h-4 w-4" />
+                                    <span
+                                        >Due:
+                                        {{ formatDueLocal(viva.due_at) }}</span
+                                    >
                                 </div>
                             </div>
 

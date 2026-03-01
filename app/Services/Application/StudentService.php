@@ -130,6 +130,8 @@ class StudentService
             return [];
         }
 
+        Viva::closeOverdueVivas();
+
         $vivas = Viva::where('institution_id', $institution->id)
             ->where('batch', $user->batch)
             ->with('lecturer')
@@ -154,6 +156,10 @@ class StudentService
 
             $rawScheduled = $viva->getRawOriginal('scheduled_at');
             $scheduledAtUtc = $rawScheduled ? Carbon::parse($rawScheduled, 'UTC') : $viva->scheduled_at->copy()->utc();
+            $rawDue = $viva->getRawOriginal('due_at');
+            $dueAtUtc = $rawDue ? Carbon::parse($rawDue, 'UTC') : ($viva->due_at ? $viva->due_at->copy()->utc() : null);
+            $closedByDue = $viva->status === 'completed' && $dueAtUtc && $dueAtUtc->lte($nowUtc);
+
             $scheduledReached = $scheduledAtUtc->lte($nowUtc);
             $notClosed = $viva->status !== 'completed';
             $can_attend = (($scheduledReached && $notClosed) && ! $hasCompleted) || $hasPendingLate;
@@ -165,6 +171,8 @@ class StudentService
                 'date' => $viva->scheduled_at->format('Y-m-d'),
                 'time' => $viva->scheduled_at->format('g:i A'),
                 'scheduled_at' => $scheduledAtUtc->toIso8601String(),
+                'due_at' => $dueAtUtc?->toIso8601String(),
+                'closed_by_due' => $closedByDue,
                 'lecturer' => $viva->lecturer->name,
                 'status' => $viva->status,
                 'batch' => $viva->batch,
@@ -177,11 +185,13 @@ class StudentService
     }
 
     /**
-     * Get viva for attend. Student may attend only on/after scheduled date and until lecturer closes the viva.
+     * Get viva for attend. Student may attend only on/after scheduled date and until lecturer closes the viva or due date passes.
      * When viva is closed, a student can attend only if the lecturer added them for one-time (late) participation (allowed_after_close).
      */
     public function getVivaForAttend(Institution $institution, User $user, int $id): array
     {
+        Viva::closeOverdueVivas();
+
         $viva = Viva::where('institution_id', $institution->id)
             ->where('id', $id)
             ->where('batch', $user->batch)
@@ -203,7 +213,13 @@ class StudentService
                 if ($anySubmission && $anySubmission->allowed_after_close && $anySubmission->status === 'completed') {
                     abort(403, 'You have already completed your one-time participation for this viva. Only the lecturer can add you again for another attempt.');
                 }
-                abort(403, 'This viva has been closed by the lecturer. You can no longer attend unless the lecturer adds you for one-time participation.');
+                $rawDue = $viva->getRawOriginal('due_at');
+                $dueAtUtc = $rawDue ? Carbon::parse($rawDue, 'UTC') : ($viva->due_at ? $viva->due_at->copy()->utc() : null);
+                $closedByDue = $dueAtUtc && $dueAtUtc->lte(now()->utc());
+                $message = $closedByDue
+                    ? 'This viva has closed (due date passed). You can no longer attend unless the lecturer adds you for one-time participation.'
+                    : 'This viva has been closed by the lecturer. You can no longer attend unless the lecturer adds you for one-time participation.';
+                abort(403, $message);
             }
 
             return [

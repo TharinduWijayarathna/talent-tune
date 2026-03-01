@@ -77,6 +77,7 @@ const props = defineProps<{
         description?: string;
         batch: string;
         scheduled_at: string;
+        due_at?: string | null;
         instructions?: string;
         status: string;
     };
@@ -210,6 +211,10 @@ const addLateStudent = () => {
                             <CardDescription class="mt-1">
                                 Batch: {{ viva.batch }} •
                                 {{ formatScheduledLocal(viva.scheduled_at) }}
+                                <template v-if="viva.due_at">
+                                    • Due:
+                                    {{ formatScheduledLocal(viva.due_at) }}
+                                </template>
                             </CardDescription>
                         </div>
                         <div class="flex items-center gap-2">

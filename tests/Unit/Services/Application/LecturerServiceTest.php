@@ -178,6 +178,8 @@ test('createViva creates viva with instructions and no base_prompt', function ()
         'batch' => '2024',
         'date' => now()->addDay()->format('Y-m-d'),
         'time' => '14:00',
+        'due_date' => now()->addDays(2)->format('Y-m-d'),
+        'due_time' => '23:59',
         'instructions' => 'Instructions',
     ];
 
@@ -187,6 +189,7 @@ test('createViva creates viva with instructions and no base_prompt', function ()
     expect($viva->title)->toBe('Viva Title');
     expect($viva->batch)->toBe('2024');
     expect($viva->instructions)->toBe('Instructions');
+    expect($viva->due_at)->not->toBeNull();
     expect($viva->viva_background)->toBeNull();
     expect($viva->base_prompt)->toBeNull();
     expect($viva->status)->toBe('upcoming');

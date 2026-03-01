@@ -105,6 +105,8 @@ class LecturerService
 
     public function getVivas(Institution $institution, User $user): array
     {
+        Viva::closeOverdueVivas();
+
         return Viva::where('institution_id', $institution->id)
             ->where('lecturer_id', $user->id)
             ->orderBy('scheduled_at', 'desc')
@@ -120,12 +122,18 @@ class LecturerService
                     ? Carbon::parse($rawScheduled, 'UTC')
                     : $viva->scheduled_at->copy()->utc();
 
+                $rawDue = $viva->getRawOriginal('due_at');
+                $dueAtUtc = $rawDue
+                    ? Carbon::parse($rawDue, 'UTC')
+                    : ($viva->due_at ? $viva->due_at->copy()->utc() : null);
+
                 return [
                     'id' => $viva->id,
                     'title' => $viva->title,
                     'description' => $viva->description,
                     'batch' => $viva->batch,
                     'scheduled_at' => $scheduledAtUtc->toIso8601String(),
+                    'due_at' => $dueAtUtc?->toIso8601String(),
                     'status' => $viva->status,
                     'students' => $studentsInBatch,
                 ];
@@ -159,20 +167,23 @@ class LecturerService
 
     /**
      * Create a viva session. Lecturer's instructions are stored and used at question-generation time.
+     * Due date is required; when due_at passes, the viva is automatically closed.
      */
     public function createViva(Institution $institution, User $user, array $validated): Viva
     {
-        // Parse scheduled time in lecturer's timezone so "6:30 PM" means their local time, then store as UTC
+        // Parse scheduled and due time in lecturer's timezone, then store as UTC
         $tz = ! empty($validated['timezone']) && in_array($validated['timezone'], timezone_identifiers_list(), true)
             ? $validated['timezone']
             : config('app.timezone');
         $scheduledAt = Carbon::parse($validated['date'].' '.$validated['time'], $tz)->utc();
+        $dueAt = Carbon::parse($validated['due_date'].' '.$validated['due_time'], $tz)->utc();
 
         return Viva::create([
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
             'batch' => $validated['batch'],
             'scheduled_at' => $scheduledAt,
+            'due_at' => $dueAt,
             'instructions' => $validated['instructions'] ?? null,
             'lecture_materials' => null,
             'viva_background' => null,
@@ -185,6 +196,8 @@ class LecturerService
 
     public function getVivaForShow(Institution $institution, User $user, int $id): Viva
     {
+        Viva::closeOverdueVivas();
+
         return Viva::where('institution_id', $institution->id)
             ->where('lecturer_id', $user->id)
             ->findOrFail($id);

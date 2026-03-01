@@ -15,6 +15,7 @@ class Viva extends Model
         'description',
         'batch',
         'scheduled_at',
+        'due_at',
         'instructions',
         'lecture_materials',
         'viva_background',
@@ -24,6 +25,7 @@ class Viva extends Model
 
     protected $casts = [
         'scheduled_at' => 'datetime',
+        'due_at' => 'datetime',
         'lecture_materials' => 'array',
     ];
 
@@ -40,5 +42,17 @@ class Viva extends Model
     public function submissions(): HasMany
     {
         return $this->hasMany(VivaStudentSubmission::class);
+    }
+
+    /**
+     * Close all vivas whose due_at has passed. Call when loading viva lists or details
+     * so that overdue vivas are marked completed and students can no longer attend.
+     */
+    public static function closeOverdueVivas(): int
+    {
+        return self::whereNotNull('due_at')
+            ->where('due_at', '<=', now()->utc())
+            ->where('status', '!=', 'completed')
+            ->update(['status' => 'completed']);
     }
 }

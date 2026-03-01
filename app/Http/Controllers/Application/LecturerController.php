@@ -99,6 +99,8 @@ class LecturerController extends Controller
             'batch' => ['required', 'string'],
             'date' => ['required', 'date'],
             'time' => ['required', 'string'],
+            'due_date' => ['required', 'date'],
+            'due_time' => ['required', 'string'],
             'timezone' => ['nullable', 'string', 'max:50'],
             'instructions' => ['nullable', 'string'],
         ]);
@@ -122,6 +124,11 @@ class LecturerController extends Controller
             ? Carbon::parse($rawScheduled, 'UTC')
             : $viva->scheduled_at->copy()->utc();
 
+        $rawDue = $viva->getRawOriginal('due_at');
+        $dueAtUtc = $rawDue
+            ? Carbon::parse($rawDue, 'UTC')
+            : ($viva->due_at ? $viva->due_at->copy()->utc() : null);
+
         return Inertia::render('lecturer/ShowViva', [
             'viva' => [
                 'id' => $viva->id,
@@ -129,6 +136,7 @@ class LecturerController extends Controller
                 'description' => $viva->description,
                 'batch' => $viva->batch,
                 'scheduled_at' => $scheduledAtUtc->toIso8601String(),
+                'due_at' => $dueAtUtc?->toIso8601String(),
                 'instructions' => $viva->instructions,
                 'status' => $viva->status,
             ],
