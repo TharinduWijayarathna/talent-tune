@@ -42,6 +42,8 @@ const form = useForm({
     batch: '',
     date: '',
     time: '',
+    due_date: '',
+    due_time: '',
     instructions: '',
 });
 
@@ -218,6 +220,110 @@ const submitForm = () => {
                                     <InputError :message="form.errors.time" />
                                 </div>
                             </div>
+
+                            <div class="grid gap-4 md:grid-cols-2">
+                                <div class="space-y-2">
+                                    <Label>Due date *</Label>
+                                    <Popover>
+                                        <PopoverTrigger as-child>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                :class="
+                                                    cn(
+                                                        'w-full justify-start text-left font-normal',
+                                                        !form.due_date &&
+                                                            'text-muted-foreground',
+                                                    )
+                                                "
+                                            >
+                                                <CalendarIcon
+                                                    class="mr-2 h-4 w-4"
+                                                />
+                                                {{
+                                                    form.due_date
+                                                        ? format(
+                                                              new Date(
+                                                                  form.due_date +
+                                                                      'T12:00:00',
+                                                              ),
+                                                              'PPP',
+                                                          )
+                                                        : 'Pick due date'
+                                                }}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent
+                                            class="w-auto p-0"
+                                            align="start"
+                                        >
+                                            <Calendar
+                                                :model-value="
+                                                    form.due_date
+                                                        ? new Date(
+                                                              form.due_date +
+                                                                  'T12:00:00',
+                                                          )
+                                                        : undefined
+                                                "
+                                                @update:model-value="
+                                                    (d) => {
+                                                        if (d)
+                                                            form.due_date =
+                                                                format(
+                                                                    d,
+                                                                    'yyyy-MM-dd',
+                                                                );
+                                                    }
+                                                "
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                    <InputError
+                                        :message="form.errors.due_date"
+                                    />
+                                </div>
+                                <div class="space-y-2">
+                                    <Label>Due time *</Label>
+                                    <Popover>
+                                        <PopoverTrigger as-child>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                :class="
+                                                    cn(
+                                                        'w-full justify-start text-left font-normal',
+                                                        !form.due_time &&
+                                                            'text-muted-foreground',
+                                                    )
+                                                "
+                                            >
+                                                <Clock class="mr-2 h-4 w-4" />
+                                                {{
+                                                    form.due_time ||
+                                                    'Pick due time'
+                                                }}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent
+                                            class="w-auto p-0"
+                                            align="start"
+                                        >
+                                            <TimePicker
+                                                v-model="form.due_time"
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                    <InputError
+                                        :message="form.errors.due_time"
+                                    />
+                                </div>
+                            </div>
+                            <p class="text-sm text-muted-foreground">
+                                After the due date and time, the viva will be
+                                closed automatically and students can no longer
+                                attend.
+                            </p>
                         </CardContent>
                     </Card>
 
