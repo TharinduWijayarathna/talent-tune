@@ -8,7 +8,7 @@ beforeEach(function () {
     $this->service = app(InstitutionService::class);
 });
 
-test('create creates institution with generated slug', function () {
+test('create creates institution with generated slug, trial, and sends credentials email', function () {
     $validated = [
         'name' => 'Test University',
         'email' => 'contact@test.edu',
@@ -16,14 +16,16 @@ test('create creates institution with generated slug', function () {
         'phone' => '+1234567890',
         'address' => '123 Main St',
     ];
+    $request = Request::create('https://test-university.example.com/', 'GET');
 
-    $institution = $this->service->create($validated);
+    $institution = $this->service->create($validated, $request);
 
     expect($institution)->toBeInstanceOf(Institution::class);
     expect($institution->name)->toBe('Test University');
     expect($institution->email)->toBe('contact@test.edu');
     expect($institution->contact_person)->toBe('John Doe');
-    expect($institution->is_active)->toBeFalse();
+    expect($institution->is_active)->toBeTrue();
+    expect($institution->trial_ends_at)->not->toBeNull();
     expect($institution->slug)->not->toBeEmpty();
     expect($institution->slug)->toMatch('/^test-university(-[0-9]+)?$/');
 });
