@@ -15,7 +15,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('settings/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::post('settings/profile/avatar', [ProfileAvatarController::class, 'upload'])->name('profile.avatar.upload');
-    Route::post('settings/profile/avatar/generate', [ProfileAvatarController::class, 'generate'])->name('profile.avatar.generate');
+    Route::post('settings/profile/avatar/enhance', [ProfileAvatarController::class, 'enhance'])->name('profile.avatar.enhance');
     Route::delete('settings/profile/avatar', [ProfileAvatarController::class, 'destroy'])->name('profile.avatar.destroy');
 
     Route::get('settings/password', [PasswordController::class, 'edit'])->name('user-password.edit');
