@@ -25,6 +25,57 @@ class GeminiQuestionService
 
     private const VIVA_QUESTION_COUNT = 5;
 
+    /**
+     * Generate 5 sample instruction points for a viva based on title and optional description.
+     * Returns ['instructions' => string] or ['error' => string, 'code' => int].
+     */
+    public function generateInstructions(string $title = '', string $description = ''): array
+    {
+        if (! $this->getApiKey()) {
+            return ['error' => 'Gemini API key not configured', 'code' => 500];
+        }
+
+        $hasContext = trim($title) !== '' || trim($description) !== '';
+        $prompt = $hasContext
+            ? 'You are helping a lecturer write instructions for a viva (oral exam) session. '
+            .'Based on the following viva details, generate exactly 5 clear, concise instruction points that define the scope and focus of the viva. '
+            ."These instructions will be used later to generate questions for students.\n\n"
+            .'Viva title: '.trim($title ?: 'General subject')."\n\n"
+            .(trim($description) !== '' ? 'Description/context: '.trim($description)."\n\n" : '')
+            .'Return ONLY a numbered list of exactly 5 instruction points (1. ... 2. ... etc.). One point per line. No preamble or extra text.'
+            : 'You are helping a lecturer write instructions for a viva (oral exam) session. '
+            .'Generate exactly 5 generic, clear instruction points that could apply to a typical viva (e.g. core concepts, terminology, applications, problem-solving, examples). '
+            .'Return ONLY a numbered list of exactly 5 points (1. ... 2. ... etc.). One point per line. No preamble or extra text.';
+
+        $response = Http::post($this->getApiUrl(), [
+            'contents' => [['parts' => [['text' => $prompt]]]],
+            'generationConfig' => [
+                'temperature' => 0.7,
+                'topK' => 40,
+                'topP' => 0.95,
+                'maxOutputTokens' => 1024,
+            ],
+        ]);
+
+        if ($response->failed()) {
+            $errorData = $response->json();
+
+            return [
+                'error' => $errorData['error']['message'] ?? 'Failed to generate instructions',
+                'code' => $response->status(),
+            ];
+        }
+
+        $data = $response->json();
+        $text = trim($data['candidates'][0]['content']['parts'][0]['text'] ?? '');
+
+        if ($text === '') {
+            return ['error' => 'Empty response from AI', 'code' => 500];
+        }
+
+        return ['instructions' => $text];
+    }
+
     public function generateQuestions(
         ?int $vivaId,
         string $topic,

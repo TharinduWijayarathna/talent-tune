@@ -14,6 +14,9 @@ Route::post('api/viva/tts', [TTSController::class, 'generate'])
     ->name('viva.tts');
 
 Route::prefix('api/viva')->middleware(['auth'])->group(function () {
+    Route::post('instructions/generate', [GeminiController::class, 'generateInstructions'])
+        ->name('viva.instructions.generate');
+
     Route::post('questions/generate', [GeminiController::class, 'generateQuestions'])
         ->name('viva.questions.generate');
 

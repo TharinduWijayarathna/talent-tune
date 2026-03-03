@@ -46,6 +46,31 @@ class GeminiController extends Controller
     }
 
     /**
+     * Generate sample viva instructions (5 points) using Gemini. Uses title/description if provided.
+     */
+    public function generateInstructions(Request $request): JsonResponse
+    {
+        $request->validate([
+            'title' => 'nullable|string|max:300',
+            'description' => 'nullable|string|max:2000',
+        ]);
+
+        $result = $this->geminiQuestionService->generateInstructions(
+            $request->input('title', ''),
+            $request->input('description', '')
+        );
+
+        if (isset($result['error'])) {
+            $code = $result['code'] ?? 500;
+            unset($result['code']);
+
+            return response()->json($result, $code);
+        }
+
+        return response()->json($result);
+    }
+
+    /**
      * Evaluate a student's answer using Gemini AI.
      * When from_voice is true, the raw speech-to-text is first corrected by AI before evaluation.
      */

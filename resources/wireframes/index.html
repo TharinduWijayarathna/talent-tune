@@ -1,0 +1,3125 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>TalentTune – Wireframes</title>
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+            body {
+                margin: 0;
+                font-family:
+                    'Inter',
+                    system-ui,
+                    -apple-system,
+                    sans-serif;
+                font-size: 14px;
+                color: #1a1a1a;
+                background: #f0f1f3;
+                line-height: 1.5;
+            }
+            .app {
+                display: flex;
+                min-height: 100vh;
+            }
+            /* Catalog nav */
+            .nav {
+                width: 280px;
+                background: #fff;
+                border-right: 1px solid #e2e4e8;
+                overflow-y: auto;
+                flex-shrink: 0;
+                box-shadow: 1px 0 0 rgba(0, 0, 0, 0.04);
+            }
+            .nav-header {
+                padding: 20px 20px 16px;
+                border-bottom: 1px solid #f3f4f6;
+            }
+            .nav-header-title {
+                font-size: 15px;
+                font-weight: 700;
+                color: #111;
+                letter-spacing: -0.02em;
+            }
+            .nav-header-sub {
+                font-size: 11px;
+                color: #6b7280;
+                margin-top: 2px;
+            }
+            .nav h2 {
+                margin: 0;
+                padding: 14px 20px 8px;
+                font-size: 10px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                color: #6b7280;
+            }
+            .nav a {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 10px 20px;
+                color: #374151;
+                text-decoration: none;
+                font-size: 13px;
+                border-left: 3px solid transparent;
+                transition: background 0.15s;
+            }
+            .nav a:hover {
+                background: #f3f4f6;
+                color: #111;
+            }
+            .nav a.active {
+                background: #eff6ff;
+                color: #1d4ed8;
+                border-left-color: #3b82f6;
+                font-weight: 500;
+            }
+            .main {
+                flex: 1;
+                padding: 32px;
+                overflow: auto;
+            }
+            .wireframe {
+                display: none;
+                max-width: 1100px;
+                margin: 0 auto;
+            }
+            .wireframe.visible {
+                display: block;
+            }
+            .wireframe-annotation {
+                font-size: 10px;
+                color: #9ca3af;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                margin-bottom: 12px;
+            }
+            /* Frames & layout */
+            .wf-frame {
+                background: #fff;
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                padding: 20px;
+                margin-bottom: 20px;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+            }
+            .wf-label {
+                font-size: 10px;
+                font-weight: 600;
+                color: #6b7280;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                margin-bottom: 10px;
+            }
+            .wf-bar {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                height: 52px;
+                padding: 0 16px;
+                background: #fff;
+                border: 1px solid #e5e7eb;
+                border-radius: 6px;
+                margin-bottom: 20px;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+            }
+            .wf-bar-breadcrumb {
+                font-size: 13px;
+                color: #6b7280;
+            }
+            .wf-bar-breadcrumb span {
+                color: #111;
+                font-weight: 500;
+            }
+            .wf-row {
+                display: flex;
+                gap: 20px;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
+            }
+            .wf-box {
+                background: #f8fafc;
+                border: 1px dashed #cbd5e1;
+                border-radius: 6px;
+                padding: 16px;
+                min-height: 64px;
+                color: #64748b;
+                font-size: 13px;
+            }
+            .wf-card {
+                background: #fff;
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                padding: 20px;
+                margin-bottom: 16px;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+            }
+            .wf-card:hover {
+                border-color: #d1d5db;
+            }
+            .wf-stat {
+                background: #fff;
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                padding: 20px;
+                flex: 1;
+                min-width: 140px;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+            }
+            .wf-stat-value {
+                font-size: 24px;
+                font-weight: 700;
+                color: #111;
+                margin-bottom: 4px;
+            }
+            .wf-stat-label {
+                font-size: 12px;
+                color: #6b7280;
+            }
+            /* Table */
+            .wf-table {
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                overflow: hidden;
+                background: #fff;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+            }
+            .wf-table .wf-th {
+                display: flex;
+                padding: 12px 16px;
+                background: #f8fafc;
+                font-size: 11px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+                color: #6b7280;
+                border-bottom: 1px solid #e5e7eb;
+            }
+            .wf-table .wf-tr {
+                display: flex;
+                align-items: center;
+                border-bottom: 1px solid #f3f4f6;
+                padding: 14px 16px;
+                background: #fff;
+                font-size: 13px;
+                color: #374151;
+            }
+            .wf-table .wf-tr:last-child {
+                border-bottom: none;
+            }
+            .wf-table .wf-tr:hover {
+                background: #fafafa;
+            }
+            .wf-table .wf-col {
+                flex: 1;
+                min-width: 0;
+            }
+            .wf-table .wf-col-actions {
+                flex: 0 0 100px;
+                text-align: right;
+            }
+            /* Sidebar (in wireframe) */
+            .wf-sidebar {
+                width: 256px;
+                background: #fafbfc;
+                border-right: 1px solid #e5e7eb;
+                padding: 16px;
+                flex-shrink: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+            }
+            .wf-sidebar .wf-logo {
+                height: 40px;
+                background: #e5e7eb;
+                border-radius: 6px;
+                margin-bottom: 16px;
+            }
+            .wf-sidebar .wf-nav-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 10px 12px;
+                border-radius: 6px;
+                font-size: 13px;
+                color: #374151;
+                background: #f1f5f9;
+                border: 1px dashed #cbd5e1;
+                margin-bottom: 4px;
+            }
+            .wf-sidebar .wf-nav-item.active {
+                background: #eff6ff;
+                color: #1d4ed8;
+                border-color: #93c5fd;
+            }
+            .wf-sidebar .wf-nav-icon {
+                width: 20px;
+                height: 20px;
+                background: #cbd5e1;
+                border-radius: 4px;
+                flex-shrink: 0;
+            }
+            .wf-sidebar .wf-user {
+                margin-top: auto;
+                padding-top: 16px;
+                border-top: 1px solid #e5e7eb;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 12px;
+                background: #f8fafc;
+                border-radius: 6px;
+                border: 1px dashed #cbd5e1;
+            }
+            .wf-sidebar .wf-avatar {
+                width: 36px;
+                height: 36px;
+                background: #cbd5e1;
+                border-radius: 50%;
+                flex-shrink: 0;
+            }
+            .wf-shell {
+                display: flex;
+                min-height: 560px;
+                background: #fff;
+                border: 1px solid #e5e7eb;
+                border-radius: 10px;
+                overflow: hidden;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            }
+            .wf-shell-content {
+                flex: 1;
+                padding: 24px;
+                overflow: auto;
+                background: #fafbfc;
+            }
+            .wf-title {
+                font-size: 22px;
+                font-weight: 700;
+                color: #111;
+                margin-bottom: 6px;
+                letter-spacing: -0.02em;
+            }
+            .wf-desc {
+                color: #6b7280;
+                margin-bottom: 20px;
+                font-size: 14px;
+            }
+            .wf-toolbar {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
+            }
+            .wf-btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 10px 18px;
+                background: #3b82f6;
+                color: #fff;
+                border: none;
+                border-radius: 6px;
+                font-size: 13px;
+                font-weight: 500;
+                margin-right: 8px;
+                margin-bottom: 8px;
+                cursor: default;
+            }
+            .wf-btn-secondary {
+                background: #fff;
+                color: #374151;
+                border: 1px solid #d1d5db;
+            }
+            .wf-btn-secondary:hover {
+                background: #f9fafb;
+            }
+            .wf-input {
+                height: 40px;
+                background: #fff;
+                border: 1px solid #d1d5db;
+                border-radius: 6px;
+                padding: 0 12px;
+                width: 100%;
+                max-width: 300px;
+                margin-bottom: 16px;
+                font-size: 14px;
+                color: #374151;
+            }
+            .wf-input:focus {
+                outline: none;
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+            }
+            .wf-form .wf-field {
+                margin-bottom: 18px;
+            }
+            .wf-form .wf-label {
+                display: block;
+                margin-bottom: 6px;
+                font-size: 13px;
+                font-weight: 500;
+                color: #374151;
+            }
+            .wf-badge {
+                display: inline-flex;
+                padding: 4px 10px;
+                border-radius: 9999px;
+                font-size: 11px;
+                font-weight: 500;
+                background: #e0e7ff;
+                color: #3730a3;
+                border: 1px solid #c7d2fe;
+            }
+            .wf-badge-muted {
+                background: #f3f4f6;
+                color: #6b7280;
+                border-color: #e5e7eb;
+            }
+            .wf-empty {
+                text-align: center;
+                padding: 48px 24px;
+                color: #9ca3af;
+                font-size: 14px;
+                border: 1px dashed #e5e7eb;
+                border-radius: 8px;
+                background: #fafbfc;
+            }
+            .screen-title {
+                font-size: 13px;
+                color: #6b7280;
+                margin-bottom: 20px;
+                padding-bottom: 12px;
+                border-bottom: 1px solid #e5e7eb;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="app">
+            <nav class="nav">
+                <div class="nav-header">
+                    <div class="nav-header-title">TalentTune</div>
+                    <div class="nav-header-sub">Wireframe catalog</div>
+                </div>
+                <h2>Public</h2>
+                <a href="#landing">Landing</a>
+                <a href="#home">Home (institution)</a>
+                <a href="#features">Features</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#about">About</a>
+                <a href="#register-institution">Register institution</a>
+                <a href="#subscribe">Subscribe institution</a>
+                <h2>Auth</h2>
+                <a href="#login">Login</a>
+                <a href="#register">Register</a>
+                <a href="#forgot-password">Forgot password</a>
+                <a href="#reset-password">Reset password</a>
+                <h2>Institution</h2>
+                <a href="#inst-dashboard">Dashboard</a>
+                <a href="#inst-payment">Payment</a>
+                <a href="#inst-batches">Batches</a>
+                <a href="#inst-lecturers">Lecturers</a>
+                <a href="#inst-students">Students</a>
+                <a href="#inst-support">Support</a>
+                <a href="#inst-reports">Reports</a>
+                <a href="#inst-reported-issues">Reported issues</a>
+                <h2>Student</h2>
+                <a href="#student-dashboard">Dashboard</a>
+                <a href="#student-vivas">Viva sessions</a>
+                <a href="#student-viva-attend">Viva attend</a>
+                <a href="#student-viva-submission">Viva submission</a>
+                <a href="#student-issues">Report issue</a>
+                <h2>Lecturer</h2>
+                <a href="#lecturer-dashboard">Dashboard</a>
+                <a href="#lecturer-vivas">My sessions</a>
+                <a href="#lecturer-create-viva">Create viva</a>
+                <a href="#lecturer-show-viva">Show viva</a>
+                <a href="#lecturer-issues">Report issue</a>
+                <h2>Admin</h2>
+                <a href="#admin-dashboard">Dashboard</a>
+                <a href="#admin-admins">TalentTune admins</a>
+                <a href="#admin-institutions">Institutions</a>
+                <a href="#admin-users">Users</a>
+                <a href="#admin-payments">Payments</a>
+                <a href="#admin-support">Support tickets</a>
+                <a href="#admin-reports">Reports</a>
+                <h2>Settings</h2>
+                <a href="#settings-profile">Profile</a>
+                <a href="#settings-password">Password</a>
+                <a href="#settings-two-factor">Two-factor</a>
+                <a href="#settings-appearance">Appearance</a>
+            </nav>
+            <main class="main">
+                <div class="screen-title">
+                    TalentTune wireframes — Select a screen from the sidebar.
+                    Use as reference for Figma or capture via browser.
+                </div>
+
+                <!-- Public -->
+                <div id="landing" class="wireframe">
+                    <div class="wireframe-annotation">Public · Landing</div>
+                    <div class="wf-bar" style="justify-content: space-between">
+                        <div
+                            style="
+                                width: 120px;
+                                height: 28px;
+                                background: #e5e7eb;
+                                border-radius: 4px;
+                            "
+                        ></div>
+                        <div
+                            style="
+                                display: flex;
+                                gap: 16px;
+                                font-size: 13px;
+                                color: #6b7280;
+                            "
+                        >
+                            Home · Features · Pricing · About
+                        </div>
+                        <div style="display: flex; gap: 8px">
+                            <span class="wf-btn-secondary">Login</span
+                            ><span class="wf-btn">Register institution</span>
+                        </div>
+                    </div>
+                    <div
+                        class="wf-frame"
+                        style="text-align: center; padding: 48px 24px"
+                    >
+                        <div class="wf-label">Hero</div>
+                        <div
+                            class="wf-title"
+                            style="
+                                font-size: 28px;
+                                max-width: 560px;
+                                margin: 0 auto 16px;
+                            "
+                        >
+                            Run viva exams at scale with AI
+                        </div>
+                        <p
+                            class="wf-desc"
+                            style="max-width: 480px; margin: 0 auto 24px"
+                        >
+                            Register your institution, add lecturers and
+                            students, and manage viva sessions with AI-powered
+                            support.
+                        </p>
+                        <span class="wf-btn">Get started</span
+                        ><span class="wf-btn-secondary">Learn more</span>
+                    </div>
+                    <div class="wf-frame">
+                        <div class="wf-label">How it works</div>
+                        <div class="wf-row">
+                            <div class="wf-box" style="flex: 1">
+                                <strong style="color: #374151">1</strong>
+                                Register institution
+                            </div>
+                            <div class="wf-box" style="flex: 1">
+                                <strong style="color: #374151">2</strong> Get
+                                subdomain
+                            </div>
+                            <div class="wf-box" style="flex: 1">
+                                <strong style="color: #374151">3</strong> Manage
+                                vivas
+                            </div>
+                        </div>
+                    </div>
+                    <div class="wf-frame">
+                        <div class="wf-label">Features</div>
+                        <div class="wf-row">
+                            <div
+                                class="wf-card"
+                                style="flex: 1; min-width: 200px"
+                            >
+                                <div
+                                    class="wf-nav-icon"
+                                    style="margin-bottom: 12px"
+                                ></div>
+                                <div class="wf-title" style="font-size: 16px">
+                                    AI questions
+                                </div>
+                                <p
+                                    class="wf-desc"
+                                    style="margin: 0; font-size: 13px"
+                                >
+                                    Generate and evaluate
+                                </p>
+                            </div>
+                            <div class="wf-card" style="flex: 1">
+                                <div
+                                    class="wf-nav-icon"
+                                    style="margin-bottom: 12px"
+                                ></div>
+                                <div class="wf-title" style="font-size: 16px">
+                                    Batches
+                                </div>
+                                <p
+                                    class="wf-desc"
+                                    style="margin: 0; font-size: 13px"
+                                >
+                                    Group students
+                                </p>
+                            </div>
+                            <div class="wf-card" style="flex: 1">
+                                <div
+                                    class="wf-nav-icon"
+                                    style="margin-bottom: 12px"
+                                ></div>
+                                <div class="wf-title" style="font-size: 16px">
+                                    Reports
+                                </div>
+                                <p
+                                    class="wf-desc"
+                                    style="margin: 0; font-size: 13px"
+                                >
+                                    Export PDFs
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="wf-frame">
+                        <div class="wf-label">Footer</div>
+                        <div
+                            style="
+                                height: 80px;
+                                background: #f3f4f6;
+                                border-radius: 6px;
+                            "
+                        ></div>
+                    </div>
+                </div>
+
+                <div id="home" class="wireframe">
+                    <div class="wireframe-annotation">
+                        Public · Home (institution)
+                    </div>
+                    <div class="wf-bar" style="justify-content: space-between">
+                        <div
+                            style="
+                                width: 120px;
+                                height: 28px;
+                                background: #e5e7eb;
+                                border-radius: 4px;
+                            "
+                        ></div>
+                        <div style="font-size: 13px; color: #6b7280">
+                            Home · Features · Pricing · About
+                        </div>
+                        <span class="wf-btn">Login</span>
+                    </div>
+                    <div class="wf-frame">
+                        <div class="wf-title">
+                            Welcome to [Institution name]
+                        </div>
+                        <p class="wf-desc">
+                            Institution-specific home. Sign in or register.
+                        </p>
+                        <span class="wf-btn">Log in</span>
+                    </div>
+                </div>
+
+                <div id="features" class="wireframe">
+                    <div class="wireframe-annotation">Public · Features</div>
+                    <div class="wf-bar"></div>
+                    <div class="wf-frame">
+                        <div class="wf-title">Features</div>
+                        <div class="wf-row">
+                            <div
+                                class="wf-card"
+                                style="flex: 1; min-width: 200px"
+                            >
+                                <div
+                                    class="wf-nav-icon"
+                                    style="margin-bottom: 12px"
+                                ></div>
+                                <div class="wf-title" style="font-size: 16px">
+                                    AI-powered vivas
+                                </div>
+                                <p
+                                    class="wf-desc"
+                                    style="margin: 0; font-size: 13px"
+                                >
+                                    Generate and evaluate questions.
+                                </p>
+                            </div>
+                            <div class="wf-card" style="flex: 1">
+                                <div
+                                    class="wf-nav-icon"
+                                    style="margin-bottom: 12px"
+                                ></div>
+                                <div class="wf-title" style="font-size: 16px">
+                                    Batches &amp; reports
+                                </div>
+                                <p
+                                    class="wf-desc"
+                                    style="margin: 0; font-size: 13px"
+                                >
+                                    Organize and export.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="pricing" class="wireframe">
+                    <div class="wireframe-annotation">Public · Pricing</div>
+                    <div class="wf-bar"></div>
+                    <div class="wf-frame">
+                        <div class="wf-title">Pricing</div>
+                        <p class="wf-desc">
+                            Choose a plan for your institution.
+                        </p>
+                        <div class="wf-row">
+                            <div
+                                class="wf-card"
+                                style="
+                                    flex: 1;
+                                    min-width: 220px;
+                                    text-align: center;
+                                "
+                            >
+                                <div class="wf-title" style="font-size: 18px">
+                                    Starter
+                                </div>
+                                <div
+                                    class="wf-stat-value"
+                                    style="font-size: 28px"
+                                >
+                                    $X/mo
+                                </div>
+                                <p class="wf-desc" style="margin: 8px 0 16px">
+                                    Up to N students
+                                </p>
+                                <span class="wf-btn">Get started</span>
+                            </div>
+                            <div
+                                class="wf-card"
+                                style="
+                                    flex: 1;
+                                    text-align: center;
+                                    border-color: #3b82f6;
+                                "
+                            >
+                                <div class="wf-label">Popular</div>
+                                <div class="wf-title" style="font-size: 18px">
+                                    Pro
+                                </div>
+                                <div
+                                    class="wf-stat-value"
+                                    style="font-size: 28px"
+                                >
+                                    $Y/mo
+                                </div>
+                                <p class="wf-desc" style="margin: 8px 0 16px">
+                                    Unlimited
+                                </p>
+                                <span class="wf-btn">Get started</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="about" class="wireframe">
+                    <div class="wireframe-annotation">Public · About</div>
+                    <div class="wf-bar"></div>
+                    <div class="wf-frame">
+                        <div class="wf-title">About TalentTune</div>
+                        <p class="wf-desc">
+                            Body text: company story, mission, team.
+                        </p>
+                    </div>
+                </div>
+
+                <div id="register-institution" class="wireframe">
+                    <div class="wireframe-annotation">
+                        Public · Register institution
+                    </div>
+                    <div class="wf-bar"></div>
+                    <div class="wf-frame" style="max-width: 520px">
+                        <div class="wf-title">Register your institution</div>
+                        <p class="wf-desc">
+                            Fill in the details below. We'll review and activate
+                            within 24 hours.
+                        </p>
+                        <div class="wf-form">
+                            <div class="wf-field">
+                                <label class="wf-label">Institution name</label>
+                                <div
+                                    class="wf-input"
+                                    style="max-width: 100%"
+                                ></div>
+                            </div>
+                            <div class="wf-field">
+                                <label class="wf-label">Slug (subdomain)</label>
+                                <div
+                                    class="wf-input"
+                                    style="max-width: 100%"
+                                ></div>
+                            </div>
+                            <div class="wf-field">
+                                <label class="wf-label">Email</label>
+                                <div
+                                    class="wf-input"
+                                    style="max-width: 100%"
+                                ></div>
+                            </div>
+                            <span class="wf-btn">Submit</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="subscribe" class="wireframe">
+                    <div class="wireframe-annotation">
+                        Public · Subscribe institution
+                    </div>
+                    <div class="wf-bar"></div>
+                    <div class="wf-frame" style="max-width: 480px">
+                        <div class="wf-title">Complete subscription</div>
+                        <p class="wf-desc">Select plan and payment method.</p>
+                        <div class="wf-card" style="margin-bottom: 16px">
+                            Plan summary
+                        </div>
+                        <span class="wf-btn">Continue to payment</span>
+                    </div>
+                </div>
+
+                <!-- Auth -->
+                <div id="login" class="wireframe">
+                    <div class="wireframe-annotation">Auth · Login</div>
+                    <div
+                        class="wf-frame"
+                        style="
+                            max-width: 420px;
+                            margin: 32px auto;
+                            padding: 32px;
+                        "
+                    >
+                        <div class="wf-title">Log in to your account</div>
+                        <p class="wf-desc">
+                            Enter your email and password below.
+                        </p>
+                        <div class="wf-form">
+                            <div class="wf-field">
+                                <label class="wf-label">Email</label>
+                                <div
+                                    class="wf-input"
+                                    style="max-width: 100%"
+                                ></div>
+                            </div>
+                            <div class="wf-field">
+                                <label class="wf-label">Password</label>
+                                <div
+                                    class="wf-input"
+                                    style="max-width: 100%"
+                                ></div>
+                                <div
+                                    style="
+                                        margin-top: 8px;
+                                        font-size: 13px;
+                                        color: #6b7280;
+                                    "
+                                >
+                                    Forgot password?
+                                </div>
+                            </div>
+                            <div class="wf-field" style="margin-bottom: 20px">
+                                <label
+                                    style="
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 8px;
+                                        font-size: 13px;
+                                    "
+                                    ><span
+                                        style="
+                                            width: 16px;
+                                            height: 16px;
+                                            border: 1px solid #d1d5db;
+                                            border-radius: 4px;
+                                        "
+                                    ></span>
+                                    Remember me</label
+                                >
+                            </div>
+                            <span class="wf-btn" style="width: 100%"
+                                >Log in</span
+                            >
+                        </div>
+                        <p
+                            class="wf-desc"
+                            style="margin-top: 20px; text-align: center"
+                        >
+                            Don't have an account? Sign up
+                        </p>
+                    </div>
+                </div>
+
+                <div id="register" class="wireframe">
+                    <div class="wireframe-annotation">Auth · Register</div>
+                    <div
+                        class="wf-frame"
+                        style="
+                            max-width: 420px;
+                            margin: 32px auto;
+                            padding: 32px;
+                        "
+                    >
+                        <div class="wf-title">Sign up</div>
+                        <p class="wf-desc">Create your account.</p>
+                        <div class="wf-form">
+                            <div class="wf-field">
+                                <label class="wf-label">Name</label>
+                                <div
+                                    class="wf-input"
+                                    style="max-width: 100%"
+                                ></div>
+                            </div>
+                            <div class="wf-field">
+                                <label class="wf-label">Email</label>
+                                <div
+                                    class="wf-input"
+                                    style="max-width: 100%"
+                                ></div>
+                            </div>
+                            <div class="wf-field">
+                                <label class="wf-label">Password</label>
+                                <div
+                                    class="wf-input"
+                                    style="max-width: 100%"
+                                ></div>
+                            </div>
+                            <span class="wf-btn">Register</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="forgot-password" class="wireframe">
+                    <div class="wireframe-annotation">
+                        Auth · Forgot password
+                    </div>
+                    <div
+                        class="wf-frame"
+                        style="
+                            max-width: 420px;
+                            margin: 32px auto;
+                            padding: 32px;
+                        "
+                    >
+                        <div class="wf-title">Forgot password</div>
+                        <p class="wf-desc">
+                            Enter your email and we'll send a reset link.
+                        </p>
+                        <div class="wf-form">
+                            <div class="wf-field">
+                                <label class="wf-label">Email</label>
+                                <div
+                                    class="wf-input"
+                                    style="max-width: 100%"
+                                ></div>
+                            </div>
+                            <span class="wf-btn">Send reset link</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="reset-password" class="wireframe">
+                    <div class="wireframe-annotation">
+                        Auth · Reset password
+                    </div>
+                    <div
+                        class="wf-frame"
+                        style="
+                            max-width: 420px;
+                            margin: 32px auto;
+                            padding: 32px;
+                        "
+                    >
+                        <div class="wf-title">Reset password</div>
+                        <div class="wf-form">
+                            <div class="wf-field">
+                                <label class="wf-label">New password</label>
+                                <div
+                                    class="wf-input"
+                                    style="max-width: 100%"
+                                ></div>
+                            </div>
+                            <div class="wf-field">
+                                <label class="wf-label">Confirm password</label>
+                                <div
+                                    class="wf-input"
+                                    style="max-width: 100%"
+                                ></div>
+                            </div>
+                            <span class="wf-btn">Reset password</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- App shell template for authenticated screens -->
+                <div id="inst-dashboard" class="wireframe">
+                    <div class="wireframe-annotation">
+                        Institution · Dashboard
+                    </div>
+                    <div class="wf-shell">
+                        <div class="wf-sidebar">
+                            <div class="wf-logo"></div>
+                            <div class="wf-nav-item active">
+                                <span class="wf-nav-icon"></span> Dashboard
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Payment
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Batches
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Lecturers
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Students
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Support
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Reported
+                                issues
+                            </div>
+                            <div class="wf-user">
+                                <div class="wf-avatar"></div>
+                                <div>
+                                    <div
+                                        style="
+                                            font-size: 13px;
+                                            font-weight: 500;
+                                        "
+                                    >
+                                        User name
+                                    </div>
+                                    <div
+                                        style="font-size: 11px; color: #6b7280"
+                                    >
+                                        Settings · Log out
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="wf-shell-content">
+                            <div class="wf-bar">
+                                <div
+                                    style="
+                                        width: 24px;
+                                        height: 24px;
+                                        background: #e5e7eb;
+                                        border-radius: 4px;
+                                    "
+                                ></div>
+                                <div class="wf-bar-breadcrumb">Dashboard</div>
+                            </div>
+                            <div class="wf-title">Dashboard</div>
+                            <p class="wf-desc">
+                                Institution overview and quick actions.
+                            </p>
+                            <div class="wf-row">
+                                <div class="wf-stat">
+                                    <div class="wf-stat-value">12</div>
+                                    <div class="wf-stat-label">Batches</div>
+                                </div>
+                                <div class="wf-stat">
+                                    <div class="wf-stat-value">8</div>
+                                    <div class="wf-stat-label">Lecturers</div>
+                                </div>
+                                <div class="wf-stat">
+                                    <div class="wf-stat-value">240</div>
+                                    <div class="wf-stat-label">Students</div>
+                                </div>
+                            </div>
+                            <div class="wf-frame">
+                                <div class="wf-label">
+                                    Recent activity / content
+                                </div>
+                                <div
+                                    class="wf-box"
+                                    style="min-height: 220px; color: #94a3b8"
+                                >
+                                    Table or list placeholder
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="inst-payment" class="wireframe">
+                    <div class="wireframe-annotation">
+                        Institution · Payment
+                    </div>
+                    <div class="wf-shell">
+                        <div class="wf-sidebar">
+                            <div class="wf-logo"></div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Dashboard
+                            </div>
+                            <div class="wf-nav-item active">
+                                <span class="wf-nav-icon"></span> Payment
+                            </div>
+                            <div class="wf-user">
+                                <div class="wf-avatar"></div>
+                                <div style="font-size: 13px">User</div>
+                            </div>
+                        </div>
+                        <div class="wf-shell-content">
+                            <div class="wf-bar">
+                                <div class="wf-bar-breadcrumb">
+                                    Dashboard
+                                    <span style="margin: 0 4px">›</span>
+                                    <span>Payment</span>
+                                </div>
+                            </div>
+                            <div class="wf-title">Payment</div>
+                            <p class="wf-desc">
+                                Manage your subscription and view payment
+                                history.
+                            </p>
+                            <div class="wf-card">
+                                <div class="wf-label">Current plan</div>
+                                <div
+                                    style="
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: space-between;
+                                        flex-wrap: wrap;
+                                        gap: 12px;
+                                    "
+                                >
+                                    <div>
+                                        <span
+                                            class="wf-title"
+                                            style="font-size: 18px"
+                                            >Pro</span
+                                        ><span
+                                            class="wf-badge"
+                                            style="margin-left: 8px"
+                                            >Active</span
+                                        >
+                                    </div>
+                                    <span class="wf-btn-secondary"
+                                        >Cancel subscription</span
+                                    >
+                                </div>
+                            </div>
+                            <div
+                                class="wf-card"
+                                style="padding: 0; overflow: hidden"
+                            >
+                                <div
+                                    style="
+                                        padding: 16px 20px;
+                                        border-bottom: 1px solid #e5e7eb;
+                                    "
+                                >
+                                    <div class="wf-label">Payment history</div>
+                                </div>
+                                <div class="wf-table">
+                                    <div class="wf-th">
+                                        <span class="wf-col">Date</span
+                                        ><span class="wf-col">Amount</span
+                                        ><span class="wf-col">Status</span>
+                                    </div>
+                                    <div class="wf-tr">
+                                        <span class="wf-col">Mar 1, 2024</span
+                                        ><span class="wf-col">$99.00</span
+                                        ><span class="wf-col"
+                                            ><span class="wf-badge"
+                                                >Paid</span
+                                            ></span
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="inst-batches" class="wireframe">
+                    <div class="wireframe-annotation">
+                        Institution · Batches
+                    </div>
+                    <div class="wf-shell">
+                        <div class="wf-sidebar">
+                            <div class="wf-logo"></div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Dashboard
+                            </div>
+                            <div class="wf-nav-item active">
+                                <span class="wf-nav-icon"></span> Batches
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Lecturers
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Students
+                            </div>
+                            <div class="wf-user">
+                                <div class="wf-avatar"></div>
+                                <div style="font-size: 13px">User</div>
+                            </div>
+                        </div>
+                        <div class="wf-shell-content">
+                            <div class="wf-bar">
+                                <div
+                                    style="
+                                        width: 24px;
+                                        height: 24px;
+                                        background: #e5e7eb;
+                                        border-radius: 4px;
+                                    "
+                                ></div>
+                                <div class="wf-bar-breadcrumb">
+                                    Dashboard
+                                    <span style="margin: 0 4px">›</span>
+                                    <span>Batches</span>
+                                </div>
+                            </div>
+                            <div class="wf-title">Manage Batches</div>
+                            <p class="wf-desc">
+                                Create batches for grouping students; vivas are
+                                scheduled per batch.
+                            </p>
+                            <div class="wf-card">
+                                <div class="wf-label">Add Batch</div>
+                                <div
+                                    class="wf-toolbar"
+                                    style="margin-bottom: 0"
+                                >
+                                    <div
+                                        class="wf-input"
+                                        style="
+                                            max-width: 240px;
+                                            margin-bottom: 0;
+                                        "
+                                    ></div>
+                                    <span class="wf-btn">Add Batch</span>
+                                </div>
+                            </div>
+                            <div
+                                class="wf-card"
+                                style="padding: 0; overflow: hidden"
+                            >
+                                <div
+                                    style="
+                                        padding: 16px 20px;
+                                        border-bottom: 1px solid #e5e7eb;
+                                    "
+                                >
+                                    <div class="wf-label">All Batches (3)</div>
+                                </div>
+                                <div class="wf-table">
+                                    <div class="wf-th">
+                                        <span class="wf-col">Batch name</span
+                                        ><span class="wf-col">Students</span
+                                        ><span class="wf-col">Created</span
+                                        ><span class="wf-col-actions"
+                                            >Actions</span
+                                        >
+                                    </div>
+                                    <div class="wf-tr">
+                                        <span class="wf-col">CS-2024</span
+                                        ><span class="wf-col">85</span
+                                        ><span class="wf-col">Jan 15, 2024</span
+                                        ><span class="wf-col-actions"
+                                            ><span
+                                                class="wf-btn-secondary"
+                                                style="
+                                                    padding: 6px 10px;
+                                                    font-size: 12px;
+                                                "
+                                                >Delete</span
+                                            ></span
+                                        >
+                                    </div>
+                                    <div class="wf-tr">
+                                        <span class="wf-col">SE-2024</span
+                                        ><span class="wf-col">62</span
+                                        ><span class="wf-col">Jan 20, 2024</span
+                                        ><span class="wf-col-actions"
+                                            ><span
+                                                class="wf-btn-secondary"
+                                                style="
+                                                    padding: 6px 10px;
+                                                    font-size: 12px;
+                                                "
+                                                >Delete</span
+                                            ></span
+                                        >
+                                    </div>
+                                    <div class="wf-tr">
+                                        <span class="wf-col">IT-2024</span
+                                        ><span class="wf-col">93</span
+                                        ><span class="wf-col">Feb 1, 2024</span
+                                        ><span class="wf-col-actions"
+                                            ><span
+                                                class="wf-btn-secondary"
+                                                style="
+                                                    padding: 6px 10px;
+                                                    font-size: 12px;
+                                                "
+                                                >Delete</span
+                                            ></span
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="inst-lecturers" class="wireframe">
+                    <div class="wireframe-annotation">
+                        Institution · Lecturers
+                    </div>
+                    <div class="wf-shell">
+                        <div class="wf-sidebar">
+                            <div class="wf-logo"></div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Dashboard
+                            </div>
+                            <div class="wf-nav-item active">
+                                <span class="wf-nav-icon"></span> Lecturers
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Students
+                            </div>
+                            <div class="wf-user">
+                                <div class="wf-avatar"></div>
+                                <div style="font-size: 13px">User</div>
+                            </div>
+                        </div>
+                        <div class="wf-shell-content">
+                            <div class="wf-bar">
+                                <div
+                                    style="
+                                        width: 24px;
+                                        height: 24px;
+                                        background: #e5e7eb;
+                                        border-radius: 4px;
+                                    "
+                                ></div>
+                                <div class="wf-bar-breadcrumb">
+                                    Dashboard
+                                    <span style="margin: 0 4px">›</span>
+                                    <span>Lecturers</span>
+                                </div>
+                            </div>
+                            <div class="wf-title">Manage Lecturers</div>
+                            <p class="wf-desc">
+                                Add and manage lecturers who can create viva
+                                sessions.
+                            </p>
+                            <div class="wf-toolbar">
+                                <div
+                                    class="wf-input"
+                                    style="max-width: 280px; margin-bottom: 0"
+                                    placeholder="Search..."
+                                ></div>
+                                <span class="wf-btn">Add Lecturer</span>
+                            </div>
+                            <div class="wf-table">
+                                <div class="wf-th">
+                                    <span class="wf-col">Name</span
+                                    ><span class="wf-col">Email</span
+                                    ><span class="wf-col">Department</span
+                                    ><span class="wf-col">Status</span
+                                    ><span class="wf-col-actions">Actions</span>
+                                </div>
+                                <div class="wf-tr">
+                                    <span class="wf-col">Dr. Jane Smith</span
+                                    ><span class="wf-col">jane@edu.example</span
+                                    ><span class="wf-col">Computer Science</span
+                                    ><span class="wf-col"
+                                        ><span class="wf-badge"
+                                            >Active</span
+                                        ></span
+                                    ><span class="wf-col-actions"
+                                        >Edit · Delete</span
+                                    >
+                                </div>
+                                <div class="wf-tr">
+                                    <span class="wf-col">Prof. John Doe</span
+                                    ><span class="wf-col">john@edu.example</span
+                                    ><span class="wf-col">Software Eng.</span
+                                    ><span class="wf-col"
+                                        ><span class="wf-badge"
+                                            >Active</span
+                                        ></span
+                                    ><span class="wf-col-actions"
+                                        >Edit · Delete</span
+                                    >
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="inst-students" class="wireframe">
+                    <div class="wireframe-annotation">
+                        Institution · Students
+                    </div>
+                    <div class="wf-shell">
+                        <div class="wf-sidebar">
+                            <div class="wf-logo"></div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Dashboard
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Lecturers
+                            </div>
+                            <div class="wf-nav-item active">
+                                <span class="wf-nav-icon"></span> Students
+                            </div>
+                            <div class="wf-user">
+                                <div class="wf-avatar"></div>
+                                <div style="font-size: 13px">User</div>
+                            </div>
+                        </div>
+                        <div class="wf-shell-content">
+                            <div class="wf-bar">
+                                <div class="wf-bar-breadcrumb">
+                                    Dashboard
+                                    <span style="margin: 0 4px">›</span>
+                                    <span>Students</span>
+                                </div>
+                            </div>
+                            <div class="wf-title">Manage Students</div>
+                            <p class="wf-desc">
+                                Add students and assign them to batches.
+                            </p>
+                            <div class="wf-toolbar">
+                                <div
+                                    class="wf-input"
+                                    style="max-width: 280px; margin-bottom: 0"
+                                ></div>
+                                <span class="wf-btn">Add Student</span>
+                            </div>
+                            <div class="wf-table">
+                                <div class="wf-th">
+                                    <span class="wf-col">Name</span
+                                    ><span class="wf-col">Email</span
+                                    ><span class="wf-col">Batch</span
+                                    ><span class="wf-col-actions">Actions</span>
+                                </div>
+                                <div class="wf-tr">
+                                    <span class="wf-col">Alice Lee</span
+                                    ><span class="wf-col"
+                                        >alice@edu.example</span
+                                    ><span class="wf-col">CS-2024</span
+                                    ><span class="wf-col-actions"
+                                        >Edit · Delete</span
+                                    >
+                                </div>
+                                <div class="wf-tr">
+                                    <span class="wf-col">Bob Chen</span
+                                    ><span class="wf-col">bob@edu.example</span
+                                    ><span class="wf-col">CS-2024</span
+                                    ><span class="wf-col-actions"
+                                        >Edit · Delete</span
+                                    >
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="inst-support" class="wireframe">
+                    <div class="wireframe-annotation">
+                        Institution · Support
+                    </div>
+                    <div class="wf-shell">
+                        <div class="wf-sidebar">
+                            <div class="wf-logo"></div>
+                            <div class="wf-nav-item active">
+                                <span class="wf-nav-icon"></span> Support
+                            </div>
+                            <div class="wf-user">
+                                <div class="wf-avatar"></div>
+                                <div style="font-size: 13px">User</div>
+                            </div>
+                        </div>
+                        <div class="wf-shell-content">
+                            <div class="wf-bar">
+                                <div class="wf-bar-breadcrumb">
+                                    Dashboard
+                                    <span style="margin: 0 4px">›</span>
+                                    <span>Support</span>
+                                </div>
+                            </div>
+                            <div class="wf-title">Support</div>
+                            <p class="wf-desc">
+                                Create and view support tickets.
+                            </p>
+                            <span class="wf-btn">Create ticket</span>
+                            <div class="wf-table" style="margin-top: 20px">
+                                <div class="wf-th">
+                                    <span class="wf-col">Subject</span
+                                    ><span class="wf-col">Status</span
+                                    ><span class="wf-col">Date</span>
+                                </div>
+                                <div class="wf-tr">
+                                    <span class="wf-col">Billing question</span
+                                    ><span class="wf-col"
+                                        ><span class="wf-badge-muted"
+                                            >Open</span
+                                        ></span
+                                    ><span class="wf-col">Mar 1, 2024</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="inst-reports" class="wireframe">
+                    <div class="wireframe-annotation">
+                        Institution · Reports
+                    </div>
+                    <div class="wf-shell">
+                        <div class="wf-sidebar">
+                            <div class="wf-logo"></div>
+                            <div class="wf-nav-item active">
+                                <span class="wf-nav-icon"></span> Reports
+                            </div>
+                            <div class="wf-user">
+                                <div class="wf-avatar"></div>
+                                <div style="font-size: 13px">User</div>
+                            </div>
+                        </div>
+                        <div class="wf-shell-content">
+                            <div class="wf-bar">
+                                <div class="wf-bar-breadcrumb">
+                                    Dashboard
+                                    <span style="margin: 0 4px">›</span>
+                                    <span>Reports</span>
+                                </div>
+                            </div>
+                            <div class="wf-title">Reports</div>
+                            <p class="wf-desc">Export PDF reports.</p>
+                            <div class="wf-row">
+                                <div
+                                    class="wf-card"
+                                    style="flex: 1; min-width: 200px"
+                                >
+                                    <div
+                                        class="wf-title"
+                                        style="font-size: 16px"
+                                    >
+                                        Students report
+                                    </div>
+                                    <p
+                                        class="wf-desc"
+                                        style="margin: 8px 0 16px"
+                                    >
+                                        List of all students by batch.
+                                    </p>
+                                    <span class="wf-btn">Download PDF</span>
+                                </div>
+                                <div class="wf-card" style="flex: 1">
+                                    <div
+                                        class="wf-title"
+                                        style="font-size: 16px"
+                                    >
+                                        Lecturers report
+                                    </div>
+                                    <p
+                                        class="wf-desc"
+                                        style="margin: 8px 0 16px"
+                                    >
+                                        List of lecturers and sessions.
+                                    </p>
+                                    <span class="wf-btn">Download PDF</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="inst-reported-issues" class="wireframe">
+                    <div class="wireframe-annotation">
+                        Institution · Reported issues
+                    </div>
+                    <div class="wf-shell">
+                        <div class="wf-sidebar">
+                            <div class="wf-logo"></div>
+                            <div class="wf-nav-item active">
+                                <span class="wf-nav-icon"></span> Reported
+                                issues
+                            </div>
+                            <div class="wf-user">
+                                <div class="wf-avatar"></div>
+                                <div style="font-size: 13px">User</div>
+                            </div>
+                        </div>
+                        <div class="wf-shell-content">
+                            <div class="wf-bar">
+                                <div class="wf-bar-breadcrumb">
+                                    Dashboard
+                                    <span style="margin: 0 4px">›</span>
+                                    <span>Reported issues</span>
+                                </div>
+                            </div>
+                            <div class="wf-title">Reported issues</div>
+                            <p class="wf-desc">
+                                Review issues reported by students or lecturers.
+                            </p>
+                            <div class="wf-table">
+                                <div class="wf-th">
+                                    <span class="wf-col">Issue</span
+                                    ><span class="wf-col">Reporter</span
+                                    ><span class="wf-col">Status</span
+                                    ><span class="wf-col-actions">Actions</span>
+                                </div>
+                                <div class="wf-tr">
+                                    <span class="wf-col"
+                                        >Cannot submit viva</span
+                                    ><span class="wf-col">Student A</span
+                                    ><span class="wf-col"
+                                        ><span class="wf-badge-muted"
+                                            >Pending</span
+                                        ></span
+                                    ><span class="wf-col-actions">View</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Student -->
+                <div id="student-dashboard" class="wireframe">
+                    <div class="wireframe-annotation">Student · Dashboard</div>
+                    <div class="wf-shell">
+                        <div class="wf-sidebar">
+                            <div class="wf-logo"></div>
+                            <div class="wf-nav-item active">
+                                <span class="wf-nav-icon"></span> Dashboard
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Viva Sessions
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Report issue
+                            </div>
+                            <div class="wf-user">
+                                <div class="wf-avatar"></div>
+                                <div style="font-size: 13px">Student</div>
+                            </div>
+                        </div>
+                        <div class="wf-shell-content">
+                            <div class="wf-bar">
+                                <div class="wf-bar-breadcrumb">Dashboard</div>
+                            </div>
+                            <div class="wf-title">Dashboard</div>
+                            <p class="wf-desc">
+                                Your viva sessions at a glance.
+                            </p>
+                            <div class="wf-row">
+                                <div class="wf-stat">
+                                    <div class="wf-stat-value">2</div>
+                                    <div class="wf-stat-label">
+                                        Upcoming vivas
+                                    </div>
+                                </div>
+                                <div class="wf-stat">
+                                    <div class="wf-stat-value">5</div>
+                                    <div class="wf-stat-label">Completed</div>
+                                </div>
+                            </div>
+                            <div class="wf-frame">
+                                <div class="wf-label">Upcoming</div>
+                                <div class="wf-card">
+                                    <span
+                                        class="wf-title"
+                                        style="font-size: 16px"
+                                        >Software Engineering Viva</span
+                                    >
+                                    <p
+                                        class="wf-desc"
+                                        style="margin: 4px 0 12px"
+                                    >
+                                        Mar 15, 2:00 PM
+                                    </p>
+                                    <span class="wf-btn">Attend Viva</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="student-vivas" class="wireframe">
+                    <div class="wireframe-annotation">
+                        Student · Viva Sessions
+                    </div>
+                    <div class="wf-shell">
+                        <div class="wf-sidebar">
+                            <div class="wf-logo"></div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Dashboard
+                            </div>
+                            <div class="wf-nav-item active">
+                                <span class="wf-nav-icon"></span> Viva Sessions
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Report issue
+                            </div>
+                            <div class="wf-user">
+                                <div class="wf-avatar"></div>
+                                <div style="font-size: 13px">Student</div>
+                            </div>
+                        </div>
+                        <div class="wf-shell-content">
+                            <div class="wf-bar">
+                                <div
+                                    style="
+                                        width: 24px;
+                                        height: 24px;
+                                        background: #e5e7eb;
+                                        border-radius: 4px;
+                                    "
+                                ></div>
+                                <div class="wf-bar-breadcrumb">
+                                    Dashboard
+                                    <span style="margin: 0 4px">›</span>
+                                    <span>Viva Sessions</span>
+                                </div>
+                            </div>
+                            <div class="wf-title">Viva Sessions</div>
+                            <p class="wf-desc">
+                                View and attend your viva sessions.
+                            </p>
+                            <div class="wf-card">
+                                <div
+                                    style="
+                                        display: flex;
+                                        align-items: flex-start;
+                                        justify-content: space-between;
+                                        gap: 16px;
+                                        flex-wrap: wrap;
+                                    "
+                                >
+                                    <div>
+                                        <div
+                                            style="
+                                                display: flex;
+                                                align-items: center;
+                                                gap: 8px;
+                                                margin-bottom: 6px;
+                                            "
+                                        >
+                                            <span
+                                                class="wf-title"
+                                                style="font-size: 18px"
+                                                >Software Engineering Viva –
+                                                Batch CS-2024</span
+                                            ><span class="wf-badge">Open</span>
+                                        </div>
+                                        <p class="wf-desc" style="margin: 0">
+                                            Scheduled Mar 15, 2024 · 2:00 PM ·
+                                            Dr. Jane Smith
+                                        </p>
+                                    </div>
+                                </div>
+                                <div
+                                    style="
+                                        margin-top: 16px;
+                                        display: flex;
+                                        gap: 8px;
+                                        flex-wrap: wrap;
+                                    "
+                                >
+                                    <span class="wf-btn">Attend Viva</span
+                                    ><span class="wf-btn-secondary"
+                                        >View materials</span
+                                    >
+                                </div>
+                            </div>
+                            <div class="wf-card">
+                                <div
+                                    style="
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 8px;
+                                        margin-bottom: 6px;
+                                    "
+                                >
+                                    <span
+                                        class="wf-title"
+                                        style="font-size: 18px"
+                                        >Database Systems Viva</span
+                                    ><span class="wf-badge-muted"
+                                        >Upcoming</span
+                                    >
+                                </div>
+                                <p class="wf-desc" style="margin: 0">
+                                    Opens Mar 20, 2024 at 10:00 AM
+                                </p>
+                                <div style="margin-top: 12px">
+                                    <span
+                                        class="wf-btn-secondary"
+                                        disabled
+                                        style="opacity: 0.7"
+                                        >Attend (opens on date)</span
+                                    >
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="student-viva-attend" class="wireframe">
+                    <div class="wireframe-annotation">
+                        Student · Viva attend
+                    </div>
+                    <div class="wf-shell">
+                        <div class="wf-sidebar">
+                            <div class="wf-logo"></div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Dashboard
+                            </div>
+                            <div class="wf-nav-item active">
+                                <span class="wf-nav-icon"></span> Viva Sessions
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Report issue
+                            </div>
+                            <div class="wf-user">
+                                <div class="wf-avatar"></div>
+                                <div style="font-size: 13px">Student</div>
+                            </div>
+                        </div>
+                        <div class="wf-shell-content">
+                            <div class="wf-bar">
+                                <div
+                                    style="
+                                        width: 24px;
+                                        height: 24px;
+                                        background: #e5e7eb;
+                                        border-radius: 4px;
+                                    "
+                                ></div>
+                                <div class="wf-bar-breadcrumb">
+                                    Dashboard
+                                    <span style="margin: 0 4px">›</span> Viva
+                                    Sessions
+                                    <span style="margin: 0 4px">›</span>
+                                    <span>Attend Viva</span>
+                                </div>
+                            </div>
+                            <div class="wf-title">
+                                Attend Viva – Software Engineering
+                            </div>
+                            <p class="wf-desc">
+                                Complete your viva session. You can record voice
+                                and upload documents.
+                            </p>
+                            <div class="wf-card">
+                                <div class="wf-label">Instructions</div>
+                                <p class="wf-desc" style="margin: 0">
+                                    Read the questions and record your answers.
+                                    Submit before the due time.
+                                </p>
+                            </div>
+                            <div class="wf-card">
+                                <div class="wf-label">
+                                    Questions &amp; recording
+                                </div>
+                                <div class="wf-box" style="min-height: 180px">
+                                    Question list · Voice recording UI ·
+                                    Document upload
+                                </div>
+                            </div>
+                            <span class="wf-btn">Submit</span
+                            ><span class="wf-btn-secondary">Save draft</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="student-viva-submission" class="wireframe">
+                    <div class="wireframe-annotation">
+                        Student · Viva submission
+                    </div>
+                    <div class="wf-shell">
+                        <div class="wf-sidebar">
+                            <div class="wf-logo"></div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Dashboard
+                            </div>
+                            <div class="wf-nav-item active">
+                                <span class="wf-nav-icon"></span> Viva Sessions
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Report issue
+                            </div>
+                            <div class="wf-user">
+                                <div class="wf-avatar"></div>
+                                <div style="font-size: 13px">Student</div>
+                            </div>
+                        </div>
+                        <div class="wf-shell-content">
+                            <div class="wf-bar">
+                                <div class="wf-bar-breadcrumb">
+                                    Dashboard
+                                    <span style="margin: 0 4px">›</span> Viva
+                                    Sessions
+                                    <span style="margin: 0 4px">›</span>
+                                    <span>My answers</span>
+                                </div>
+                            </div>
+                            <div class="wf-title">My answers</div>
+                            <p class="wf-desc">
+                                View your submission for this viva. Grade shown
+                                when released by lecturer.
+                            </p>
+                            <div class="wf-card">
+                                <div class="wf-label">Submission</div>
+                                <p class="wf-desc" style="margin: 0">
+                                    Documents and recordings you submitted.
+                                </p>
+                            </div>
+                            <div class="wf-card">
+                                <div class="wf-label">Result</div>
+                                <div class="wf-stat-value">Grade: B+ (78%)</div>
+                                <div class="wf-stat-label">
+                                    Released by lecturer
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="student-issues" class="wireframe">
+                    <div class="wireframe-annotation">
+                        Student · Report issue
+                    </div>
+                    <div class="wf-shell">
+                        <div class="wf-sidebar">
+                            <div class="wf-logo"></div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Dashboard
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Viva Sessions
+                            </div>
+                            <div class="wf-nav-item active">
+                                <span class="wf-nav-icon"></span> Report issue
+                            </div>
+                            <div class="wf-user">
+                                <div class="wf-avatar"></div>
+                                <div style="font-size: 13px">Student</div>
+                            </div>
+                        </div>
+                        <div class="wf-shell-content">
+                            <div class="wf-bar">
+                                <div class="wf-bar-breadcrumb">
+                                    Dashboard
+                                    <span style="margin: 0 4px">›</span>
+                                    <span>Report issue</span>
+                                </div>
+                            </div>
+                            <div class="wf-title">Report issue</div>
+                            <p class="wf-desc">
+                                List and create issues you want to report to
+                                your institution.
+                            </p>
+                            <span class="wf-btn">Create issue</span>
+                            <div class="wf-table" style="margin-top: 20px">
+                                <div class="wf-th">
+                                    <span class="wf-col">Subject</span
+                                    ><span class="wf-col">Status</span
+                                    ><span class="wf-col">Date</span
+                                    ><span class="wf-col-actions">Actions</span>
+                                </div>
+                                <div class="wf-tr">
+                                    <span class="wf-col"
+                                        >Cannot submit viva</span
+                                    ><span class="wf-col"
+                                        ><span class="wf-badge-muted"
+                                            >Open</span
+                                        ></span
+                                    ><span class="wf-col">Mar 10, 2024</span
+                                    ><span class="wf-col-actions">View</span>
+                                </div>
+                                <div class="wf-tr">
+                                    <span class="wf-col"
+                                        >Audio not recording</span
+                                    ><span class="wf-col"
+                                        ><span class="wf-badge"
+                                            >Resolved</span
+                                        ></span
+                                    ><span class="wf-col">Mar 5, 2024</span
+                                    ><span class="wf-col-actions">View</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lecturer -->
+                <div id="lecturer-dashboard" class="wireframe">
+                    <div class="wireframe-annotation">Lecturer · Dashboard</div>
+                    <div class="wf-shell">
+                        <div class="wf-sidebar">
+                            <div class="wf-logo"></div>
+                            <div class="wf-nav-item active">
+                                <span class="wf-nav-icon"></span> Dashboard
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Create Viva
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> My Sessions
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Report issue
+                            </div>
+                            <div class="wf-user">
+                                <div class="wf-avatar"></div>
+                                <div style="font-size: 13px">Lecturer</div>
+                            </div>
+                        </div>
+                        <div class="wf-shell-content">
+                            <div class="wf-bar">
+                                <div class="wf-bar-breadcrumb">Dashboard</div>
+                            </div>
+                            <div class="wf-title">Dashboard</div>
+                            <p class="wf-desc">
+                                Your viva sessions and activity.
+                            </p>
+                            <div class="wf-row">
+                                <div class="wf-stat">
+                                    <div class="wf-stat-value">5</div>
+                                    <div class="wf-stat-label">
+                                        Active sessions
+                                    </div>
+                                </div>
+                                <div class="wf-stat">
+                                    <div class="wf-stat-value">42</div>
+                                    <div class="wf-stat-label">
+                                        Students attended
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="wf-frame">
+                                <div class="wf-label">My vivas</div>
+                                <div class="wf-card">
+                                    <span
+                                        class="wf-title"
+                                        style="font-size: 16px"
+                                        >Software Engineering Viva –
+                                        CS-2024</span
+                                    >
+                                    <p
+                                        class="wf-desc"
+                                        style="margin: 8px 0 12px"
+                                    >
+                                        Mar 15, 2:00 PM · Open
+                                    </p>
+                                    <span class="wf-btn">View</span
+                                    ><span class="wf-btn-secondary"
+                                        >Close viva</span
+                                    >
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="lecturer-vivas" class="wireframe">
+                    <div class="wireframe-annotation">
+                        Lecturer · My sessions
+                    </div>
+                    <div class="wf-shell">
+                        <div class="wf-sidebar">
+                            <div class="wf-logo"></div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Dashboard
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Create Viva
+                            </div>
+                            <div class="wf-nav-item active">
+                                <span class="wf-nav-icon"></span> My Sessions
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Report issue
+                            </div>
+                            <div class="wf-user">
+                                <div class="wf-avatar"></div>
+                                <div style="font-size: 13px">Lecturer</div>
+                            </div>
+                        </div>
+                        <div class="wf-shell-content">
+                            <div class="wf-bar">
+                                <div class="wf-bar-breadcrumb">
+                                    Dashboard
+                                    <span style="margin: 0 4px">›</span>
+                                    <span>My Sessions</span>
+                                </div>
+                            </div>
+                            <div class="wf-title">My Sessions</div>
+                            <p class="wf-desc">
+                                Create and manage your viva sessions.
+                            </p>
+                            <span class="wf-btn">Create Viva</span>
+                            <div class="wf-card" style="margin-top: 20px">
+                                <div
+                                    style="
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: space-between;
+                                        flex-wrap: wrap;
+                                        gap: 12px;
+                                    "
+                                >
+                                    <div>
+                                        <span
+                                            class="wf-title"
+                                            style="font-size: 18px"
+                                            >Software Engineering Viva</span
+                                        ><span
+                                            class="wf-badge"
+                                            style="margin-left: 8px"
+                                            >Open</span
+                                        >
+                                    </div>
+                                    <div>
+                                        <span class="wf-btn">View</span
+                                        ><span class="wf-btn-secondary"
+                                            >Close viva</span
+                                        ><span class="wf-btn-secondary"
+                                            >Add late student</span
+                                        >
+                                    </div>
+                                </div>
+                                <p class="wf-desc" style="margin: 8px 0 0">
+                                    Batch CS-2024 · Mar 15, 2:00 PM
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="lecturer-create-viva" class="wireframe">
+                    <div class="wireframe-annotation">
+                        Lecturer · Create viva
+                    </div>
+                    <div class="wf-shell">
+                        <div class="wf-sidebar">
+                            <div class="wf-logo"></div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Dashboard
+                            </div>
+                            <div class="wf-nav-item active">
+                                <span class="wf-nav-icon"></span> Create Viva
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> My Sessions
+                            </div>
+                            <div class="wf-user">
+                                <div class="wf-avatar"></div>
+                                <div style="font-size: 13px">Lecturer</div>
+                            </div>
+                        </div>
+                        <div class="wf-shell-content">
+                            <div class="wf-bar">
+                                <div class="wf-bar-breadcrumb">
+                                    Dashboard
+                                    <span style="margin: 0 4px">›</span>
+                                    <span>Create Viva</span>
+                                </div>
+                            </div>
+                            <div class="wf-title">Create Viva</div>
+                            <p class="wf-desc">
+                                Schedule a new viva session for a batch.
+                            </p>
+                            <div class="wf-card">
+                                <div class="wf-form">
+                                    <div class="wf-field">
+                                        <label class="wf-label">Title</label>
+                                        <div
+                                            class="wf-input"
+                                            style="max-width: 100%"
+                                        ></div>
+                                    </div>
+                                    <div class="wf-field">
+                                        <label class="wf-label"
+                                            >Description</label
+                                        >
+                                        <div
+                                            class="wf-input"
+                                            style="
+                                                max-width: 100%;
+                                                height: 80px;
+                                            "
+                                        ></div>
+                                    </div>
+                                    <div
+                                        class="wf-row"
+                                        style="margin-bottom: 0"
+                                    >
+                                        <div
+                                            class="wf-field"
+                                            style="flex: 1; min-width: 140px"
+                                        >
+                                            <label class="wf-label"
+                                                >Batch</label
+                                            >
+                                            <div
+                                                class="wf-input"
+                                                style="max-width: 100%"
+                                            ></div>
+                                        </div>
+                                        <div class="wf-field" style="flex: 1">
+                                            <label class="wf-label"
+                                                >Date &amp; time</label
+                                            >
+                                            <div
+                                                class="wf-input"
+                                                style="max-width: 100%"
+                                            ></div>
+                                        </div>
+                                        <div class="wf-field" style="flex: 1">
+                                            <label class="wf-label"
+                                                >Due date</label
+                                            >
+                                            <div
+                                                class="wf-input"
+                                                style="max-width: 100%"
+                                            ></div>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 20px">
+                                        <span class="wf-btn">Create Viva</span
+                                        ><span class="wf-btn-secondary"
+                                            >Cancel</span
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="lecturer-show-viva" class="wireframe">
+                    <div class="wireframe-annotation">Lecturer · Show viva</div>
+                    <div class="wf-shell">
+                        <div class="wf-sidebar">
+                            <div class="wf-logo"></div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Dashboard
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Create Viva
+                            </div>
+                            <div class="wf-nav-item active">
+                                <span class="wf-nav-icon"></span> My Sessions
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Report issue
+                            </div>
+                            <div class="wf-user">
+                                <div class="wf-avatar"></div>
+                                <div style="font-size: 13px">Lecturer</div>
+                            </div>
+                        </div>
+                        <div class="wf-shell-content">
+                            <div class="wf-bar">
+                                <div class="wf-bar-breadcrumb">
+                                    Dashboard
+                                    <span style="margin: 0 4px">›</span> My
+                                    Sessions
+                                    <span style="margin: 0 4px">›</span>
+                                    <span>Software Engineering Viva</span>
+                                </div>
+                            </div>
+                            <div class="wf-title">
+                                Software Engineering Viva
+                            </div>
+                            <p class="wf-desc">
+                                Batch CS-2024 · Mar 15, 2:00 PM ·
+                                <span class="wf-badge">Open</span>
+                            </p>
+                            <div class="wf-toolbar">
+                                <span class="wf-btn">Close viva</span
+                                ><span class="wf-btn-secondary"
+                                    >Add late student</span
+                                >
+                            </div>
+                            <div
+                                class="wf-card"
+                                style="padding: 0; overflow: hidden"
+                            >
+                                <div
+                                    style="
+                                        padding: 16px 20px;
+                                        border-bottom: 1px solid #e5e7eb;
+                                    "
+                                >
+                                    <div class="wf-label">Students</div>
+                                </div>
+                                <div class="wf-table">
+                                    <div class="wf-th">
+                                        <span class="wf-col">Student</span
+                                        ><span class="wf-col">Attended</span
+                                        ><span class="wf-col">Marks</span
+                                        ><span class="wf-col">Grade</span>
+                                    </div>
+                                    <div class="wf-tr">
+                                        <span class="wf-col">Alice Lee</span
+                                        ><span class="wf-col">Yes</span
+                                        ><span class="wf-col">78%</span
+                                        ><span class="wf-col">B+</span>
+                                    </div>
+                                    <div class="wf-tr">
+                                        <span class="wf-col">Bob Chen</span
+                                        ><span class="wf-col">Yes</span
+                                        ><span class="wf-col">—</span
+                                        ><span class="wf-col">—</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="lecturer-issues" class="wireframe">
+                    <div class="wireframe-annotation">
+                        Lecturer · Report issue
+                    </div>
+                    <div class="wf-shell">
+                        <div class="wf-sidebar">
+                            <div class="wf-logo"></div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Dashboard
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Create Viva
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> My Sessions
+                            </div>
+                            <div class="wf-nav-item active">
+                                <span class="wf-nav-icon"></span> Report issue
+                            </div>
+                            <div class="wf-user">
+                                <div class="wf-avatar"></div>
+                                <div style="font-size: 13px">Lecturer</div>
+                            </div>
+                        </div>
+                        <div class="wf-shell-content">
+                            <div class="wf-bar">
+                                <div class="wf-bar-breadcrumb">
+                                    Dashboard
+                                    <span style="margin: 0 4px">›</span>
+                                    <span>Report issue</span>
+                                </div>
+                            </div>
+                            <div class="wf-title">Report issue</div>
+                            <p class="wf-desc">
+                                List and create issues to report to your
+                                institution.
+                            </p>
+                            <span class="wf-btn">Create issue</span>
+                            <div class="wf-table" style="margin-top: 20px">
+                                <div class="wf-th">
+                                    <span class="wf-col">Subject</span
+                                    ><span class="wf-col">Status</span
+                                    ><span class="wf-col">Date</span
+                                    ><span class="wf-col-actions">Actions</span>
+                                </div>
+                                <div class="wf-tr">
+                                    <span class="wf-col">Platform bug</span
+                                    ><span class="wf-col"
+                                        ><span class="wf-badge-muted"
+                                            >Open</span
+                                        ></span
+                                    ><span class="wf-col">Mar 8, 2024</span
+                                    ><span class="wf-col-actions">View</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin -->
+                <div id="admin-dashboard" class="wireframe">
+                    <div class="wireframe-annotation">Admin · Dashboard</div>
+                    <div class="wf-shell">
+                        <div class="wf-sidebar">
+                            <div class="wf-logo"></div>
+                            <div class="wf-nav-item active">
+                                <span class="wf-nav-icon"></span> Dashboard
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> System Users
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Institutions
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Users
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Payments
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Support
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Reports
+                            </div>
+                            <div class="wf-user">
+                                <div class="wf-avatar"></div>
+                                <div style="font-size: 13px">Admin</div>
+                            </div>
+                        </div>
+                        <div class="wf-shell-content">
+                            <div class="wf-bar">
+                                <div class="wf-bar-breadcrumb">Dashboard</div>
+                            </div>
+                            <div class="wf-title">Dashboard</div>
+                            <p class="wf-desc">Platform overview.</p>
+                            <div class="wf-row">
+                                <div class="wf-stat">
+                                    <div class="wf-stat-value">8</div>
+                                    <div class="wf-stat-label">
+                                        Institutions
+                                    </div>
+                                </div>
+                                <div class="wf-stat">
+                                    <div class="wf-stat-value">1,240</div>
+                                    <div class="wf-stat-label">Users</div>
+                                </div>
+                                <div class="wf-stat">
+                                    <div class="wf-stat-value">$2,450</div>
+                                    <div class="wf-stat-label">
+                                        Revenue (MTD)
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="wf-frame">
+                                <div class="wf-label">Recent activity</div>
+                                <div class="wf-box" style="min-height: 160px">
+                                    New signups · Payments · Support tickets
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="admin-admins" class="wireframe">
+                    <div class="wireframe-annotation">
+                        Admin · TalentTune admins
+                    </div>
+                    <div class="wf-shell">
+                        <div class="wf-sidebar">
+                            <div class="wf-logo"></div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Dashboard
+                            </div>
+                            <div class="wf-nav-item active">
+                                <span class="wf-nav-icon"></span> System Users
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Institutions
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Users
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Payments
+                            </div>
+                            <div class="wf-user">
+                                <div class="wf-avatar"></div>
+                                <div style="font-size: 13px">Admin</div>
+                            </div>
+                        </div>
+                        <div class="wf-shell-content">
+                            <div class="wf-bar">
+                                <div class="wf-bar-breadcrumb">
+                                    Dashboard
+                                    <span style="margin: 0 4px">›</span>
+                                    <span>System Users</span>
+                                </div>
+                            </div>
+                            <div class="wf-title">TalentTune admins</div>
+                            <p class="wf-desc">
+                                Manage platform administrators.
+                            </p>
+                            <span class="wf-btn">Add admin</span>
+                            <div class="wf-table" style="margin-top: 20px">
+                                <div class="wf-th">
+                                    <span class="wf-col">Email</span
+                                    ><span class="wf-col">Name</span
+                                    ><span class="wf-col">Added</span
+                                    ><span class="wf-col-actions">Actions</span>
+                                </div>
+                                <div class="wf-tr">
+                                    <span class="wf-col"
+                                        >admin@talenttune.example</span
+                                    ><span class="wf-col">Admin User</span
+                                    ><span class="wf-col">Jan 1, 2024</span
+                                    ><span class="wf-col-actions">—</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="admin-institutions" class="wireframe">
+                    <div class="wireframe-annotation">Admin · Institutions</div>
+                    <div class="wf-shell">
+                        <div class="wf-sidebar">
+                            <div class="wf-logo"></div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Dashboard
+                            </div>
+                            <div class="wf-nav-item active">
+                                <span class="wf-nav-icon"></span> Institutions
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Users
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Payments
+                            </div>
+                            <div class="wf-user">
+                                <div class="wf-avatar"></div>
+                                <div style="font-size: 13px">Admin</div>
+                            </div>
+                        </div>
+                        <div class="wf-shell-content">
+                            <div class="wf-bar">
+                                <div class="wf-bar-breadcrumb">
+                                    Dashboard
+                                    <span style="margin: 0 4px">›</span>
+                                    <span>Institutions</span>
+                                </div>
+                            </div>
+                            <div class="wf-title">Institutions</div>
+                            <p class="wf-desc">
+                                Manage institution accounts and subscriptions.
+                            </p>
+                            <div class="wf-toolbar">
+                                <div
+                                    class="wf-input"
+                                    style="max-width: 280px; margin-bottom: 0"
+                                ></div>
+                                <div
+                                    style="
+                                        display: flex;
+                                        gap: 12px;
+                                        font-size: 13px;
+                                        color: #6b7280;
+                                    "
+                                >
+                                    Pending: 2 · Active: 8
+                                </div>
+                            </div>
+                            <div class="wf-table">
+                                <div class="wf-th">
+                                    <span class="wf-col">Name</span
+                                    ><span class="wf-col">Slug</span
+                                    ><span class="wf-col">Status</span
+                                    ><span class="wf-col">Subscription</span
+                                    ><span class="wf-col-actions">Actions</span>
+                                </div>
+                                <div class="wf-tr">
+                                    <span class="wf-col"
+                                        >University of Example</span
+                                    ><span class="wf-col">example</span
+                                    ><span class="wf-col"
+                                        ><span class="wf-badge"
+                                            >Active</span
+                                        ></span
+                                    ><span class="wf-col">Pro</span
+                                    ><span class="wf-col-actions">View</span>
+                                </div>
+                                <div class="wf-tr">
+                                    <span class="wf-col">Tech College</span
+                                    ><span class="wf-col">techcollege</span
+                                    ><span class="wf-col"
+                                        ><span class="wf-badge-muted"
+                                            >Pending</span
+                                        ></span
+                                    ><span class="wf-col">—</span
+                                    ><span class="wf-col-actions">View</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="admin-users" class="wireframe">
+                    <div class="wireframe-annotation">Admin · Users</div>
+                    <div class="wf-shell">
+                        <div class="wf-sidebar">
+                            <div class="wf-logo"></div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Dashboard
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> System Users
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Institutions
+                            </div>
+                            <div class="wf-nav-item active">
+                                <span class="wf-nav-icon"></span> Users
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Payments
+                            </div>
+                            <div class="wf-user">
+                                <div class="wf-avatar"></div>
+                                <div style="font-size: 13px">Admin</div>
+                            </div>
+                        </div>
+                        <div class="wf-shell-content">
+                            <div class="wf-bar">
+                                <div class="wf-bar-breadcrumb">
+                                    Dashboard
+                                    <span style="margin: 0 4px">›</span>
+                                    <span>Institutional Users</span>
+                                </div>
+                            </div>
+                            <div class="wf-title">Institutional Users</div>
+                            <p class="wf-desc">
+                                Students, lecturers, and institution admins
+                                across all institutions.
+                            </p>
+                            <div class="wf-toolbar">
+                                <div
+                                    class="wf-input"
+                                    style="max-width: 280px; margin-bottom: 0"
+                                ></div>
+                            </div>
+                            <div class="wf-table">
+                                <div class="wf-th">
+                                    <span class="wf-col">Name</span
+                                    ><span class="wf-col">Email</span
+                                    ><span class="wf-col">Institution</span
+                                    ><span class="wf-col">Role</span
+                                    ><span class="wf-col-actions">Actions</span>
+                                </div>
+                                <div class="wf-tr">
+                                    <span class="wf-col">Alice Lee</span
+                                    ><span class="wf-col"
+                                        >alice@edu.example</span
+                                    ><span class="wf-col"
+                                        >University of Example</span
+                                    ><span class="wf-col">Student</span
+                                    ><span class="wf-col-actions">Edit</span>
+                                </div>
+                                <div class="wf-tr">
+                                    <span class="wf-col">Dr. Jane Smith</span
+                                    ><span class="wf-col">jane@edu.example</span
+                                    ><span class="wf-col"
+                                        >University of Example</span
+                                    ><span class="wf-col">Lecturer</span
+                                    ><span class="wf-col-actions">Edit</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="admin-payments" class="wireframe">
+                    <div class="wireframe-annotation">Admin · Payments</div>
+                    <div class="wf-shell">
+                        <div class="wf-sidebar">
+                            <div class="wf-logo"></div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Dashboard
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Institutions
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Users
+                            </div>
+                            <div class="wf-nav-item active">
+                                <span class="wf-nav-icon"></span> Payments
+                            </div>
+                            <div class="wf-user">
+                                <div class="wf-avatar"></div>
+                                <div style="font-size: 13px">Admin</div>
+                            </div>
+                        </div>
+                        <div class="wf-shell-content">
+                            <div class="wf-bar">
+                                <div class="wf-bar-breadcrumb">
+                                    Dashboard
+                                    <span style="margin: 0 4px">›</span>
+                                    <span>Payments</span>
+                                </div>
+                            </div>
+                            <div class="wf-title">Payments</div>
+                            <p class="wf-desc">
+                                All subscription and payment transactions.
+                            </p>
+                            <div class="wf-table">
+                                <div class="wf-th">
+                                    <span class="wf-col">Id</span
+                                    ><span class="wf-col">Institution</span
+                                    ><span class="wf-col">Amount</span
+                                    ><span class="wf-col">Date</span
+                                    ><span class="wf-col-actions">Actions</span>
+                                </div>
+                                <div class="wf-tr">
+                                    <span class="wf-col">#1001</span
+                                    ><span class="wf-col"
+                                        >University of Example</span
+                                    ><span class="wf-col">$99.00</span
+                                    ><span class="wf-col">Mar 1, 2024</span
+                                    ><span class="wf-col-actions">View</span>
+                                </div>
+                                <div class="wf-tr">
+                                    <span class="wf-col">#1002</span
+                                    ><span class="wf-col">Tech College</span
+                                    ><span class="wf-col">$99.00</span
+                                    ><span class="wf-col">Mar 2, 2024</span
+                                    ><span class="wf-col-actions">View</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="admin-support" class="wireframe">
+                    <div class="wireframe-annotation">
+                        Admin · Support tickets
+                    </div>
+                    <div class="wf-shell">
+                        <div class="wf-sidebar">
+                            <div class="wf-logo"></div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Dashboard
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Institutions
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Users
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Payments
+                            </div>
+                            <div class="wf-nav-item active">
+                                <span class="wf-nav-icon"></span> Support
+                            </div>
+                            <div class="wf-user">
+                                <div class="wf-avatar"></div>
+                                <div style="font-size: 13px">Admin</div>
+                            </div>
+                        </div>
+                        <div class="wf-shell-content">
+                            <div class="wf-bar">
+                                <div class="wf-bar-breadcrumb">
+                                    Dashboard
+                                    <span style="margin: 0 4px">›</span>
+                                    <span>Support tickets</span>
+                                </div>
+                            </div>
+                            <div class="wf-title">Support tickets</div>
+                            <p class="wf-desc">
+                                Respond to and manage support tickets from
+                                institutions.
+                            </p>
+                            <div class="wf-table">
+                                <div class="wf-th">
+                                    <span class="wf-col">Ticket</span
+                                    ><span class="wf-col">Institution</span
+                                    ><span class="wf-col">Subject</span
+                                    ><span class="wf-col">Status</span
+                                    ><span class="wf-col-actions">Actions</span>
+                                </div>
+                                <div class="wf-tr">
+                                    <span class="wf-col">#201</span
+                                    ><span class="wf-col"
+                                        >University of Example</span
+                                    ><span class="wf-col">Billing question</span
+                                    ><span class="wf-col"
+                                        ><span class="wf-badge-muted"
+                                            >Open</span
+                                        ></span
+                                    ><span class="wf-col-actions">View</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="admin-reports" class="wireframe">
+                    <div class="wireframe-annotation">Admin · Reports</div>
+                    <div class="wf-shell">
+                        <div class="wf-sidebar">
+                            <div class="wf-logo"></div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Dashboard
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Institutions
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Payments
+                            </div>
+                            <div class="wf-nav-item active">
+                                <span class="wf-nav-icon"></span> Reports
+                            </div>
+                            <div class="wf-user">
+                                <div class="wf-avatar"></div>
+                                <div style="font-size: 13px">Admin</div>
+                            </div>
+                        </div>
+                        <div class="wf-shell-content">
+                            <div class="wf-bar">
+                                <div class="wf-bar-breadcrumb">
+                                    Dashboard
+                                    <span style="margin: 0 4px">›</span>
+                                    <span>Reports</span>
+                                </div>
+                            </div>
+                            <div class="wf-title">Reports</div>
+                            <p class="wf-desc">Export platform reports.</p>
+                            <div class="wf-row">
+                                <div
+                                    class="wf-card"
+                                    style="flex: 1; min-width: 200px"
+                                >
+                                    <div
+                                        class="wf-title"
+                                        style="font-size: 16px"
+                                    >
+                                        Payments report
+                                    </div>
+                                    <p
+                                        class="wf-desc"
+                                        style="margin: 8px 0 16px"
+                                    >
+                                        All payments in date range.
+                                    </p>
+                                    <span class="wf-btn">Download PDF</span>
+                                </div>
+                                <div class="wf-card" style="flex: 1">
+                                    <div
+                                        class="wf-title"
+                                        style="font-size: 16px"
+                                    >
+                                        Profit &amp; loss
+                                    </div>
+                                    <p
+                                        class="wf-desc"
+                                        style="margin: 8px 0 16px"
+                                    >
+                                        Revenue and costs.
+                                    </p>
+                                    <span class="wf-btn">Download PDF</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings -->
+                <div id="settings-profile" class="wireframe">
+                    <div class="wireframe-annotation">Settings · Profile</div>
+                    <div class="wf-shell">
+                        <div class="wf-sidebar">
+                            <div class="wf-logo"></div>
+                            <div class="wf-nav-item active">
+                                <span class="wf-nav-icon"></span> Profile
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Password
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Two-factor
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Appearance
+                            </div>
+                            <div class="wf-user">
+                                <div class="wf-avatar"></div>
+                                <div style="font-size: 13px">User</div>
+                            </div>
+                        </div>
+                        <div class="wf-shell-content">
+                            <div class="wf-bar">
+                                <div class="wf-bar-breadcrumb">
+                                    Settings
+                                    <span style="margin: 0 4px">›</span>
+                                    <span>Profile</span>
+                                </div>
+                            </div>
+                            <div class="wf-title">Profile</div>
+                            <p class="wf-desc">Update your name and email.</p>
+                            <div class="wf-card">
+                                <div class="wf-form">
+                                    <div class="wf-field">
+                                        <label class="wf-label">Name</label>
+                                        <div
+                                            class="wf-input"
+                                            style="max-width: 360px"
+                                        ></div>
+                                    </div>
+                                    <div class="wf-field">
+                                        <label class="wf-label">Email</label>
+                                        <div
+                                            class="wf-input"
+                                            style="max-width: 360px"
+                                        ></div>
+                                    </div>
+                                    <span class="wf-btn">Save changes</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="settings-password" class="wireframe">
+                    <div class="wireframe-annotation">Settings · Password</div>
+                    <div class="wf-shell">
+                        <div class="wf-sidebar">
+                            <div class="wf-logo"></div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Profile
+                            </div>
+                            <div class="wf-nav-item active">
+                                <span class="wf-nav-icon"></span> Password
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Two-factor
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Appearance
+                            </div>
+                            <div class="wf-user">
+                                <div class="wf-avatar"></div>
+                                <div style="font-size: 13px">User</div>
+                            </div>
+                        </div>
+                        <div class="wf-shell-content">
+                            <div class="wf-bar">
+                                <div class="wf-bar-breadcrumb">
+                                    Settings
+                                    <span style="margin: 0 4px">›</span>
+                                    <span>Password</span>
+                                </div>
+                            </div>
+                            <div class="wf-title">Password</div>
+                            <p class="wf-desc">Change your password.</p>
+                            <div class="wf-card">
+                                <div class="wf-form">
+                                    <div class="wf-field">
+                                        <label class="wf-label"
+                                            >Current password</label
+                                        >
+                                        <div
+                                            class="wf-input"
+                                            style="max-width: 360px"
+                                        ></div>
+                                    </div>
+                                    <div class="wf-field">
+                                        <label class="wf-label"
+                                            >New password</label
+                                        >
+                                        <div
+                                            class="wf-input"
+                                            style="max-width: 360px"
+                                        ></div>
+                                    </div>
+                                    <div class="wf-field">
+                                        <label class="wf-label"
+                                            >Confirm new password</label
+                                        >
+                                        <div
+                                            class="wf-input"
+                                            style="max-width: 360px"
+                                        ></div>
+                                    </div>
+                                    <span class="wf-btn">Update password</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="settings-two-factor" class="wireframe">
+                    <div class="wireframe-annotation">
+                        Settings · Two-factor
+                    </div>
+                    <div class="wf-shell">
+                        <div class="wf-sidebar">
+                            <div class="wf-logo"></div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Profile
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Password
+                            </div>
+                            <div class="wf-nav-item active">
+                                <span class="wf-nav-icon"></span> Two-factor
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Appearance
+                            </div>
+                            <div class="wf-user">
+                                <div class="wf-avatar"></div>
+                                <div style="font-size: 13px">User</div>
+                            </div>
+                        </div>
+                        <div class="wf-shell-content">
+                            <div class="wf-bar">
+                                <div class="wf-bar-breadcrumb">
+                                    Settings
+                                    <span style="margin: 0 4px">›</span>
+                                    <span>Two-factor authentication</span>
+                                </div>
+                            </div>
+                            <div class="wf-title">
+                                Two-factor authentication
+                            </div>
+                            <p class="wf-desc">
+                                Add an extra layer of security to your account.
+                            </p>
+                            <div class="wf-card">
+                                <div class="wf-label">Status</div>
+                                <p class="wf-desc" style="margin: 0 0 16px">
+                                    2FA is currently disabled.
+                                </p>
+                                <div class="wf-box" style="min-height: 120px">
+                                    QR code or setup key placeholder
+                                </div>
+                                <span class="wf-btn">Enable two-factor</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="settings-appearance" class="wireframe">
+                    <div class="wireframe-annotation">
+                        Settings · Appearance
+                    </div>
+                    <div class="wf-shell">
+                        <div class="wf-sidebar">
+                            <div class="wf-logo"></div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Profile
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Password
+                            </div>
+                            <div class="wf-nav-item">
+                                <span class="wf-nav-icon"></span> Two-factor
+                            </div>
+                            <div class="wf-nav-item active">
+                                <span class="wf-nav-icon"></span> Appearance
+                            </div>
+                            <div class="wf-user">
+                                <div class="wf-avatar"></div>
+                                <div style="font-size: 13px">User</div>
+                            </div>
+                        </div>
+                        <div class="wf-shell-content">
+                            <div class="wf-bar">
+                                <div class="wf-bar-breadcrumb">
+                                    Settings
+                                    <span style="margin: 0 4px">›</span>
+                                    <span>Appearance</span>
+                                </div>
+                            </div>
+                            <div class="wf-title">Appearance</div>
+                            <p class="wf-desc">Choose how the app looks.</p>
+                            <div class="wf-card">
+                                <div class="wf-label">Theme</div>
+                                <div class="wf-row" style="margin-bottom: 0">
+                                    <div
+                                        class="wf-card"
+                                        style="
+                                            flex: 1;
+                                            min-width: 140px;
+                                            text-align: center;
+                                            cursor: pointer;
+                                        "
+                                    >
+                                        <div
+                                            style="
+                                                width: 48px;
+                                                height: 48px;
+                                                background: #fff;
+                                                border: 2px solid #e5e7eb;
+                                                border-radius: 8px;
+                                                margin: 0 auto 8px;
+                                            "
+                                        ></div>
+                                        Light
+                                    </div>
+                                    <div
+                                        class="wf-card"
+                                        style="flex: 1; text-align: center"
+                                    >
+                                        <div
+                                            style="
+                                                width: 48px;
+                                                height: 48px;
+                                                background: #1e293b;
+                                                border-radius: 8px;
+                                                margin: 0 auto 8px;
+                                            "
+                                        ></div>
+                                        Dark
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+        <script>
+            (function () {
+                var links = document.querySelectorAll('.nav a');
+                function show(id) {
+                    document
+                        .querySelectorAll('.wireframe')
+                        .forEach(function (w) {
+                            w.classList.remove('visible');
+                        });
+                    var w = document.getElementById(id);
+                    if (w) w.classList.add('visible');
+                    links.forEach(function (l) {
+                        l.classList.remove('active');
+                        if (l.getAttribute('href') === '#' + id)
+                            l.classList.add('active');
+                    });
+                }
+                function onHash() {
+                    var id = (window.location.hash || '#landing').slice(1);
+                    show(id);
+                }
+                links.forEach(function (a) {
+                    a.addEventListener('click', function (e) {
+                        var id = a.getAttribute('href').slice(1);
+                        show(id);
+                        window.location.hash = id;
+                        e.preventDefault();
+                    });
+                });
+                window.addEventListener('hashchange', onHash);
+                onHash();
+            })();
+        </script>
+    </body>
+</html>
