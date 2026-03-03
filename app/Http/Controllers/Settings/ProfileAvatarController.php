@@ -44,22 +44,24 @@ class ProfileAvatarController extends Controller
     }
 
     /**
-     * Generate a profile photo using AI (Imagen) based on user choices.
+     * Enhance the current profile photo with AI (professional headshot style).
+     * Requires the user to have an avatar already uploaded.
      */
-    public function generate(Request $request): RedirectResponse|JsonResponse
+    public function enhance(Request $request): RedirectResponse|JsonResponse
     {
-        $request->validate([
-            'style' => ['nullable', 'string', 'in:professional,casual,creative'],
-            'background' => ['nullable', 'string', 'in:neutral,outdoor,abstract,minimal'],
-            'mood' => ['nullable', 'string', 'in:friendly,serious,approachable'],
-            'gender' => ['nullable', 'string', 'in:neutral,male,female'],
-        ]);
-
         $user = $request->user();
-        $options = $request->only(['style', 'background', 'mood', 'gender']);
 
-        $result = $this->imagenProfileService->generateProfilePicture(
-            array_filter($options),
+        if (! $user->avatar || ! Storage::disk('public')->exists($user->avatar)) {
+            $message = 'Upload a photo first, then enhance it with AI.';
+            if ($request->wantsJson()) {
+                return response()->json(['error' => $message], 422);
+            }
+
+            return back()->with('error', $message);
+        }
+
+        $result = $this->imagenProfileService->enhanceProfilePicture(
+            $user->avatar,
             $user->id
         );
 
@@ -72,9 +74,7 @@ class ProfileAvatarController extends Controller
             return back()->with('error', $result['error']);
         }
 
-        if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
-            Storage::disk('public')->delete($user->avatar);
-        }
+        Storage::disk('public')->delete($user->avatar);
 
         $user->avatar = $result['path'];
         $user->save();

@@ -13,103 +13,103 @@ class ImagenProfileService
     }
 
     /**
-     * Generate a profile picture using Imagen based on user choices.
-     * Returns ['path' => string] (storage path) or ['error' => string, 'code' => int].
-     *
-     * @param  array{style?: string, background?: string, mood?: string, gender?: string}  $options
+     * Enhance an existing profile photo with AI to look more professional.
+     * Reads the image from storage, sends to Gemini for enhancement, saves result.
+     * Returns ['path' => string] or ['error' => string, 'code' => int].
      */
-    public function generateProfilePicture(array $options, int $userId): array
+    public function enhanceProfilePicture(string $avatarPath, int $userId): array
     {
         if (! $this->getApiKey()) {
-            return ['error' => 'API key not configured for image generation', 'code' => 500];
+            return ['error' => 'API key not configured for image enhancement', 'code' => 500];
         }
 
-        $prompt = $this->buildProfilePrompt($options);
+        $disk = Storage::disk('public');
+        if (! $disk->exists($avatarPath)) {
+            return ['error' => 'Avatar image not found', 'code' => 404];
+        }
+
+        $contents = $disk->get($avatarPath);
+        $mimeType = $this->guessMimeType($avatarPath);
+        $base64 = base64_encode($contents);
+
         $apiKey = $this->getApiKey();
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key={$apiKey}";
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key={$apiKey}";
+
+        $prompt = 'Transform this photo into a professional headshot. '
+            .'Improve lighting and clarity, use a clean neutral background (e.g. soft gray or white). '
+            .'Keep the same person and their appearance; only enhance quality and make it look professional. '
+            .'Output only the enhanced image, no text or captions.';
 
         $body = [
-            'instances' => [
-                ['prompt' => $prompt],
+            'contents' => [
+                [
+                    'parts' => [
+                        [
+                            'inlineData' => [
+                                'mimeType' => $mimeType,
+                                'data' => $base64,
+                            ],
+                        ],
+                        ['text' => $prompt],
+                    ],
+                ],
             ],
-            'parameters' => [
-                'sampleCount' => 1,
-                'personGeneration' => 'allow_adult',
+            'generationConfig' => [
+                'responseModalities' => ['TEXT', 'IMAGE'],
+                'responseMimeType' => 'image/png',
             ],
         ];
 
-        $response = Http::timeout(60)->post($url, $body);
+        $response = Http::timeout(90)->post($url, $body);
 
         if ($response->failed()) {
             $errorData = $response->json();
 
             return [
-                'error' => $errorData['error']['message'] ?? 'Failed to generate profile image',
+                'error' => $errorData['error']['message'] ?? 'Failed to enhance image',
                 'code' => $response->status(),
             ];
         }
 
         $data = $response->json();
+        $parts = $data['candidates'][0]['content']['parts'] ?? [];
 
-        // Response may be: predictions[0].bytesBase64Encoded or generatedImages[0].image.imageBytes
-        $base64 = $data['predictions'][0]['bytesBase64Encoded']
-            ?? $data['generatedImages'][0]['image']['imageBytes']
-            ?? null;
-
-        if (! $base64 || ! is_string($base64)) {
-            return ['error' => 'No image data in response', 'code' => 500];
+        $imageBase64 = null;
+        foreach ($parts as $part) {
+            $inline = $part['inlineData'] ?? $part['inline_data'] ?? null;
+            if ($inline && isset($inline['data'])) {
+                $imageBase64 = $inline['data'];
+                break;
+            }
         }
 
-        $binary = base64_decode($base64, true);
+        if (! $imageBase64 || ! is_string($imageBase64)) {
+            return ['error' => 'No enhanced image in response', 'code' => 500];
+        }
+
+        $binary = base64_decode($imageBase64, true);
         if ($binary === false) {
             return ['error' => 'Invalid image data', 'code' => 500];
         }
 
         $dir = "avatars/{$userId}";
-        $filename = uniqid('avatar_', true).'.png';
-        $path = "{$dir}/{$filename}";
+        $filename = 'enhanced_'.uniqid('', true).'.png';
+        $newPath = "{$dir}/{$filename}";
 
-        Storage::disk('public')->put($path, $binary);
+        $disk->put($newPath, $binary);
 
-        return ['path' => $path];
+        return ['path' => $newPath];
     }
 
-    private function buildProfilePrompt(array $options): string
+    private function guessMimeType(string $path): string
     {
-        $style = $this->mapOption('style', $options, [
-            'professional' => 'professional headshot, business attire, clean and polished',
-            'casual' => 'casual friendly portrait, relaxed outfit, approachable',
-            'creative' => 'creative portrait, artistic lighting, modern and distinctive',
-        ]);
-        $background = $this->mapOption('background', $options, [
-            'neutral' => 'neutral gray or soft gradient background',
-            'outdoor' => 'soft outdoor background, natural light, blurred',
-            'abstract' => 'subtle abstract or geometric background, not distracting',
-            'minimal' => 'plain white or light minimal background',
-        ]);
-        $mood = $this->mapOption('mood', $options, [
-            'friendly' => 'warm smile, approachable and friendly expression',
-            'serious' => 'composed, professional and confident expression',
-            'approachable' => 'slight smile, welcoming and approachable',
-        ]);
-        $gender = $this->mapOption('gender', $options, [
-            'neutral' => 'androgynous person',
-            'male' => 'adult man',
-            'female' => 'adult woman',
-        ], 'neutral');
+        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
 
-        return "Profile photo of one {$gender}, {$style}, {$background}, {$mood}. "
-            .'Single person only, head and shoulders, front facing, high quality portrait suitable for a profile picture. '
-            .'No text, no logos.';
-    }
-
-    /**
-     * @param  array<string, string>  $map
-     */
-    private function mapOption(string $key, array $options, array $map, string $default = 'neutral'): string
-    {
-        $value = $options[$key] ?? $default;
-
-        return $map[$value] ?? $map[$default] ?? $default;
+        return match ($ext) {
+            'jpg', 'jpeg' => 'image/jpeg',
+            'gif' => 'image/gif',
+            'webp' => 'image/webp',
+            default => 'image/png',
+        };
     }
 }

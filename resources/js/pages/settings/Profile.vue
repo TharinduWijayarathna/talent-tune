@@ -11,15 +11,6 @@ import HeadingSmall from '@/components/HeadingSmall.vue';
 import InputError from '@/components/InputError.vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useInitials } from '@/composables/useInitials';
@@ -48,16 +39,8 @@ const { getInitials } = useInitials();
 
 const avatarUploadRef = ref<HTMLInputElement | null>(null);
 const isUploading = ref(false);
-const isGenerating = ref(false);
-const generateError = ref('');
-const aiDialogOpen = ref(false);
-
-const aiOptions = ref({
-    style: 'professional',
-    background: 'neutral',
-    mood: 'friendly',
-    gender: 'neutral',
-});
+const isEnhancing = ref(false);
+const enhanceError = ref('');
 
 const csrfToken = (page.props as { csrfToken?: string }).csrfToken ?? '';
 
@@ -76,7 +59,7 @@ async function onAvatarFileChange(event: Event) {
     const file = input.files?.[0];
     if (!file) return;
     isUploading.value = true;
-    generateError.value = '';
+    enhanceError.value = '';
     try {
         const formData = new FormData();
         formData.append('avatar', file);
@@ -98,38 +81,37 @@ async function onAvatarFileChange(event: Event) {
         }
         router.reload();
     } catch (e: unknown) {
-        generateError.value = e instanceof Error ? e.message : 'Upload failed';
+        enhanceError.value = e instanceof Error ? e.message : 'Upload failed';
     } finally {
         isUploading.value = false;
         input.value = '';
     }
 }
 
-async function generateAvatar() {
-    isGenerating.value = true;
-    generateError.value = '';
+async function enhanceWithAi() {
+    if (!avatarUrl.value) return;
+    isEnhancing.value = true;
+    enhanceError.value = '';
     try {
-        const response = await fetch('/settings/profile/avatar/generate', {
+        const response = await fetch('/settings/profile/avatar/enhance', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': csrfToken,
                 'X-Requested-With': 'XMLHttpRequest',
+                Accept: 'application/json',
             },
             credentials: 'same-origin',
-            body: JSON.stringify(aiOptions.value),
         });
         const data = await response.json().catch(() => ({}));
         if (!response.ok) {
-            throw new Error(data.error ?? 'Generation failed');
+            throw new Error(data.error ?? 'Enhancement failed');
         }
-        aiDialogOpen.value = false;
         router.reload();
     } catch (e: unknown) {
-        generateError.value =
-            e instanceof Error ? e.message : 'Generation failed';
+        enhanceError.value =
+            e instanceof Error ? e.message : 'Enhancement failed';
     } finally {
-        isGenerating.value = false;
+        isEnhancing.value = false;
     }
 }
 
@@ -158,7 +140,7 @@ async function removeAvatar() {
             <div class="flex flex-col space-y-6">
                 <HeadingSmall
                     title="Profile photo"
-                    description="Upload a photo or generate one with AI"
+                    description="Upload a photo, then enhance it with AI for a professional look"
                 />
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
                     <Avatar
@@ -193,129 +175,17 @@ async function removeAvatar() {
                             <Upload class="mr-2 h-4 w-4" />
                             {{ isUploading ? 'Uploading…' : 'Upload photo' }}
                         </Button>
-                        <Dialog v-model:open="aiDialogOpen">
-                            <DialogTrigger as-child>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                >
-                                    <Sparkles class="mr-2 h-4 w-4" />
-                                    Generate with AI
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent class="sm:max-w-md">
-                                <DialogHeader>
-                                    <DialogTitle
-                                        >Generate profile photo with
-                                        AI</DialogTitle
-                                    >
-                                    <DialogDescription>
-                                        Answer a few questions so we can create
-                                        a profile picture that fits your style.
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <div class="grid gap-4 py-4">
-                                    <div class="grid gap-2">
-                                        <Label for="ai-style">Style</Label>
-                                        <select
-                                            id="ai-style"
-                                            v-model="aiOptions.style"
-                                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
-                                        >
-                                            <option value="professional">
-                                                Professional
-                                            </option>
-                                            <option value="casual">
-                                                Casual
-                                            </option>
-                                            <option value="creative">
-                                                Creative
-                                            </option>
-                                        </select>
-                                    </div>
-                                    <div class="grid gap-2">
-                                        <Label for="ai-background"
-                                            >Background</Label
-                                        >
-                                        <select
-                                            id="ai-background"
-                                            v-model="aiOptions.background"
-                                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
-                                        >
-                                            <option value="neutral">
-                                                Neutral
-                                            </option>
-                                            <option value="outdoor">
-                                                Outdoor
-                                            </option>
-                                            <option value="abstract">
-                                                Abstract
-                                            </option>
-                                            <option value="minimal">
-                                                Minimal
-                                            </option>
-                                        </select>
-                                    </div>
-                                    <div class="grid gap-2">
-                                        <Label for="ai-mood">Mood</Label>
-                                        <select
-                                            id="ai-mood"
-                                            v-model="aiOptions.mood"
-                                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
-                                        >
-                                            <option value="friendly">
-                                                Friendly
-                                            </option>
-                                            <option value="serious">
-                                                Serious
-                                            </option>
-                                            <option value="approachable">
-                                                Approachable
-                                            </option>
-                                        </select>
-                                    </div>
-                                    <div class="grid gap-2">
-                                        <Label for="ai-gender"
-                                            >Appearance</Label
-                                        >
-                                        <select
-                                            id="ai-gender"
-                                            v-model="aiOptions.gender"
-                                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
-                                        >
-                                            <option value="neutral">
-                                                Neutral
-                                            </option>
-                                            <option value="male">Male</option>
-                                            <option value="female">
-                                                Female
-                                            </option>
-                                        </select>
-                                    </div>
-                                    <p
-                                        v-if="generateError"
-                                        class="text-sm text-destructive"
-                                    >
-                                        {{ generateError }}
-                                    </p>
-                                </div>
-                                <DialogFooter>
-                                    <Button
-                                        type="button"
-                                        :disabled="isGenerating"
-                                        @click="generateAvatar"
-                                    >
-                                        <Sparkles class="mr-2 h-4 w-4" />
-                                        {{
-                                            isGenerating
-                                                ? 'Generating…'
-                                                : 'Generate photo'
-                                        }}
-                                    </Button>
-                                </DialogFooter>
-                            </DialogContent>
-                        </Dialog>
+                        <Button
+                            v-if="avatarUrl"
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            :disabled="isEnhancing"
+                            @click="enhanceWithAi"
+                        >
+                            <Sparkles class="mr-2 h-4 w-4" />
+                            {{ isEnhancing ? 'Enhancing…' : 'Enhance with AI' }}
+                        </Button>
                         <Button
                             v-if="avatarUrl"
                             type="button"
@@ -328,6 +198,9 @@ async function removeAvatar() {
                             Remove
                         </Button>
                     </div>
+                    <p v-if="enhanceError" class="text-sm text-destructive">
+                        {{ enhanceError }}
+                    </p>
                 </div>
 
                 <HeadingSmall
