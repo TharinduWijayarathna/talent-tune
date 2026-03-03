@@ -27,7 +27,9 @@ import { Calendar as CalendarIcon, Clock, Sparkles } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 const page = usePage();
-const csrfToken = computed(() => (page.props as { csrfToken?: string }).csrfToken ?? '');
+const csrfToken = computed(
+    () => (page.props as { csrfToken?: string }).csrfToken ?? '',
+);
 
 const genericInstructionTemplates = [
     'Review core concepts and definitions from the syllabus.',
@@ -69,7 +71,9 @@ const availableBatches = computed(() => props.batches || []);
 const isGeneratingInstructions = ref(false);
 
 async function generateInstructions() {
-    const hasContext = (form.title?.trim().length ?? 0) > 0 || (form.description?.trim().length ?? 0) > 0;
+    const hasContext =
+        (form.title?.trim().length ?? 0) > 0 ||
+        (form.description?.trim().length ?? 0) > 0;
     if (!hasContext) {
         form.instructions = getLocalFallbackInstructions();
         return;
@@ -90,7 +94,11 @@ async function generateInstructions() {
             }),
         });
         const data = await response.json().catch(() => ({}));
-        if (response.ok && typeof data.instructions === 'string' && data.instructions.trim()) {
+        if (
+            response.ok &&
+            typeof data.instructions === 'string' &&
+            data.instructions.trim()
+        ) {
             form.instructions = data.instructions.trim();
         } else {
             form.instructions = getLocalFallbackInstructions();
@@ -406,17 +414,22 @@ const submitForm = () => {
                                         type="button"
                                         variant="secondary"
                                         size="sm"
-                                        class="absolute bottom-2 right-2 gap-1.5"
+                                        class="absolute right-2 bottom-2 gap-1.5"
                                         :disabled="isGeneratingInstructions"
                                         @click="generateInstructions()"
                                     >
                                         <Sparkles
                                             class="h-3.5 w-3.5"
                                             :class="{
-                                                'animate-pulse': isGeneratingInstructions,
+                                                'animate-pulse':
+                                                    isGeneratingInstructions,
                                             }"
                                         />
-                                        {{ isGeneratingInstructions ? 'Generating…' : 'Generate' }}
+                                        {{
+                                            isGeneratingInstructions
+                                                ? 'Generating…'
+                                                : 'Generate'
+                                        }}
                                     </Button>
                                 </div>
                                 <InputError

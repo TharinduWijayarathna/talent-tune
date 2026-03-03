@@ -37,15 +37,15 @@ class GeminiQuestionService
 
         $hasContext = trim($title) !== '' || trim($description) !== '';
         $prompt = $hasContext
-            ? "You are helping a lecturer write instructions for a viva (oral exam) session. "
-            . "Based on the following viva details, generate exactly 5 clear, concise instruction points that define the scope and focus of the viva. "
-            . "These instructions will be used later to generate questions for students.\n\n"
-            . "Viva title: " . trim($title ?: 'General subject') . "\n\n"
-            . (trim($description) !== '' ? "Description/context: " . trim($description) . "\n\n" : '')
-            . "Return ONLY a numbered list of exactly 5 instruction points (1. ... 2. ... etc.). One point per line. No preamble or extra text."
-            : "You are helping a lecturer write instructions for a viva (oral exam) session. "
-            . "Generate exactly 5 generic, clear instruction points that could apply to a typical viva (e.g. core concepts, terminology, applications, problem-solving, examples). "
-            . "Return ONLY a numbered list of exactly 5 points (1. ... 2. ... etc.). One point per line. No preamble or extra text.";
+            ? 'You are helping a lecturer write instructions for a viva (oral exam) session. '
+            .'Based on the following viva details, generate exactly 5 clear, concise instruction points that define the scope and focus of the viva. '
+            ."These instructions will be used later to generate questions for students.\n\n"
+            .'Viva title: '.trim($title ?: 'General subject')."\n\n"
+            .(trim($description) !== '' ? 'Description/context: '.trim($description)."\n\n" : '')
+            .'Return ONLY a numbered list of exactly 5 instruction points (1. ... 2. ... etc.). One point per line. No preamble or extra text.'
+            : 'You are helping a lecturer write instructions for a viva (oral exam) session. '
+            .'Generate exactly 5 generic, clear instruction points that could apply to a typical viva (e.g. core concepts, terminology, applications, problem-solving, examples). '
+            .'Return ONLY a numbered list of exactly 5 points (1. ... 2. ... etc.). One point per line. No preamble or extra text.';
 
         $response = Http::post($this->getApiUrl(), [
             'contents' => [['parts' => [['text' => $prompt]]]],
