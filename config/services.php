@@ -38,6 +38,7 @@ return [
     'google' => [
         'tts_api_key' => env('GOOGLE_TTS_API_KEY'),
         'gemini_api_key' => env('GEMINI_API_KEY'),
+        'gemini_image_model' => env('GEMINI_IMAGE_MODEL', 'gemini-2.0-flash'),
     ],
 
     'rubric' => [

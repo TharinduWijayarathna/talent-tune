@@ -13,6 +13,15 @@ class ImagenProfileService
     }
 
     /**
+     * Gemini model used for image enhancement (must support generateContent with image output).
+     * Override via config('services.google.gemini_image_model') or GEMINI_IMAGE_MODEL.
+     */
+    protected function getImageModel(): string
+    {
+        return config('services.google.gemini_image_model', 'gemini-2.0-flash');
+    }
+
+    /**
      * Enhance an existing profile photo with AI to look more professional.
      * Reads the image from storage, sends to Gemini for enhancement, saves result.
      * Returns ['path' => string] or ['error' => string, 'code' => int].
@@ -33,7 +42,8 @@ class ImagenProfileService
         $base64 = base64_encode($contents);
 
         $apiKey = $this->getApiKey();
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key={$apiKey}";
+        $model = $this->getImageModel();
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
 
         $prompt = 'Transform this photo into a professional headshot. '
             .'Improve lighting and clarity, use a clean neutral background (e.g. soft gray or white). '
