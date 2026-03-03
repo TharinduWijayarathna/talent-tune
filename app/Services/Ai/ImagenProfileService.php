@@ -14,11 +14,11 @@ class ImagenProfileService
 
     /**
      * Gemini model used for image enhancement (must support generateContent with image output).
-     * Override via config('services.google.gemini_image_model') or GEMINI_IMAGE_MODEL.
+     * Default: gemini-2.5-flash-image. Override via GEMINI_IMAGE_MODEL.
      */
     protected function getImageModel(): string
     {
-        return config('services.google.gemini_image_model', 'gemini-2.0-flash');
+        return config('services.google.gemini_image_model', 'gemini-2.5-flash-image');
     }
 
     /**
