@@ -26,13 +26,28 @@ class ProfileAvatarController extends Controller
 
         $user = $request->user();
 
-        if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
-            Storage::disk('public')->delete($user->avatar);
-        }
+        try {
+            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+                Storage::disk('public')->delete($user->avatar);
+            }
 
-        $path = $request->file('avatar')->store("avatars/{$user->id}", 'public');
-        $user->avatar = $path;
-        $user->save();
+            $path = $request->file('avatar')->store("avatars/{$user->id}", 'public');
+            if (! $path) {
+                throw new \RuntimeException('Storage failed to save the file.');
+            }
+
+            $user->avatar = $path;
+            $user->save();
+        } catch (\Throwable $e) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'message' => 'Upload failed. Please try again.',
+                    'error' => config('app.debug') ? $e->getMessage() : null,
+                ], 500);
+            }
+
+            return back()->with('error', 'Upload failed. Please try again.');
+        }
 
         if ($request->wantsJson()) {
             return response()->json([
