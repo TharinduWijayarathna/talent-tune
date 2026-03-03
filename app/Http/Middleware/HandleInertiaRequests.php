@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -54,6 +55,7 @@ class HandleInertiaRequests extends Middleware
         $user = $request->user();
         $authUser = $user ? array_merge($user->toArray(), [
             'role' => $user->role,
+            'avatar' => $user->avatar ? Storage::disk('public')->url($user->avatar) : null,
         ]) : null;
 
         return [
