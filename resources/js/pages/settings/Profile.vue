@@ -63,6 +63,7 @@ async function onAvatarFileChange(event: Event) {
     try {
         const formData = new FormData();
         formData.append('avatar', file);
+        formData.append('_token', csrfToken);
         const response = await fetch('/settings/profile/avatar', {
             method: 'POST',
             headers: {
@@ -75,9 +76,17 @@ async function onAvatarFileChange(event: Event) {
         });
         if (!response.ok) {
             const data = await response.json().catch(() => ({}));
-            throw new Error(
-                data.message ?? data.errors?.avatar?.[0] ?? 'Upload failed',
-            );
+            if (response.status === 419) {
+                throw new Error(
+                    'Session expired. Please refresh the page and try again.',
+                );
+            }
+            const msg =
+                data.message ??
+                data.errors?.avatar?.[0] ??
+                (typeof data.error === 'string' ? data.error : null) ??
+                `Upload failed (${response.status})`;
+            throw new Error(msg);
         }
         router.reload();
     } catch (e: unknown) {
