@@ -18,7 +18,7 @@ class InstitutionService
         protected DockployDomainService $dockployDomainService
     ) {}
 
-    public function create(array $validated): Institution
+    public function create(array $validated, Request $request): Institution
     {
         $slug = $this->generateUniqueSlug($validated['name']);
 
@@ -35,10 +35,12 @@ class InstitutionService
                 'phone' => $validated['phone'] ?? null,
                 'address' => $validated['address'] ?? null,
             ],
-            'is_active' => false,
+            'is_active' => true,
+            'trial_ends_at' => now()->addDays(self::TRIAL_DAYS),
         ]);
 
         $this->createSubdomainIfConfigured($institution);
+        $this->activateInstitution($institution, $request);
 
         return $institution;
     }

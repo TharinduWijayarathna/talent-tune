@@ -37,11 +37,11 @@ class InstitutionController extends Controller
             'address' => 'nullable|string|max:500',
         ]);
 
-        $institution = $this->institutionService->create($validated);
+        $institution = $this->institutionService->create($validated, $request);
 
         return redirect()->route('register-institution.success', [
             'id' => $institution->id,
-        ])->with('success', 'Your institution registration has been submitted. Our admin team will review and activate your account soon.');
+        ])->with('success', 'Your institution has been registered. Check the contact email for your login credentials and 14-day trial details.');
     }
 
     /**
