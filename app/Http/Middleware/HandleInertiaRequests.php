@@ -53,9 +53,17 @@ class HandleInertiaRequests extends Middleware
         }
 
         $user = $request->user();
+        $avatarUrl = null;
+        if ($user && ! empty($user->avatar) && is_string($user->avatar)) {
+            try {
+                $avatarUrl = Storage::disk('public')->url($user->avatar);
+            } catch (\Throwable) {
+                $avatarUrl = null;
+            }
+        }
         $authUser = $user ? array_merge($user->toArray(), [
             'role' => $user->role,
-            'avatar' => $user->avatar ? Storage::disk('public')->url($user->avatar) : null,
+            'avatar' => $avatarUrl,
         ]) : null;
 
         return [

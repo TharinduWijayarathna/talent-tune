@@ -94,10 +94,10 @@ class ProfileAvatarController extends Controller
         $user->avatar = $result['path'];
         $user->save();
 
-        $avatarUrl = Storage::disk('public')->url($result['path']);
-
         if ($request->wantsJson()) {
-            return response()->json(['avatar_url' => $avatarUrl]);
+            return response()->json([
+                'avatar_url' => Storage::disk('public')->url($result['path']),
+            ]);
         }
 
         return back();
