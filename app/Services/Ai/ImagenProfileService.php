@@ -56,7 +56,6 @@ class ImagenProfileService
             ],
             'generationConfig' => [
                 'responseModalities' => ['TEXT', 'IMAGE'],
-                'responseMimeType' => 'image/png',
             ],
         ];
 
