@@ -21,10 +21,27 @@ import { TimePicker } from '@/components/ui/time-picker';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { format } from 'date-fns';
-import { Calendar as CalendarIcon, Clock } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { Calendar as CalendarIcon, Clock, Sparkles } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
+
+const page = usePage();
+const csrfToken = computed(() => (page.props as { csrfToken?: string }).csrfToken ?? '');
+
+const genericInstructionTemplates = [
+    'Review core concepts and definitions from the syllabus.',
+    'Prepare to explain key terminology and its practical applications.',
+    'Be ready to discuss common pitfalls and best practices.',
+    'Expect questions on problem-solving and analytical thinking.',
+    'Ensure you can demonstrate understanding through examples.',
+];
+
+function getLocalFallbackInstructions(): string {
+    return genericInstructionTemplates
+        .map((p, i) => `${i + 1}. ${p}`)
+        .join('\n\n');
+}
 
 const props = defineProps<{
     batches?: string[];
@@ -48,6 +65,42 @@ const form = useForm({
 });
 
 const availableBatches = computed(() => props.batches || []);
+
+const isGeneratingInstructions = ref(false);
+
+async function generateInstructions() {
+    const hasContext = (form.title?.trim().length ?? 0) > 0 || (form.description?.trim().length ?? 0) > 0;
+    if (!hasContext) {
+        form.instructions = getLocalFallbackInstructions();
+        return;
+    }
+    isGeneratingInstructions.value = true;
+    try {
+        const response = await fetch('/api/viva/instructions/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken.value,
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                title: form.title?.trim() ?? '',
+                description: form.description?.trim() ?? '',
+            }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (response.ok && typeof data.instructions === 'string' && data.instructions.trim()) {
+            form.instructions = data.instructions.trim();
+        } else {
+            form.instructions = getLocalFallbackInstructions();
+        }
+    } catch {
+        form.instructions = getLocalFallbackInstructions();
+    } finally {
+        isGeneratingInstructions.value = false;
+    }
+}
 
 const submitForm = () => {
     form.transform((data) => ({
@@ -125,7 +178,7 @@ const submitForm = () => {
                                     id="description"
                                     v-model="form.description"
                                     placeholder="Brief description of the viva session..."
-                                    rows="3"
+                                    :rows="3"
                                 />
                                 <InputError
                                     :message="form.errors.description"
@@ -341,12 +394,31 @@ const submitForm = () => {
                         <CardContent>
                             <div class="space-y-2">
                                 <Label for="instructions">Instructions</Label>
-                                <Textarea
-                                    id="instructions"
-                                    v-model="form.instructions"
-                                    placeholder="e.g. Key topics to cover, concepts to assess, question areas (SQL, normalization, indexing...)"
-                                    rows="8"
-                                />
+                                <div class="relative">
+                                    <Textarea
+                                        id="instructions"
+                                        v-model="form.instructions"
+                                        placeholder="e.g. Key topics to cover, concepts to assess, question areas (SQL, normalization, indexing...)"
+                                        :rows="8"
+                                        class="pr-28 pb-10"
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        size="sm"
+                                        class="absolute bottom-2 right-2 gap-1.5"
+                                        :disabled="isGeneratingInstructions"
+                                        @click="generateInstructions()"
+                                    >
+                                        <Sparkles
+                                            class="h-3.5 w-3.5"
+                                            :class="{
+                                                'animate-pulse': isGeneratingInstructions,
+                                            }"
+                                        />
+                                        {{ isGeneratingInstructions ? 'Generating…' : 'Generate' }}
+                                    </Button>
+                                </div>
                                 <InputError
                                     :message="form.errors.instructions"
                                 />
