@@ -199,16 +199,26 @@ class StudentController extends Controller
             'audio' => ['required', 'file', 'mimes:webm,mp3,mp4,m4a,ogg,wav', 'max:20480'],
         ]);
 
-        $result = $this->studentService->uploadVivaVoiceRecording(
-            $institution,
-            $user,
-            $id,
-            $validated['submission_id'],
-            $validated['question_index'],
-            $validated['audio']
-        );
+        try {
+            $result = $this->studentService->uploadVivaVoiceRecording(
+                $institution,
+                $user,
+                $id,
+                $validated['submission_id'],
+                $validated['question_index'],
+                $validated['audio']
+            );
 
-        return response()->json($result);
+            return response()->json($result);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to save voice recording.',
+                'message' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
     }
 
     public function completeVivaSubmission(Request $request)

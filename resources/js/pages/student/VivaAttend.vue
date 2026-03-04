@@ -736,41 +736,59 @@ const evaluateAnswer = async (
     }
 };
 
-// Upload voice recording and return path for lecturer playback
+// Max time to wait for voice upload; after this we proceed without voice_path so the flow never gets stuck.
+const VOICE_UPLOAD_TIMEOUT_MS = 12000;
+
+// Upload voice recording and return path for lecturer playback. Never blocks the flow: on timeout or error returns null.
 const uploadVoiceRecording = async (
     blob: Blob,
     submissionId: number,
     questionIndex: number,
     mimeType: string,
 ): Promise<string | null> => {
-    try {
-        const ext = mimeType.includes('webm')
-            ? 'webm'
-            : mimeType.includes('mp4') || mimeType.includes('m4a')
-              ? 'm4a'
-              : 'webm';
-        const formData = new FormData();
-        formData.append('submission_id', String(submissionId));
-        formData.append('question_index', String(questionIndex));
-        formData.append('audio', blob, `answer.${ext}`);
-        const response = await fetch(
-            `/student/vivas/${vivaSession.value.id}/upload-voice`,
-            {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken.value,
-                    'X-Requested-With': 'XMLHttpRequest',
+    const doUpload = async (): Promise<string | null> => {
+        try {
+            const ext = mimeType.includes('webm')
+                ? 'webm'
+                : mimeType.includes('mp4') || mimeType.includes('m4a')
+                  ? 'm4a'
+                  : 'webm';
+            const formData = new FormData();
+            formData.append('submission_id', String(submissionId));
+            formData.append('question_index', String(questionIndex));
+            formData.append('audio', blob, `answer.${ext}`);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(
+                () => controller.abort(),
+                VOICE_UPLOAD_TIMEOUT_MS,
+            );
+            const response = await fetch(
+                `/student/vivas/${vivaSession.value.id}/upload-voice`,
+                {
+                    method: 'POST',
+                    signal: controller.signal,
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken.value,
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    credentials: 'same-origin',
+                    body: formData,
                 },
-                credentials: 'same-origin',
-                body: formData,
-            },
-        );
-        if (!response.ok) return null;
-        const data = await response.json();
-        return data.voice_path ?? null;
-    } catch {
-        return null;
-    }
+            );
+            clearTimeout(timeoutId);
+            if (!response.ok) return null;
+            const data = await response.json().catch(() => ({}));
+            return data.voice_path ?? null;
+        } catch {
+            return null;
+        }
+    };
+    return Promise.race([
+        doUpload(),
+        new Promise<string | null>((resolve) =>
+            setTimeout(() => resolve(null), VOICE_UPLOAD_TIMEOUT_MS),
+        ),
+    ]);
 };
 
 // Evaluate answer and move to next question
