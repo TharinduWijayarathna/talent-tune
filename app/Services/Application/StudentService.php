@@ -335,9 +335,17 @@ class StudentService
             abort(422, 'Invalid question index.');
         }
 
-        $ext = $audio->getClientOriginalExtension() ?: 'webm';
+        $allowedExtensions = ['webm', 'mp3', 'mp4', 'm4a', 'ogg', 'wav'];
+        $ext = strtolower((string) $audio->getClientOriginalExtension());
+        if (! in_array($ext, $allowedExtensions, true)) {
+            $ext = 'webm';
+        }
+
+        $directory = 'vivas/voice-recordings/'.$submission->id;
+        Storage::disk('private')->makeDirectory($directory);
+
         $path = $audio->storeAs(
-            'vivas/voice-recordings/'.$submission->id,
+            $directory,
             $questionIndex.'.'.$ext,
             'private'
         );
