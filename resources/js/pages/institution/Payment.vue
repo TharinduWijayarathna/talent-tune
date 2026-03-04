@@ -179,7 +179,9 @@ const endSubscription = () => {
                             the workspace.
                         </p>
                         <Button as-child class="mt-4">
-                            <a href="/institution/complete-subscription/checkout">
+                            <a
+                                href="/institution/complete-subscription/checkout"
+                            >
                                 Complete payment
                             </a>
                         </Button>
