@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Application;
 
 use App\Http\Controllers\Controller;
 use App\Services\Application\StripeSubscriptionService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
@@ -15,7 +16,7 @@ class InstitutionSubscriptionController extends Controller
         protected StripeSubscriptionService $stripeService
     ) {}
 
-    public function show(Request $request): Response
+    public function show(Request $request): Response|RedirectResponse
     {
         $institution = $request->user()->institution;
         if (! $institution) {
