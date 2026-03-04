@@ -42,7 +42,8 @@ class InstitutionSubscriptionController extends Controller
         if (! $institution) {
             abort(403);
         }
-        if ($institution->hasAccess()) {
+        // Only skip checkout if they already have an active paid subscription (not just trial)
+        if ($institution->subscription_status === 'active') {
             return redirect()->route('institution.dashboard');
         }
         $baseSuccessUrl = URL::route('subscription.success', ['institution' => $institution->slug]);
