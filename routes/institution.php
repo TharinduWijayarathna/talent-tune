@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Route;
 */
 Route::prefix('institution')->middleware(['auth', 'verified', EnsureInstitutionAccess::class])->group(function () {
     Route::get('complete-subscription', [InstitutionSubscriptionController::class, 'show'])->name('institution.complete-subscription');
-    Route::post('complete-subscription/checkout', [InstitutionSubscriptionController::class, 'checkout'])->name('institution.complete-subscription.checkout');
+    Route::match(['get', 'post'], 'complete-subscription/checkout', [InstitutionSubscriptionController::class, 'checkout'])->name('institution.complete-subscription.checkout');
 
     Route::middleware(EnsureSubscriptionActive::class)->group(function () {
         Route::get('dashboard', [InstitutionDashboardController::class, 'index'])->name('institution.dashboard');
