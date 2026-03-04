@@ -273,6 +273,9 @@ const stopSession = () => {
     }
 };
 
+// Max time we wait for TTS (fetch + play). If exceeded, we resolve so the flow never gets stuck.
+const TTS_TIMEOUT_MS = 25000;
+
 // Google Cloud Text-to-Speech: speak text and return a Promise that resolves when playback ends (so we can chain TTS without overlap).
 // When startRecordingWhenDone is false, we do not start recording in onended (used for feedback before moving to next question).
 const speakAndWait = (
@@ -285,8 +288,12 @@ const speakAndWait = (
     isListening.value = true;
     isSpeaking.value = true;
 
-    return fetch('/api/viva/tts', {
+    let ttsTimedOut = false;
+    const abortController = new AbortController();
+
+    const ttsPromise = fetch('/api/viva/tts', {
         method: 'POST',
+        signal: abortController.signal,
         headers: {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': csrfToken.value,
@@ -306,6 +313,7 @@ const speakAndWait = (
         }),
     })
         .then(async (response) => {
+            if (ttsTimedOut) return;
             if (!response.ok) {
                 const errorData = await response
                     .json()
@@ -324,6 +332,7 @@ const speakAndWait = (
             if (audioBlob.size === 0) {
                 throw new Error('Received empty audio file');
             }
+            if (ttsTimedOut) return;
             const audioUrl = URL.createObjectURL(audioBlob);
             if (currentAudio) {
                 currentAudio.pause();
@@ -334,6 +343,10 @@ const speakAndWait = (
 
             return new Promise<void>((resolve, reject) => {
                 audio.onplay = () => {
+                    if (ttsTimedOut) {
+                        audio.pause();
+                        return;
+                    }
                     isListening.value = true;
                     isSpeaking.value = true;
                     if (speechRecognition.value && recognitionActive.value) {
@@ -341,10 +354,11 @@ const speakAndWait = (
                     }
                 };
                 audio.onended = () => {
+                    if (ttsTimedOut) return;
                     isListening.value = false;
                     isSpeaking.value = false;
                     URL.revokeObjectURL(audioUrl);
-                    currentAudio = null;
+                    if (currentAudio === audio) currentAudio = null;
                     if (
                         startRecordingWhenDone &&
                         sessionActive.value &&
@@ -358,17 +372,41 @@ const speakAndWait = (
                     isListening.value = false;
                     isSpeaking.value = false;
                     URL.revokeObjectURL(audioUrl);
-                    currentAudio = null;
+                    if (currentAudio === audio) currentAudio = null;
                     reject(new Error('Error playing audio'));
                 };
                 audio.play().catch(reject);
             });
         })
         .catch((error: any) => {
+            if (ttsTimedOut) return;
             isListening.value = false;
             isSpeaking.value = false;
             throw error;
         });
+
+    const timeoutPromise = new Promise<void>((resolve) => {
+        setTimeout(() => {
+            ttsTimedOut = true;
+            abortController.abort();
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+            isListening.value = false;
+            isSpeaking.value = false;
+            if (
+                startRecordingWhenDone &&
+                sessionActive.value &&
+                !isProcessingAnswer.value
+            ) {
+                startRecording();
+            }
+            resolve();
+        }, TTS_TIMEOUT_MS);
+    });
+
+    return Promise.race([ttsPromise, timeoutPromise]);
 };
 
 // Speak question and start recording when playback ends.
@@ -485,12 +523,14 @@ const initializeSpeechRecognition = () => {
     };
 
     recognition.onerror = (event: any) => {
-        console.error('Speech recognition error:', event.error);
         if (event.error === 'no-speech') {
-            // Do not call recognition.start() here — it causes "recognition has already started".
-            // Let onend fire and use the single restart timeout there.
+            // Expected when we stop() recognition for TTS or when user stays silent; onend will handle restart.
+            if (!isSpeaking.value) {
+                console.warn('Speech recognition: no speech detected');
+            }
             recognitionActive.value = false;
         } else {
+            console.error('Speech recognition error:', event.error);
             isRecording.value = false;
             recognitionActive.value = false;
         }
