@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { Head, router, usePage } from '@inertiajs/vue3';
 import { AlertTriangle, Calendar, CreditCard, Loader2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
@@ -179,11 +179,9 @@ const endSubscription = () => {
                             the workspace.
                         </p>
                         <Button as-child class="mt-4">
-                            <Link
-                                href="/institution/complete-subscription/checkout"
-                            >
+                            <a href="/institution/complete-subscription/checkout">
                                 Complete payment
-                            </Link>
+                            </a>
                         </Button>
                     </div>
                 </CardContent>
