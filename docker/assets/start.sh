@@ -17,6 +17,7 @@ mkdir -p /app/storage/logs \
   /app/storage/framework/sessions \
   /app/storage/framework/views \
   /app/storage/app/public \
+  /app/storage/app/private \
   /app/bootstrap/cache
 touch /app/storage/logs/laravel.log
 
