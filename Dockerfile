@@ -56,7 +56,7 @@ RUN rm -rf /app/node_modules /app/tests /app/.phpunit.result.cache \
 # Ensure storage structure exists and is writable by www-data (PHP-FPM)
 RUN mkdir -p /app/storage/logs /app/storage/framework/cache/data \
     /app/storage/framework/sessions /app/storage/framework/views \
-    /app/storage/app/public /app/bootstrap/cache \
+    /app/storage/app/public /app/storage/app/private /app/bootstrap/cache \
     && chown -R www-data:www-data /app/storage /app/bootstrap/cache \
     && chmod -R 775 /app/storage /app/bootstrap/cache
 
