@@ -632,8 +632,7 @@ const addLateStudent = () => {
                                                             <span
                                                                 class="text-xs font-medium text-muted-foreground"
                                                             >
-                                                                Hear student's
-                                                                voice:
+                                                                Hear {{ sub.student_name }}'s voice:
                                                             </span>
                                                             <audio
                                                                 :src="`/lecturer/viva-submissions/${sub.id}/voice/${idx}`"

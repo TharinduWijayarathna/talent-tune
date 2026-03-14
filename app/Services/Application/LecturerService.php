@@ -9,6 +9,7 @@ use App\Models\Viva;
 use App\Models\VivaStudentSubmission;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class LecturerService
 {
@@ -219,6 +220,22 @@ class LecturerService
             ->orderBy('updated_at', 'desc')
             ->get()
             ->map(function (VivaStudentSubmission $sub) {
+                $rawAnswers = $sub->answers ?? [];
+                $answers = array_values(array_map(function ($item, $idx) use ($sub) {
+                    $voicePath = $item['voice_path'] ?? null;
+                    if (! $voicePath || ! Storage::disk('private')->exists($voicePath)) {
+                        $legacyDir = 'vivas/voice-recordings/'.$sub->id;
+                        foreach (['webm', 'mp3', 'm4a', 'mp4', 'ogg', 'wav'] as $ext) {
+                            $candidate = $legacyDir.'/'.$idx.'.'.$ext;
+                            if (Storage::disk('private')->exists($candidate)) {
+                                $voicePath = $candidate;
+                                break;
+                            }
+                        }
+                    }
+                    return array_merge($item, ['voice_path' => $voicePath]);
+                }, $rawAnswers, array_keys($rawAnswers)));
+
                 return [
                     'id' => $sub->id,
                     'student_name' => $sub->student?->name ?? 'Unknown',
@@ -227,7 +244,7 @@ class LecturerService
                     'total_score' => $sub->total_score,
                     'grade' => $sub->grade,
                     'feedback' => $sub->feedback,
-                    'answers' => $sub->answers ?? [],
+                    'answers' => $answers,
                     'document_path' => $sub->document_path,
                     'completed_at' => $sub->updated_at?->format('Y-m-d H:i'),
                     'allowed_after_close' => (bool) $sub->allowed_after_close,
