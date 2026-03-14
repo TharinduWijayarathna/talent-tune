@@ -10,8 +10,29 @@ import {
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
-import { FileDown, GraduationCap, Loader2, Users } from 'lucide-vue-next';
+import {
+    BookOpen,
+    CheckCircle2,
+    FileDown,
+    GraduationCap,
+    Loader2,
+    Users,
+} from 'lucide-vue-next';
 import { ref } from 'vue';
+
+interface ReportSummary {
+    students: number;
+    lecturers: number;
+    vivas: number;
+    completed_submissions: number;
+}
+
+const props = withDefaults(
+    defineProps<{
+        summary?: ReportSummary;
+    }>(),
+    { summary: undefined },
+);
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/institution/dashboard' },
@@ -53,12 +74,81 @@ async function downloadPdf(
                 <div>
                     <h1 class="text-2xl font-bold">Reports</h1>
                     <p class="text-muted-foreground">
-                        Download PDF reports for students (by batch) and
+                        Overview and PDF reports for students (by batch) and
                         lecturers (vivas and submissions).
                     </p>
                 </div>
             </div>
 
+            <!-- Summary stats -->
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <Card>
+                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle class="text-sm font-medium">
+                            Students
+                        </CardTitle>
+                        <GraduationCap class="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <span class="text-2xl font-bold">{{
+                            props.summary?.students ?? 0
+                        }}</span>
+                        <p class="text-xs text-muted-foreground">
+                            Enrolled in institution
+                        </p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle class="text-sm font-medium">
+                            Lecturers
+                        </CardTitle>
+                        <Users class="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <span class="text-2xl font-bold">{{
+                            props.summary?.lecturers ?? 0
+                        }}</span>
+                        <p class="text-xs text-muted-foreground">
+                            Active lecturers
+                        </p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle class="text-sm font-medium">
+                            Viva Sessions
+                        </CardTitle>
+                        <BookOpen class="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <span class="text-2xl font-bold">{{
+                            props.summary?.vivas ?? 0
+                        }}</span>
+                        <p class="text-xs text-muted-foreground">
+                            Total vivas created
+                        </p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle class="text-sm font-medium">
+                            Completed Submissions
+                        </CardTitle>
+                        <CheckCircle2 class="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <span class="text-2xl font-bold">{{
+                            props.summary?.completed_submissions ?? 0
+                        }}</span>
+                        <p class="text-xs text-muted-foreground">
+                            Student submissions completed
+                        </p>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <h2 class="text-lg font-semibold">Download reports</h2>
             <div class="grid gap-4 md:grid-cols-2">
                 <Card>
                     <CardHeader>

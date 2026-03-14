@@ -127,6 +127,11 @@ const mainNavItems = computed<NavItem[]>(() => {
                 icon: MessageSquare,
             },
             {
+                title: 'Reports',
+                href: '/institution/reports',
+                icon: FileBarChart,
+            },
+            {
                 title: 'Reported Issues',
                 href: '/institution/reported-issues',
                 icon: AlertTriangle,
