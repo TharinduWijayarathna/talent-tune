@@ -84,7 +84,7 @@ const conversationHistory = ref<Array<{ examiner: string; student: string }>>(
 );
 const isProcessingAnswer = ref(false);
 
-// Voice recording for lecturer playback: record actual audio per answer
+// Voice recording for lecturer playback: start as soon as question TTS ends, save before next question.
 const mediaRecorder = ref<MediaRecorder | null>(null);
 const recordedChunks = ref<Blob[]>([]);
 const mediaStream = ref<MediaStream | null>(null);
@@ -463,10 +463,11 @@ const initializeSpeechRecognition = () => {
     recognition.onstart = () => {
         recognitionActive.value = true;
         isRecording.value = true;
+        // Clear finalAnswer for next utterance; leave answer.value so auto-submit timer still has transcript
         finalAnswer = '';
     };
 
-    recognition.onresult = (event: any) => {
+        recognition.onresult = (event: any) => {
         let interimTranscript = '';
         let finalTranscript = '';
 
@@ -505,10 +506,9 @@ const initializeSpeechRecognition = () => {
             sessionActive.value
         ) {
             silenceTimer = setTimeout(() => {
-                // Student stopped speaking for 5 seconds - process the answer
-                // Double-check conditions before processing
+                // Student stopped speaking for 5 seconds - auto-submit (use answer.value in case finalAnswer was cleared by recognition restart)
                 if (
-                    finalAnswer.trim() &&
+                    (answer.value || finalAnswer).trim() &&
                     !isProcessingAnswer.value &&
                     !isSpeaking.value &&
                     sessionActive.value
@@ -569,7 +569,7 @@ const initializeSpeechRecognition = () => {
     return recognition;
 };
 
-// Start voice recording (MediaRecorder) for lecturer playback
+// Start voice recording (MediaRecorder) immediately when question TTS ends — capture full answer until next question.
 const startVoiceRecording = () => {
     if (mediaStream.value) {
         mediaStream.value.getTracks().forEach((t) => t.stop());
@@ -596,7 +596,7 @@ const startVoiceRecording = () => {
             rec.ondataavailable = (e) => {
                 if (e.data.size > 0) recordedChunks.value.push(e.data);
             };
-            rec.start(1000);
+            rec.start(1000); // Start immediately when TTS ends, record until we move to next question
         })
         .catch(() => {
             // Mic permission denied or unavailable; continue without voice recording
@@ -604,6 +604,7 @@ const startVoiceRecording = () => {
 };
 
 // Stop voice recording and return the blob and mime type (for upload). Resolves when recording is stopped.
+// Must save the recording when student ends; requestData() flushes final data before stop.
 const stopVoiceRecording = (): Promise<{
     blob: Blob | null;
     mimeType: string;
@@ -633,6 +634,10 @@ const stopVoiceRecording = (): Promise<{
                     : null;
             finish(blob, mime);
         };
+        // Flush any buffered data so the final blob is complete when student stops speaking
+        if (mediaRecorder.value.state === 'recording' && typeof mediaRecorder.value.requestData === 'function') {
+            mediaRecorder.value.requestData();
+        }
         mediaRecorder.value.stop();
     });
 };
@@ -790,12 +795,12 @@ const uploadVoiceRecording = async (
 
 // Evaluate answer and move to next question
 const evaluateAndMoveOn = async (answerText: string, isSkipped: boolean) => {
-    // Stop recording
+    // Stop speech recognition first; then stop and save voice recording (must capture blob before clearing stream)
     if (speechRecognition.value && recognitionActive.value) {
         speechRecognition.value.stop();
     }
 
-    // Stop voice recording and upload for lecturer playback
+    // Stop voice recording and save blob for lecturer playback (runs when student ends speaking or clicks Get feedback)
     const voiceResult = await stopVoiceRecording();
     const submissionId = props.submission?.id;
     let voicePath: string | null = null;
@@ -985,10 +990,12 @@ const isSkipAnswer = (text: string): boolean => {
 };
 
 // Process student's answer: evaluate once (mark 1-10), no follow-up questions, then move on.
+// Use answer.value (voice transcript or typed text) so manual submit works when user types or clicks before final result.
 const processAnswer = async () => {
+    const textToSubmit = (answer.value || finalAnswer).trim();
     if (
         !currentQuestion.value ||
-        !finalAnswer.trim() ||
+        !textToSubmit ||
         isProcessingAnswer.value ||
         isSpeaking.value
     ) {
@@ -1000,7 +1007,8 @@ const processAnswer = async () => {
         silenceTimer = null;
     }
 
-    const answerText = finalAnswer.trim();
+    finalAnswer = textToSubmit;
+    const answerText = textToSubmit;
     if (speechRecognition.value && recognitionActive.value) {
         speechRecognition.value.stop();
     }
@@ -1274,9 +1282,9 @@ onUnmounted(() => {
                     </div>
                 </div>
 
-                <!-- Transcript strip (conversation-style) -->
+                <!-- Question + your answer (type or speak); always visible when there is a question -->
                 <div
-                    v-if="currentQuestion || answer.trim()"
+                    v-if="currentQuestion"
                     class="shrink-0 border-t bg-muted/30 px-4 py-4"
                 >
                     <div class="mx-auto flex max-w-2xl flex-col gap-3">
@@ -1308,7 +1316,7 @@ onUnmounted(() => {
                             </div>
                         </div>
                     </div>
-                    <!-- Manual submit fallback -->
+                    <!-- Submit answer (if auto-submit after 5s silence didn't run, user can hit this) -->
                     <div class="mx-auto mt-3 flex max-w-2xl justify-end">
                         <Button
                             @click="processAnswer"
