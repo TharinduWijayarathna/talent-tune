@@ -63,6 +63,37 @@ const statusVariant = (status: string) => {
             return 'outline';
     }
 };
+
+// User-friendly labels: backend uses upcoming | active | completed | cancelled
+const statusLabel = (status: string) => {
+    switch (status) {
+        case 'upcoming':
+            return 'Upcoming';
+        case 'active':
+            return 'Open';
+        case 'completed':
+            return 'Closed';
+        case 'cancelled':
+            return 'Cancelled';
+        default:
+            return status;
+    }
+};
+
+// Time-based effective status: show Open when start time has passed, Upcoming before start, Closed when completed or past due
+const effectiveStatus = (viva: {
+    status: string;
+    scheduled_at: string;
+    due_at?: string | null;
+}) => {
+    if (viva.status === 'completed' || viva.status === 'cancelled')
+        return viva.status;
+    const now = new Date();
+    const start = new Date(viva.scheduled_at);
+    if (now < start) return 'upcoming';
+    if (viva.due_at && now >= new Date(viva.due_at)) return 'completed';
+    return 'active';
+};
 </script>
 
 <template>
@@ -124,9 +155,17 @@ const statusVariant = (status: string) => {
                                         {{ viva.title }}
                                     </h3>
                                     <Badge
-                                        :variant="statusVariant(viva.status)"
+                                        :variant="
+                                            statusVariant(
+                                                effectiveStatus(viva)
+                                            )
+                                        "
                                     >
-                                        {{ viva.status }}
+                                        {{
+                                            statusLabel(
+                                                effectiveStatus(viva)
+                                            )
+                                        }}
                                     </Badge>
                                 </div>
                                 <p class="text-sm text-muted-foreground">

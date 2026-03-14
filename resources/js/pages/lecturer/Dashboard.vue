@@ -153,7 +153,7 @@ const sessionsOverTimeSeries = computed(() => [
                         class="flex flex-row items-center justify-between space-y-0 pb-2"
                     >
                         <CardTitle class="text-sm font-medium"
-                            >Active Sessions</CardTitle
+                            >Upcoming Sessions</CardTitle
                         >
                         <FileText class="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
@@ -161,7 +161,9 @@ const sessionsOverTimeSeries = computed(() => [
                         <div class="text-2xl font-bold">
                             {{ stats.activeSessions }}
                         </div>
-                        <p class="text-xs text-muted-foreground">Upcoming</p>
+                        <p class="text-xs text-muted-foreground">
+                            Scheduled, not yet closed
+                        </p>
                     </CardContent>
                 </Card>
 

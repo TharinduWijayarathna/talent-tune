@@ -100,6 +100,37 @@ const closeViva = () => {
     router.post(`/lecturer/vivas/${props.viva.id}/close`);
 };
 
+// User-friendly status labels: upcoming → Upcoming, active → Open, completed → Closed
+const statusLabel = (status: string) => {
+    switch (status) {
+        case 'upcoming':
+            return 'Upcoming';
+        case 'active':
+            return 'Open';
+        case 'completed':
+            return 'Closed';
+        case 'cancelled':
+            return 'Cancelled';
+        default:
+            return status;
+    }
+};
+
+// Time-based effective status: Open when start time has passed, Upcoming before start, Closed when completed or past due
+const effectiveStatus = (viva: {
+    status: string;
+    scheduled_at: string;
+    due_at?: string | null;
+}) => {
+    if (viva.status === 'completed' || viva.status === 'cancelled')
+        return viva.status;
+    const now = new Date();
+    const start = new Date(viva.scheduled_at);
+    if (now < start) return 'upcoming';
+    if (viva.due_at && now >= new Date(viva.due_at)) return 'completed';
+    return 'active';
+};
+
 const completedCount = () =>
     submissions.value.filter((s) => s.status === 'completed').length;
 const inProgressCount = () =>
@@ -220,12 +251,12 @@ const addLateStudent = () => {
                         <div class="flex items-center gap-2">
                             <Badge
                                 :variant="
-                                    viva.status === 'upcoming'
+                                    effectiveStatus(viva) === 'upcoming'
                                         ? 'default'
                                         : 'secondary'
                                 "
                             >
-                                {{ viva.status }}
+                                {{ statusLabel(effectiveStatus(viva)) }}
                             </Badge>
                             <Button
                                 v-if="viva.status !== 'completed'"
