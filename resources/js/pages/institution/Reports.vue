@@ -83,7 +83,9 @@ async function downloadPdf(
             <!-- Summary stats -->
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <Card>
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardHeader
+                        class="flex flex-row items-center justify-between space-y-0 pb-2"
+                    >
                         <CardTitle class="text-sm font-medium">
                             Students
                         </CardTitle>
@@ -99,7 +101,9 @@ async function downloadPdf(
                     </CardContent>
                 </Card>
                 <Card>
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardHeader
+                        class="flex flex-row items-center justify-between space-y-0 pb-2"
+                    >
                         <CardTitle class="text-sm font-medium">
                             Lecturers
                         </CardTitle>
@@ -115,7 +119,9 @@ async function downloadPdf(
                     </CardContent>
                 </Card>
                 <Card>
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardHeader
+                        class="flex flex-row items-center justify-between space-y-0 pb-2"
+                    >
                         <CardTitle class="text-sm font-medium">
                             Viva Sessions
                         </CardTitle>
@@ -131,7 +137,9 @@ async function downloadPdf(
                     </CardContent>
                 </Card>
                 <Card>
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardHeader
+                        class="flex flex-row items-center justify-between space-y-0 pb-2"
+                    >
                         <CardTitle class="text-sm font-medium">
                             Completed Submissions
                         </CardTitle>

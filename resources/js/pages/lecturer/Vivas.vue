@@ -156,16 +156,10 @@ const effectiveStatus = (viva: {
                                     </h3>
                                     <Badge
                                         :variant="
-                                            statusVariant(
-                                                effectiveStatus(viva)
-                                            )
+                                            statusVariant(effectiveStatus(viva))
                                         "
                                     >
-                                        {{
-                                            statusLabel(
-                                                effectiveStatus(viva)
-                                            )
-                                        }}
+                                        {{ statusLabel(effectiveStatus(viva)) }}
                                     </Badge>
                                 </div>
                                 <p class="text-sm text-muted-foreground">

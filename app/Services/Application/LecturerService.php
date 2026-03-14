@@ -234,6 +234,7 @@ class LecturerService
                         }
                     }
                 }
+
                 return array_merge($item, ['voice_path' => $voicePath]);
             }, $rawAnswers, array_keys($rawAnswers)));
 

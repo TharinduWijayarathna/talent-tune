@@ -5,9 +5,16 @@ import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, usePage } from '@inertiajs/vue3';
-import { CircleCheck, FileText, Mic, MicOff, Upload, Volume2 } from 'lucide-vue-next';
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import {
+    CircleCheck,
+    FileText,
+    Mic,
+    MicOff,
+    Upload,
+    Volume2,
+} from 'lucide-vue-next';
 import RecordRTC from 'recordrtc';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 const props = defineProps<{
     viva?: {
@@ -86,7 +93,14 @@ const conversationHistory = ref<Array<{ examiner: string; student: string }>>(
 const isProcessingAnswer = ref(false);
 
 // Voice recording for lecturer playback (RecordRTC for reliable cross-browser capture per question).
-const RecordRTCPromisesHandler = (RecordRTC as { RecordRTCPromisesHandler: new (stream: MediaStream, options: Record<string, unknown>) => RecordRTCRecorder }).RecordRTCPromisesHandler;
+const RecordRTCPromisesHandler = (
+    RecordRTC as {
+        RecordRTCPromisesHandler: new (
+            stream: MediaStream,
+            options: Record<string, unknown>,
+        ) => RecordRTCRecorder;
+    }
+).RecordRTCPromisesHandler;
 interface RecordRTCRecorder {
     startRecording: () => Promise<void>;
     stopRecording: () => Promise<void>;
@@ -475,7 +489,7 @@ const initializeSpeechRecognition = () => {
         finalAnswer = '';
     };
 
-        recognition.onresult = (event: any) => {
+    recognition.onresult = (event: any) => {
         let interimTranscript = '';
         let finalTranscript = '';
 
@@ -605,7 +619,10 @@ const startVoiceRecording = async (): Promise<void> => {
             type: 'audio',
             disableLogs: true,
         };
-        if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported?.('audio/webm')) {
+        if (
+            typeof MediaRecorder !== 'undefined' &&
+            MediaRecorder.isTypeSupported?.('audio/webm')
+        ) {
             options.mimeType = 'audio/webm';
         }
         const recorder = new RecordRTCPromisesHandler(stream, options);
@@ -689,10 +706,16 @@ const stopRecording = () => {
     }
     const rec = recordRTCInstance.value;
     if (rec) {
-        rec.stopRecording().catch(() => {}).finally(() => {
-            try { rec.recordRTC.destroy(); } catch { /* ignore */ }
-            recordRTCInstance.value = null;
-        });
+        rec.stopRecording()
+            .catch(() => {})
+            .finally(() => {
+                try {
+                    rec.recordRTC.destroy();
+                } catch {
+                    /* ignore */
+                }
+                recordRTCInstance.value = null;
+            });
     }
     if (mediaStream.value) {
         mediaStream.value.getTracks().forEach((t) => t.stop());
@@ -1050,10 +1073,16 @@ onUnmounted(() => {
     // Stop voice recording
     const rec = recordRTCInstance.value;
     if (rec) {
-        rec.stopRecording().catch(() => {}).finally(() => {
-            try { rec.recordRTC.destroy(); } catch { /* ignore */ }
-            recordRTCInstance.value = null;
-        });
+        rec.stopRecording()
+            .catch(() => {})
+            .finally(() => {
+                try {
+                    rec.recordRTC.destroy();
+                } catch {
+                    /* ignore */
+                }
+                recordRTCInstance.value = null;
+            });
     }
     if (mediaStream.value) {
         mediaStream.value.getTracks().forEach((t) => t.stop());

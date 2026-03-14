@@ -261,6 +261,7 @@ class LecturerController extends Controller
         };
 
         $ext = strtolower(pathinfo($voicePath, PATHINFO_EXTENSION)) ?: 'webm';
+
         return response()->file(Storage::disk('private')->path($voicePath), [
             'Content-Type' => $mime,
             'Content-Disposition' => 'inline; filename="answer-'.($index + 1).'.'.$ext.'"',

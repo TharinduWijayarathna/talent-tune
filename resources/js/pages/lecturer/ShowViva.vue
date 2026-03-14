@@ -135,9 +135,8 @@ const effectiveStatus = (viva: {
 const completedCount = () =>
     submissions.value.filter((s) => s.status === 'completed').length;
 const inProgressCount = () =>
-    submissions.value.filter(
-        (s) => s.status === 'in_progress' && !s.superseded,
-    ).length;
+    submissions.value.filter((s) => s.status === 'in_progress' && !s.superseded)
+        .length;
 const pendingCount = () =>
     submissions.value.filter((s) => s.status === 'pending' && !s.superseded)
         .length;
@@ -508,8 +507,7 @@ const addLateStudent = () => {
                                             :variant="
                                                 sub.superseded
                                                     ? 'outline'
-                                                    : sub.status ===
-                                                        'completed'
+                                                    : sub.status === 'completed'
                                                       ? 'default'
                                                       : 'secondary'
                                             "
@@ -657,7 +655,10 @@ const addLateStudent = () => {
                                                             <span
                                                                 class="text-xs font-medium text-muted-foreground"
                                                             >
-                                                                Hear {{ sub.student_name }}'s voice:
+                                                                Hear
+                                                                {{
+                                                                    sub.student_name
+                                                                }}'s voice:
                                                             </span>
                                                             <audio
                                                                 :src="`/lecturer/viva-submissions/${sub.id}/voice/${idx}`"
