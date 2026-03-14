@@ -235,7 +235,20 @@ class LecturerController extends Controller
         }
         $voicePath = $answers[$index]['voice_path'] ?? null;
         if (! $voicePath || ! Storage::disk('private')->exists($voicePath)) {
-            abort(404, 'Voice recording not found.');
+            // Fallback: legacy path from older recordings (vivas/voice-recordings/{submission_id}/{index}.ext)
+            $legacyDir = 'vivas/voice-recordings/'.$submission->id;
+            $extensions = ['webm', 'mp3', 'm4a', 'mp4', 'ogg', 'wav'];
+            $voicePath = null;
+            foreach ($extensions as $ext) {
+                $candidate = $legacyDir.'/'.$index.'.'.$ext;
+                if (Storage::disk('private')->exists($candidate)) {
+                    $voicePath = $candidate;
+                    break;
+                }
+            }
+            if (! $voicePath) {
+                abort(404, 'Voice recording not found.');
+            }
         }
 
         $mime = match (strtolower(pathinfo($voicePath, PATHINFO_EXTENSION))) {
@@ -247,9 +260,11 @@ class LecturerController extends Controller
             default => 'audio/webm',
         };
 
+        $ext = strtolower(pathinfo($voicePath, PATHINFO_EXTENSION)) ?: 'webm';
+
         return response()->file(Storage::disk('private')->path($voicePath), [
             'Content-Type' => $mime,
-            'Content-Disposition' => 'inline; filename="answer-'.($index + 1).'.webm"',
+            'Content-Disposition' => 'inline; filename="answer-'.($index + 1).'.'.$ext.'"',
         ]);
     }
 }

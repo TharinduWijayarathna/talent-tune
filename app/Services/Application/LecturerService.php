@@ -9,6 +9,7 @@ use App\Models\Viva;
 use App\Models\VivaStudentSubmission;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class LecturerService
 {
@@ -214,26 +215,52 @@ class LecturerService
             ->where('lecturer_id', $user->id)
             ->findOrFail($vivaId);
 
-        return VivaStudentSubmission::where('viva_id', $viva->id)
+        $allSubs = VivaStudentSubmission::where('viva_id', $viva->id)
             ->with('student')
             ->orderBy('updated_at', 'desc')
-            ->get()
-            ->map(function (VivaStudentSubmission $sub) {
-                return [
-                    'id' => $sub->id,
-                    'student_name' => $sub->student?->name ?? 'Unknown',
-                    'student_email' => $sub->student?->email ?? null,
-                    'status' => $sub->status,
-                    'total_score' => $sub->total_score,
-                    'grade' => $sub->grade,
-                    'feedback' => $sub->feedback,
-                    'answers' => $sub->answers ?? [],
-                    'document_path' => $sub->document_path,
-                    'completed_at' => $sub->updated_at?->format('Y-m-d H:i'),
-                    'allowed_after_close' => (bool) $sub->allowed_after_close,
-                ];
-            })
-            ->all();
+            ->get();
+
+        return $allSubs->map(function (VivaStudentSubmission $sub) use ($allSubs) {
+            $rawAnswers = $sub->answers ?? [];
+            $answers = array_values(array_map(function ($item, $idx) use ($sub) {
+                $voicePath = $item['voice_path'] ?? null;
+                if (! $voicePath || ! Storage::disk('private')->exists($voicePath)) {
+                    $legacyDir = 'vivas/voice-recordings/'.$sub->id;
+                    foreach (['webm', 'mp3', 'm4a', 'mp4', 'ogg', 'wav'] as $ext) {
+                        $candidate = $legacyDir.'/'.$idx.'.'.$ext;
+                        if (Storage::disk('private')->exists($candidate)) {
+                            $voicePath = $candidate;
+                            break;
+                        }
+                    }
+                }
+
+                return array_merge($item, ['voice_path' => $voicePath]);
+            }, $rawAnswers, array_keys($rawAnswers)));
+
+            // Mark superseded when this student has a completed submission (e.g. one-time) so the old in_progress/pending row is not misleading
+            $hasCompletedOther = $allSubs
+                ->where('id', '!=', $sub->id)
+                ->where('student_id', $sub->student_id)
+                ->where('status', 'completed')
+                ->isNotEmpty();
+            $superseded = in_array($sub->status, ['in_progress', 'pending'], true) && $hasCompletedOther;
+
+            return [
+                'id' => $sub->id,
+                'student_name' => $sub->student?->name ?? 'Unknown',
+                'student_email' => $sub->student?->email ?? null,
+                'status' => $sub->status,
+                'superseded' => $superseded,
+                'total_score' => $sub->total_score,
+                'grade' => $sub->grade,
+                'feedback' => $sub->feedback,
+                'answers' => $answers,
+                'document_path' => $sub->document_path,
+                'completed_at' => $sub->updated_at?->format('Y-m-d H:i'),
+                'allowed_after_close' => (bool) $sub->allowed_after_close,
+            ];
+        })->all();
     }
 
     /**

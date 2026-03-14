@@ -22,7 +22,21 @@ class InstitutionReportController extends Controller
             abort(403);
         }
 
-        return Inertia::render('institution/Reports', []);
+        $studentCount = User::forInstitution($institution->id)->where('role', 'student')->count();
+        $lecturerCount = User::forInstitution($institution->id)->where('role', 'lecturer')->count();
+        $vivaCount = Viva::where('institution_id', $institution->id)->count();
+        $completedSubmissionsCount = VivaStudentSubmission::whereHas('viva', fn ($q) => $q->where('institution_id', $institution->id))
+            ->where('status', 'completed')
+            ->count();
+
+        return Inertia::render('institution/Reports', [
+            'summary' => [
+                'students' => $studentCount,
+                'lecturers' => $lecturerCount,
+                'vivas' => $vivaCount,
+                'completed_submissions' => $completedSubmissionsCount,
+            ],
+        ]);
     }
 
     /**

@@ -4,8 +4,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, usePage } from '@inertiajs/vue3';
-import { FileText, Mic, MicOff, Upload, Volume2 } from 'lucide-vue-next';
+import { Head, router, usePage } from '@inertiajs/vue3';
+import {
+    CircleCheck,
+    FileText,
+    Mic,
+    MicOff,
+    Upload,
+    Volume2,
+} from 'lucide-vue-next';
+import RecordRTC from 'recordrtc';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 const props = defineProps<{
@@ -84,9 +92,22 @@ const conversationHistory = ref<Array<{ examiner: string; student: string }>>(
 );
 const isProcessingAnswer = ref(false);
 
-// Voice recording for lecturer playback: record actual audio per answer
-const mediaRecorder = ref<MediaRecorder | null>(null);
-const recordedChunks = ref<Blob[]>([]);
+// Voice recording for lecturer playback (RecordRTC for reliable cross-browser capture per question).
+const RecordRTCPromisesHandler = (
+    RecordRTC as {
+        RecordRTCPromisesHandler: new (
+            stream: MediaStream,
+            options: Record<string, unknown>,
+        ) => RecordRTCRecorder;
+    }
+).RecordRTCPromisesHandler;
+interface RecordRTCRecorder {
+    startRecording: () => Promise<void>;
+    stopRecording: () => Promise<void>;
+    getBlob: () => Promise<Blob>;
+    recordRTC: { getBlob: () => Blob; destroy: () => void };
+}
+const recordRTCInstance = ref<RecordRTCRecorder | null>(null);
 const mediaStream = ref<MediaStream | null>(null);
 
 // Single timeout for restarting speech recognition (avoids double-start / "already started" errors)
@@ -103,6 +124,7 @@ const uploadedDocumentPath = ref<string | null>(
     props.submission?.document_path || null,
 );
 const documentUploaded = ref(!!props.submission?.document_path);
+const documentUploadSuccess = ref(false);
 
 const handleDocumentSelect = (event: Event) => {
     const target = event.target as HTMLInputElement;
@@ -149,9 +171,9 @@ const uploadDocument = async () => {
         const data = await response.json();
         uploadedDocumentPath.value = data.document_path;
         documentUploaded.value = true;
+        documentUploadSuccess.value = true;
         documentFile.value = null;
         if (documentInputRef.value) documentInputRef.value.value = '';
-        alert('PDF uploaded. You can now start the viva.');
     } catch (error: any) {
         alert(`Error uploading document: ${error.message}`);
     } finally {
@@ -232,6 +254,7 @@ const startSession = async () => {
     }
 
     sessionActive.value = true;
+    documentUploadSuccess.value = false;
     timeElapsed.value = 0;
     showEvaluation.value = false;
     currentEvaluation.value = null;
@@ -273,8 +296,9 @@ const stopSession = () => {
     }
 };
 
-// Max time we wait for TTS (fetch + play). If exceeded, we resolve so the flow never gets stuck.
-const TTS_TIMEOUT_MS = 25000;
+// Max time we wait for TTS fetch. If exceeded, we abort fetch so the flow never gets stuck.
+// Playback is never cut off: once audio is playing, we wait for onended before starting recording.
+const TTS_FETCH_TIMEOUT_MS = 45000;
 
 // Google Cloud Text-to-Speech: speak text and return a Promise that resolves when playback ends (so we can chain TTS without overlap).
 // When startRecordingWhenDone is false, we do not start recording in onended (used for feedback before moving to next question).
@@ -343,18 +367,13 @@ const speakAndWait = (
 
             return new Promise<void>((resolve, reject) => {
                 audio.onplay = () => {
-                    if (ttsTimedOut) {
-                        audio.pause();
-                        return;
-                    }
                     isListening.value = true;
                     isSpeaking.value = true;
                     if (speechRecognition.value && recognitionActive.value) {
                         speechRecognition.value.stop();
                     }
                 };
-                audio.onended = () => {
-                    if (ttsTimedOut) return;
+                audio.onended = async () => {
                     isListening.value = false;
                     isSpeaking.value = false;
                     URL.revokeObjectURL(audioUrl);
@@ -364,7 +383,7 @@ const speakAndWait = (
                         sessionActive.value &&
                         !isProcessingAnswer.value
                     ) {
-                        startRecording();
+                        await startRecording();
                     }
                     resolve();
                 };
@@ -389,21 +408,21 @@ const speakAndWait = (
         setTimeout(() => {
             ttsTimedOut = true;
             abortController.abort();
-            if (currentAudio) {
-                currentAudio.pause();
-                currentAudio = null;
-            }
-            isListening.value = false;
-            isSpeaking.value = false;
-            if (
-                startRecordingWhenDone &&
-                sessionActive.value &&
-                !isProcessingAnswer.value
-            ) {
-                startRecording();
+            // Do not stop playback: if TTS is already playing (long text), let it finish;
+            // onended will start recording when the full audio has played.
+            if (!currentAudio) {
+                isListening.value = false;
+                isSpeaking.value = false;
+                if (
+                    startRecordingWhenDone &&
+                    sessionActive.value &&
+                    !isProcessingAnswer.value
+                ) {
+                    void startRecording();
+                }
             }
             resolve();
-        }, TTS_TIMEOUT_MS);
+        }, TTS_FETCH_TIMEOUT_MS);
     });
 
     return Promise.race([ttsPromise, timeoutPromise]);
@@ -440,7 +459,7 @@ const speakQuestion = async (question: string) => {
                 `Error generating speech: ${errorMsg}\n\nPlease check:\n1. Google TTS API key is configured in .env\n2. API key has proper permissions\n3. Check browser console for details\n\nYou can still read the question and type your answer.`,
             );
         }
-        startRecording();
+        void startRecording();
     }
 };
 
@@ -466,6 +485,7 @@ const initializeSpeechRecognition = () => {
     recognition.onstart = () => {
         recognitionActive.value = true;
         isRecording.value = true;
+        // Clear finalAnswer for next utterance; leave answer.value so auto-submit timer still has transcript
         finalAnswer = '';
     };
 
@@ -508,10 +528,9 @@ const initializeSpeechRecognition = () => {
             sessionActive.value
         ) {
             silenceTimer = setTimeout(() => {
-                // Student stopped speaking for 5 seconds - process the answer
-                // Double-check conditions before processing
+                // Student stopped speaking for 5 seconds - auto-submit (use answer.value in case finalAnswer was cleared by recognition restart)
                 if (
-                    finalAnswer.trim() &&
+                    (answer.value || finalAnswer).trim() &&
                     !isProcessingAnswer.value &&
                     !isSpeaking.value &&
                     sessionActive.value
@@ -572,87 +591,92 @@ const initializeSpeechRecognition = () => {
     return recognition;
 };
 
-// Start voice recording (MediaRecorder) for lecturer playback
-const startVoiceRecording = () => {
+// Start voice recording (RecordRTC) when question TTS ends — reliable capture per question across browsers.
+const startVoiceRecording = async (): Promise<void> => {
+    // Clean up any previous recording session
+    if (recordRTCInstance.value) {
+        try {
+            await recordRTCInstance.value.stopRecording().catch(() => {});
+        } catch {
+            /* ignore */
+        }
+        recordRTCInstance.value.recordRTC.destroy();
+        recordRTCInstance.value = null;
+    }
     if (mediaStream.value) {
         mediaStream.value.getTracks().forEach((t) => t.stop());
         mediaStream.value = null;
     }
-    if (mediaRecorder.value && mediaRecorder.value.state !== 'inactive') {
-        mediaRecorder.value.stop();
-    }
-    recordedChunks.value = [];
-    navigator.mediaDevices
-        ?.getUserMedia({ audio: true })
-        .then((stream) => {
-            mediaStream.value = stream;
-            const mime = MediaRecorder.isTypeSupported('audio/webm')
-                ? 'audio/webm'
-                : MediaRecorder.isTypeSupported('audio/mp4')
-                  ? 'audio/mp4'
-                  : undefined;
-            const rec = new MediaRecorder(
-                stream,
-                mime ? { mimeType: mime } : {},
-            );
-            mediaRecorder.value = rec;
-            rec.ondataavailable = (e) => {
-                if (e.data.size > 0) recordedChunks.value.push(e.data);
-            };
-            rec.start(1000);
-        })
-        .catch(() => {
-            // Mic permission denied or unavailable; continue without voice recording
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+            },
         });
+        mediaStream.value = stream;
+        const options: Record<string, unknown> = {
+            type: 'audio',
+            disableLogs: true,
+        };
+        if (
+            typeof MediaRecorder !== 'undefined' &&
+            MediaRecorder.isTypeSupported?.('audio/webm')
+        ) {
+            options.mimeType = 'audio/webm';
+        }
+        const recorder = new RecordRTCPromisesHandler(stream, options);
+        recordRTCInstance.value = recorder;
+        await recorder.startRecording();
+    } catch {
+        // Mic permission denied or unavailable; continue without voice recording
+    }
 };
 
 // Stop voice recording and return the blob and mime type (for upload). Resolves when recording is stopped.
-const stopVoiceRecording = (): Promise<{
+const stopVoiceRecording = async (): Promise<{
     blob: Blob | null;
     mimeType: string;
 } | null> => {
-    return new Promise((resolve) => {
-        const finish = (blob: Blob | null, mime: string) => {
-            if (mediaStream.value) {
-                mediaStream.value.getTracks().forEach((t) => t.stop());
-                mediaStream.value = null;
-            }
-            resolve(blob ? { blob, mimeType: mime } : null);
-        };
-        if (!mediaRecorder.value || mediaRecorder.value.state === 'inactive') {
-            const mime = mediaRecorder.value?.mimeType ?? 'audio/webm';
-            const blob =
-                recordedChunks.value.length > 0
-                    ? new Blob(recordedChunks.value, { type: mime })
-                    : null;
-            finish(blob, mime);
-            return;
+    const finish = (blob: Blob | null, mime: string) => {
+        if (mediaStream.value) {
+            mediaStream.value.getTracks().forEach((t) => t.stop());
+            mediaStream.value = null;
         }
-        mediaRecorder.value.onstop = () => {
-            const mime = mediaRecorder.value?.mimeType ?? 'audio/webm';
-            const blob =
-                recordedChunks.value.length > 0
-                    ? new Blob(recordedChunks.value, { type: mime })
-                    : null;
-            finish(blob, mime);
-        };
-        mediaRecorder.value.stop();
-    });
+        if (recordRTCInstance.value) {
+            try {
+                recordRTCInstance.value.recordRTC.destroy();
+            } catch {
+                /* ignore */
+            }
+            recordRTCInstance.value = null;
+        }
+        return blob ? { blob, mimeType: mime } : null;
+    };
+    const rec = recordRTCInstance.value;
+    if (!rec) {
+        return finish(null, 'audio/webm');
+    }
+    try {
+        await rec.stopRecording();
+        const blob = await rec.getBlob();
+        if (!blob || blob.size === 0) return finish(null, 'audio/webm');
+        const mime = blob.type || 'audio/webm';
+        return finish(blob, mime);
+    } catch {
+        // Empty or failed recording (e.g. very short); return null so flow continues
+        return finish(null, 'audio/webm');
+    }
 };
 
-// Start recording student's speech (continuous mode)
-const startRecording = () => {
-    // Don't start recording if AI is speaking
-    if (isSpeaking.value) {
-        return;
-    }
-
-    startVoiceRecording();
+// Start recording student's speech (continuous mode). Awaits mic + recorder so capture starts before user speaks.
+const startRecording = async () => {
+    if (isSpeaking.value) return;
+    await startVoiceRecording();
 
     if (!speechRecognition.value) {
         speechRecognition.value = initializeSpeechRecognition();
     }
-
     if (speechRecognition.value) {
         try {
             if (!recognitionActive.value && !isSpeaking.value) {
@@ -660,16 +684,14 @@ const startRecording = () => {
                 isRecording.value = true;
             }
         } catch {
-            // If recognition is already running, that's fine
-            console.log('Recognition already active');
+            /* recognition already active */
         }
     } else {
-        // Fallback: manual text input only
         isRecording.value = true;
     }
 };
 
-// Stop recording
+// Stop recording (no blob needed; used on cleanup / leave)
 const stopRecording = () => {
     if (silenceTimer) {
         clearTimeout(silenceTimer);
@@ -682,8 +704,18 @@ const stopRecording = () => {
     if (speechRecognition.value && recognitionActive.value) {
         speechRecognition.value.stop();
     }
-    if (mediaRecorder.value && mediaRecorder.value.state !== 'inactive') {
-        mediaRecorder.value.stop();
+    const rec = recordRTCInstance.value;
+    if (rec) {
+        rec.stopRecording()
+            .catch(() => {})
+            .finally(() => {
+                try {
+                    rec.recordRTC.destroy();
+                } catch {
+                    /* ignore */
+                }
+                recordRTCInstance.value = null;
+            });
     }
     if (mediaStream.value) {
         mediaStream.value.getTracks().forEach((t) => t.stop());
@@ -793,12 +825,12 @@ const uploadVoiceRecording = async (
 
 // Evaluate answer and move to next question
 const evaluateAndMoveOn = async (answerText: string, isSkipped: boolean) => {
-    // Stop recording
+    // Stop speech recognition first; then stop and save voice recording (must capture blob before clearing stream)
     if (speechRecognition.value && recognitionActive.value) {
         speechRecognition.value.stop();
     }
 
-    // Stop voice recording and upload for lecturer playback
+    // Stop voice recording and save blob for lecturer playback (runs when student ends speaking or clicks Get feedback)
     const voiceResult = await stopVoiceRecording();
     const submissionId = props.submission?.id;
     let voicePath: string | null = null;
@@ -874,17 +906,21 @@ const evaluateAndMoveOn = async (answerText: string, isSkipped: boolean) => {
     finalAnswer = '';
     answer.value = '';
 
-    // Build message to speak: for skip use supportive message; for answer tell whether wrong or acceptable, then move on (or "we're done" on last question).
+    // Build message to speak: friendly, encouraging tone for all outcomes (skip / good / could improve).
     const score = evaluation.score_1_10 ?? 5;
-    const acceptableThreshold = 6;
     const nextPhrase = isLastQuestion
         ? " We're all done."
         : " Let's move to the next question.";
-    const feedbackToSpeak = isSkipped
-        ? skipFeedbackMessage
-        : score >= acceptableThreshold
-          ? `That's acceptable, well done.${nextPhrase}`
-          : `That's not quite right.${nextPhrase}`;
+    let feedbackToSpeak: string;
+    if (isSkipped) {
+        feedbackToSpeak = skipFeedbackMessage;
+    } else if (score >= 7) {
+        feedbackToSpeak = `Well done, that's really good.${nextPhrase}`;
+    } else if (score >= 5) {
+        feedbackToSpeak = `Good effort. You're on the right track.${nextPhrase}`;
+    } else {
+        feedbackToSpeak = `Thanks for giving it a go. Let's keep building on that.${nextPhrase}`;
+    }
 
     // Speak feedback via TTS and only move to next question after playback completes (no overlap).
     try {
@@ -898,8 +934,12 @@ const evaluateAndMoveOn = async (answerText: string, isSkipped: boolean) => {
 // Complete viva submission: send 5 answers with score_1_10 to backend; backend calls Python rubric service and returns rubric score.
 const completeAndShowRubric = async () => {
     const submissionId = props.submission?.id;
+    const vivaId = vivaSession.value.id;
+    const redirectToSubmission = () => {
+        if (vivaId) router.visit(`/student/vivas/${vivaId}/submission`);
+    };
     if (!submissionId || answers.value.length !== 5) {
-        alert('Viva session completed. Your answers have been recorded.');
+        redirectToSubmission();
         return;
     }
     const payload = {
@@ -926,28 +966,10 @@ const completeAndShowRubric = async () => {
             credentials: 'same-origin',
             body: JSON.stringify(payload),
         });
-        const data = await response.json().catch(() => ({}));
-        if (response.ok && data.success) {
-            const grade =
-                data.grade != null && data.grade !== '' ? data.grade : null;
-            const totalScore =
-                data.rubric_score != null ? data.rubric_score : null;
-            let resultMessage =
-                'Viva session completed!\n\nYour answers have been saved.';
-            if (data.rubric_from_service) {
-                if (grade) resultMessage += `\n\nYour grade: ${grade}`;
-                if (totalScore != null)
-                    resultMessage += `\nTotal score: ${totalScore}`;
-            } else {
-                resultMessage +=
-                    '\n\nScore has been recorded based on your answers.';
-            }
-            alert(resultMessage);
-        } else {
-            alert('Viva session completed. Your answers have been saved.');
-        }
+        await response.json().catch(() => ({}));
+        redirectToSubmission();
     } catch {
-        alert('Viva session completed. Your answers have been saved.');
+        redirectToSubmission();
     }
 };
 
@@ -984,10 +1006,12 @@ const isSkipAnswer = (text: string): boolean => {
 };
 
 // Process student's answer: evaluate once (mark 1-10), no follow-up questions, then move on.
+// Use answer.value (voice transcript or typed text) so manual submit works when user types or clicks before final result.
 const processAnswer = async () => {
+    const textToSubmit = (answer.value || finalAnswer).trim();
     if (
         !currentQuestion.value ||
-        !finalAnswer.trim() ||
+        !textToSubmit ||
         isProcessingAnswer.value ||
         isSpeaking.value
     ) {
@@ -999,7 +1023,8 @@ const processAnswer = async () => {
         silenceTimer = null;
     }
 
-    const answerText = finalAnswer.trim();
+    finalAnswer = textToSubmit;
+    const answerText = textToSubmit;
     if (speechRecognition.value && recognitionActive.value) {
         speechRecognition.value.stop();
     }
@@ -1046,8 +1071,18 @@ onUnmounted(() => {
     }
 
     // Stop voice recording
-    if (mediaRecorder.value && mediaRecorder.value.state !== 'inactive') {
-        mediaRecorder.value.stop();
+    const rec = recordRTCInstance.value;
+    if (rec) {
+        rec.stopRecording()
+            .catch(() => {})
+            .finally(() => {
+                try {
+                    rec.recordRTC.destroy();
+                } catch {
+                    /* ignore */
+                }
+                recordRTCInstance.value = null;
+            });
     }
     if (mediaStream.value) {
         mediaStream.value.getTracks().forEach((t) => t.stop());
@@ -1138,6 +1173,19 @@ onUnmounted(() => {
                 v-else-if="!sessionActive"
                 class="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-12"
             >
+                <div
+                    v-if="documentUploadSuccess"
+                    class="flex w-full max-w-md items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
+                >
+                    <span
+                        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white"
+                    >
+                        <CircleCheck class="h-4 w-4" />
+                    </span>
+                    <p class="text-sm font-medium">
+                        Document uploaded. You can now start the viva.
+                    </p>
+                </div>
                 <div
                     class="flex max-w-md flex-col items-center gap-6 rounded-2xl border bg-card p-8 text-center shadow-sm"
                 >
@@ -1273,9 +1321,9 @@ onUnmounted(() => {
                     </div>
                 </div>
 
-                <!-- Transcript strip (conversation-style) -->
+                <!-- Question + your answer (type or speak); always visible when there is a question -->
                 <div
-                    v-if="currentQuestion || answer.trim()"
+                    v-if="currentQuestion"
                     class="shrink-0 border-t bg-muted/30 px-4 py-4"
                 >
                     <div class="mx-auto flex max-w-2xl flex-col gap-3">
@@ -1307,7 +1355,7 @@ onUnmounted(() => {
                             </div>
                         </div>
                     </div>
-                    <!-- Manual submit fallback -->
+                    <!-- Submit answer (if auto-submit after 5s silence didn't run, user can hit this) -->
                     <div class="mx-auto mt-3 flex max-w-2xl justify-end">
                         <Button
                             @click="processAnswer"

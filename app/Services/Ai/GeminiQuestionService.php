@@ -249,8 +249,8 @@ class GeminiQuestionService
             $prompt .= "Topic: {$topic}\n\n";
         }
         $prompt .= "Please provide:\n";
-        $prompt .= "1. A score from 1 to 10 (integer, 1=very poor, 10=excellent)\n";
-        $prompt .= "2. Brief feedback (2-3 sentences) for the student\n";
+        $prompt .= "1. A score from 1 to 10 (integer, 1=very poor, 10=excellent). Be fair and encouraging: give credit for partial understanding, correct ideas, and good effort. Avoid being harsh; a reasonable attempt with some correct points should score at least 5-6.\n";
+        $prompt .= "2. Brief, encouraging feedback (2-3 sentences) for the student. Use a supportive, friendly tone. Acknowledge what they got right before suggesting improvements.\n";
         $prompt .= "3. Key points that were covered correctly\n";
         $prompt .= "4. Areas that need improvement (if any)\n\n";
         $prompt .= "Return your response as a JSON object with the following structure:\n";
