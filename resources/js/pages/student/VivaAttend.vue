@@ -273,8 +273,9 @@ const stopSession = () => {
     }
 };
 
-// Max time we wait for TTS (fetch + play). If exceeded, we resolve so the flow never gets stuck.
-const TTS_TIMEOUT_MS = 25000;
+// Max time we wait for TTS fetch. If exceeded, we abort fetch so the flow never gets stuck.
+// Playback is never cut off: once audio is playing, we wait for onended before starting recording.
+const TTS_FETCH_TIMEOUT_MS = 45000;
 
 // Google Cloud Text-to-Speech: speak text and return a Promise that resolves when playback ends (so we can chain TTS without overlap).
 // When startRecordingWhenDone is false, we do not start recording in onended (used for feedback before moving to next question).
@@ -343,10 +344,6 @@ const speakAndWait = (
 
             return new Promise<void>((resolve, reject) => {
                 audio.onplay = () => {
-                    if (ttsTimedOut) {
-                        audio.pause();
-                        return;
-                    }
                     isListening.value = true;
                     isSpeaking.value = true;
                     if (speechRecognition.value && recognitionActive.value) {
@@ -354,11 +351,11 @@ const speakAndWait = (
                     }
                 };
                 audio.onended = () => {
-                    if (ttsTimedOut) return;
                     isListening.value = false;
                     isSpeaking.value = false;
                     URL.revokeObjectURL(audioUrl);
                     if (currentAudio === audio) currentAudio = null;
+                    // Always start recording when playback actually ends (even if fetch had timed out earlier)
                     if (
                         startRecordingWhenDone &&
                         sessionActive.value &&
@@ -389,21 +386,21 @@ const speakAndWait = (
         setTimeout(() => {
             ttsTimedOut = true;
             abortController.abort();
-            if (currentAudio) {
-                currentAudio.pause();
-                currentAudio = null;
-            }
-            isListening.value = false;
-            isSpeaking.value = false;
-            if (
-                startRecordingWhenDone &&
-                sessionActive.value &&
-                !isProcessingAnswer.value
-            ) {
-                startRecording();
+            // Do not stop playback: if TTS is already playing (long text), let it finish;
+            // onended will start recording when the full audio has played.
+            if (!currentAudio) {
+                isListening.value = false;
+                isSpeaking.value = false;
+                if (
+                    startRecordingWhenDone &&
+                    sessionActive.value &&
+                    !isProcessingAnswer.value
+                ) {
+                    startRecording();
+                }
             }
             resolve();
-        }, TTS_TIMEOUT_MS);
+        }, TTS_FETCH_TIMEOUT_MS);
     });
 
     return Promise.race([ttsPromise, timeoutPromise]);
@@ -874,17 +871,21 @@ const evaluateAndMoveOn = async (answerText: string, isSkipped: boolean) => {
     finalAnswer = '';
     answer.value = '';
 
-    // Build message to speak: for skip use supportive message; for answer tell whether wrong or acceptable, then move on (or "we're done" on last question).
+    // Build message to speak: friendly, encouraging tone for all outcomes (skip / good / could improve).
     const score = evaluation.score_1_10 ?? 5;
-    const acceptableThreshold = 6;
     const nextPhrase = isLastQuestion
         ? " We're all done."
         : " Let's move to the next question.";
-    const feedbackToSpeak = isSkipped
-        ? skipFeedbackMessage
-        : score >= acceptableThreshold
-          ? `That's acceptable, well done.${nextPhrase}`
-          : `That's not quite right.${nextPhrase}`;
+    let feedbackToSpeak: string;
+    if (isSkipped) {
+        feedbackToSpeak = skipFeedbackMessage;
+    } else if (score >= 7) {
+        feedbackToSpeak = `Well done, that's really good.${nextPhrase}`;
+    } else if (score >= 5) {
+        feedbackToSpeak = `Good effort. You're on the right track.${nextPhrase}`;
+    } else {
+        feedbackToSpeak = `Thanks for giving it a go. Let's keep building on that.${nextPhrase}`;
+    }
 
     // Speak feedback via TTS and only move to next question after playback completes (no overlap).
     try {
