@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, usePage } from '@inertiajs/vue3';
-import { FileText, Mic, MicOff, Upload, Volume2 } from 'lucide-vue-next';
+import { Head, router, usePage } from '@inertiajs/vue3';
+import { CircleCheck, FileText, Mic, MicOff, Upload, Volume2 } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import RecordRTC from 'recordrtc';
 
@@ -110,6 +110,7 @@ const uploadedDocumentPath = ref<string | null>(
     props.submission?.document_path || null,
 );
 const documentUploaded = ref(!!props.submission?.document_path);
+const documentUploadSuccess = ref(false);
 
 const handleDocumentSelect = (event: Event) => {
     const target = event.target as HTMLInputElement;
@@ -156,9 +157,9 @@ const uploadDocument = async () => {
         const data = await response.json();
         uploadedDocumentPath.value = data.document_path;
         documentUploaded.value = true;
+        documentUploadSuccess.value = true;
         documentFile.value = null;
         if (documentInputRef.value) documentInputRef.value.value = '';
-        alert('PDF uploaded. You can now start the viva.');
     } catch (error: any) {
         alert(`Error uploading document: ${error.message}`);
     } finally {
@@ -239,6 +240,7 @@ const startSession = async () => {
     }
 
     sessionActive.value = true;
+    documentUploadSuccess.value = false;
     timeElapsed.value = 0;
     showEvaluation.value = false;
     currentEvaluation.value = null;
@@ -909,8 +911,12 @@ const evaluateAndMoveOn = async (answerText: string, isSkipped: boolean) => {
 // Complete viva submission: send 5 answers with score_1_10 to backend; backend calls Python rubric service and returns rubric score.
 const completeAndShowRubric = async () => {
     const submissionId = props.submission?.id;
+    const vivaId = vivaSession.value.id;
+    const redirectToSubmission = () => {
+        if (vivaId) router.visit(`/student/vivas/${vivaId}/submission`);
+    };
     if (!submissionId || answers.value.length !== 5) {
-        alert('Viva session completed. Your answers have been recorded.');
+        redirectToSubmission();
         return;
     }
     const payload = {
@@ -937,28 +943,10 @@ const completeAndShowRubric = async () => {
             credentials: 'same-origin',
             body: JSON.stringify(payload),
         });
-        const data = await response.json().catch(() => ({}));
-        if (response.ok && data.success) {
-            const grade =
-                data.grade != null && data.grade !== '' ? data.grade : null;
-            const totalScore =
-                data.rubric_score != null ? data.rubric_score : null;
-            let resultMessage =
-                'Viva session completed!\n\nYour answers have been saved.';
-            if (data.rubric_from_service) {
-                if (grade) resultMessage += `\n\nYour grade: ${grade}`;
-                if (totalScore != null)
-                    resultMessage += `\nTotal score: ${totalScore}`;
-            } else {
-                resultMessage +=
-                    '\n\nScore has been recorded based on your answers.';
-            }
-            alert(resultMessage);
-        } else {
-            alert('Viva session completed. Your answers have been saved.');
-        }
+        await response.json().catch(() => ({}));
+        redirectToSubmission();
     } catch {
-        alert('Viva session completed. Your answers have been saved.');
+        redirectToSubmission();
     }
 };
 
@@ -1156,6 +1144,19 @@ onUnmounted(() => {
                 v-else-if="!sessionActive"
                 class="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-12"
             >
+                <div
+                    v-if="documentUploadSuccess"
+                    class="flex w-full max-w-md items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
+                >
+                    <span
+                        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white"
+                    >
+                        <CircleCheck class="h-4 w-4" />
+                    </span>
+                    <p class="text-sm font-medium">
+                        Document uploaded. You can now start the viva.
+                    </p>
+                </div>
                 <div
                     class="flex max-w-md flex-col items-center gap-6 rounded-2xl border bg-card p-8 text-center shadow-sm"
                 >
