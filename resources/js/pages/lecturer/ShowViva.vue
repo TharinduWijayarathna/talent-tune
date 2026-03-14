@@ -54,6 +54,7 @@ interface Submission {
     student_name: string;
     student_email?: string | null;
     status: string;
+    superseded?: boolean;
     total_score: number | null;
     grade: string | null;
     feedback: string | null;
@@ -134,9 +135,14 @@ const effectiveStatus = (viva: {
 const completedCount = () =>
     submissions.value.filter((s) => s.status === 'completed').length;
 const inProgressCount = () =>
-    submissions.value.filter((s) => s.status === 'in_progress').length;
+    submissions.value.filter(
+        (s) => s.status === 'in_progress' && !s.superseded,
+    ).length;
 const pendingCount = () =>
-    submissions.value.filter((s) => s.status === 'pending').length;
+    submissions.value.filter((s) => s.status === 'pending' && !s.superseded)
+        .length;
+const supersededCount = () =>
+    submissions.value.filter((s) => s.superseded).length;
 
 // Format ISO scheduled_at (UTC) in user's local time for display
 const formatScheduledLocal = (isoString: string) => {
@@ -442,6 +448,15 @@ const addLateStudent = () => {
                             }}</Badge>
                             pending
                         </span>
+                        <span
+                            v-if="supersededCount() > 0"
+                            class="text-muted-foreground"
+                        >
+                            <Badge variant="outline" class="mr-1">{{
+                                supersededCount()
+                            }}</Badge>
+                            superseded
+                        </span>
                     </div>
                 </CardHeader>
                 <CardContent>
@@ -491,12 +506,22 @@ const addLateStudent = () => {
                                         </div>
                                         <Badge
                                             :variant="
-                                                sub.status === 'completed'
-                                                    ? 'default'
-                                                    : 'secondary'
+                                                sub.superseded
+                                                    ? 'outline'
+                                                    : sub.status ===
+                                                        'completed'
+                                                      ? 'default'
+                                                      : 'secondary'
                                             "
                                         >
-                                            {{ sub.status.replace('_', ' ') }}
+                                            {{
+                                                sub.superseded
+                                                    ? 'Superseded'
+                                                    : sub.status.replace(
+                                                          '_',
+                                                          ' ',
+                                                      )
+                                            }}
                                         </Badge>
                                         <Badge
                                             v-if="sub.allowed_after_close"
