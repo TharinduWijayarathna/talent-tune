@@ -181,7 +181,7 @@
     font-size: 11px;
     color: var(--vs-accent2);
     font-family: var(--font-sans);
-    letter-spacing: 0.1em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     margin-bottom: 8px;
     display: flex;

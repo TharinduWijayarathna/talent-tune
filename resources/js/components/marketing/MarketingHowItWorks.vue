@@ -94,7 +94,7 @@ onUnmounted(() => {
         <Transition name="how-modal-fade">
             <div
                 v-if="isOpen"
-                class="how-modal-backdrop"
+                class="how-modal-backdrop marketing-how-modal"
                 role="presentation"
                 @click.self="close"
             >

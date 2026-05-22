@@ -135,7 +135,7 @@ const statusVariant: Record<
                                 >External ID</span
                             >
                             <span
-                                class="max-w-[180px] truncate font-mono text-sm"
+                                class="max-w-[180px] truncate text-sm"
                                 :title="payment.external_id"
                             >
                                 {{ payment.external_id }}
@@ -194,7 +194,7 @@ const statusVariant: Record<
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-muted-foreground">Slug</span>
-                                <span class="font-mono text-sm">{{
+                                <span class="text-sm">{{
                                     payment.institution.slug
                                 }}</span>
                             </div>
