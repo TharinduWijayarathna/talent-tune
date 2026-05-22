@@ -407,7 +407,7 @@ html.dark .marketing-page {
     padding: 6px 16px;
     border: 1px solid var(--border-bright);
     border-radius: 100px;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
     font-size: 11px;
     color: var(--accent2);
     letter-spacing: 0.1em;
@@ -574,7 +574,7 @@ html.dark .marketing-page {
   .panel-title {
     font-size: 12px;
     color: var(--text3);
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
     margin-left: 8px;
     letter-spacing: 0.05em;
   }
@@ -586,7 +586,7 @@ html.dark .marketing-page {
     border-radius: 100px;
     font-size: 10px;
     color: var(--accent2);
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
     display: flex; align-items: center; gap: 5px;
   }
   .panel-badge::before {
@@ -640,7 +640,7 @@ html.dark .marketing-page {
     font-size: 12px;
     color: var(--text3);
     margin-top: 2px;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
   }
 
   .panel-progress-label {
@@ -648,7 +648,7 @@ html.dark .marketing-page {
     justify-content: space-between;
     font-size: 11px;
     color: var(--text3);
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
     margin-bottom: 8px;
   }
 
@@ -677,7 +677,7 @@ html.dark .marketing-page {
   .q-label {
     font-size: 11px;
     color: var(--accent2);
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     margin-bottom: 8px;
@@ -730,7 +730,7 @@ html.dark .marketing-page {
     border-radius: 100px;
     font-size: 10px;
     font-weight: 700;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
     background: rgba(255, 95, 87, 0.12);
     border: 1px solid rgba(255, 95, 87, 0.25);
     color: #ff5f57;
@@ -795,7 +795,7 @@ html.dark .marketing-page {
   }
 
   .transcript-line {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
     font-size: 12px;
     color: var(--text2);
     line-height: 1.65;
@@ -840,7 +840,7 @@ html.dark .marketing-page {
     border-radius: 100px;
     font-size: 11px;
     color: var(--text2);
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
     border: 1px solid var(--border);
     background: var(--surface);
   }
@@ -851,12 +851,12 @@ html.dark .marketing-page {
     border-radius: 100px;
     font-size: 11px;
     color: var(--gold);
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
   }
   .time-pill {
     font-size: 11px;
     color: var(--text3);
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
   }
 
   /* SECTION GENERIC */
@@ -867,7 +867,7 @@ html.dark .marketing-page {
 
   .section-tag {
     display: inline-flex; align-items: center; gap: 8px;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
     font-size: 11px;
     color: var(--accent2);
     letter-spacing: 0.12em;
@@ -1185,7 +1185,7 @@ html.dark .marketing-page {
     font-family: 'Syne', sans-serif;
   }
   .ws-org-name { font-size: 13px; font-weight: 700; }
-  .ws-org-plan { font-size: 11px; color: var(--text3); margin-top: 1px; font-family: 'JetBrains Mono', monospace; }
+  .ws-org-plan { font-size: 11px; color: var(--text3); margin-top: 1px; font-family: 'Syne', ui-sans-serif, system-ui, sans-serif; }
   .ws-topbar-actions { display: flex; align-items: center; gap: 10px; }
   .ws-notif {
     width: 30px; height: 30px;
@@ -1220,7 +1220,7 @@ html.dark .marketing-page {
     border-radius: 100px;
     font-size: 11px;
     color: var(--text3);
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
   }
 
   .ws-stat-row {
@@ -1234,7 +1234,7 @@ html.dark .marketing-page {
   }
   .ws-stat-box:last-child { border-right: none; }
   .ws-stat-val { font-family: 'DM Serif Display', serif; font-size: 28px; color: var(--text); line-height: 1; }
-  .ws-stat-lbl { font-size: 11px; color: var(--text3); margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
+  .ws-stat-lbl { font-size: 11px; color: var(--text3); margin-top: 4px; font-family: 'Syne', ui-sans-serif, system-ui, sans-serif; }
 
   .ws-recent-header {
     padding: 14px 22px 8px;
@@ -1242,7 +1242,7 @@ html.dark .marketing-page {
     color: var(--text3);
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
   }
   .ws-exam-list { padding: 0 14px 16px; }
   .ws-exam-row {
@@ -1259,7 +1259,7 @@ html.dark .marketing-page {
     border-radius: 100px;
     font-size: 10px;
     font-weight: 600;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
   }
   .ws-exam-badge.live { background: rgba(40,200,64,0.1); color: #28c840; border: 1px solid rgba(40,200,64,0.2); }
   .ws-exam-badge.pending { background: rgba(240,192,96,0.1); color: #f0c060; border: 1px solid rgba(240,192,96,0.2); }
@@ -1276,13 +1276,13 @@ html.dark .marketing-page {
   .ws-member-row:hover { background: var(--surface2); }
   .ws-member-info { flex: 1; }
   .ws-member-name { font-size: 13px; font-weight: 600; }
-  .ws-member-email { font-size: 11px; color: var(--text3); font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
+  .ws-member-email { font-size: 11px; color: var(--text3); font-family: 'Syne', ui-sans-serif, system-ui, sans-serif; margin-top: 2px; }
   .ws-role-chip {
     padding: 3px 10px;
     border-radius: 100px;
     font-size: 10px;
     font-weight: 600;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
   }
   .ws-role-chip.admin { background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); }
   .ws-role-chip.lecturer { background: rgba(240,192,96,0.1); color: #f0c060; border: 1px solid rgba(240,192,96,0.2); }
@@ -1304,13 +1304,13 @@ html.dark .marketing-page {
     transition: background 0.2s;
   }
   .ws-bar.active { background: var(--accent); }
-  .ws-bar-lbl { font-size: 10px; color: var(--text3); font-family: 'JetBrains Mono', monospace; }
-  .ws-chart-label { font-size: 11px; color: var(--text3); text-align: center; margin-top: 10px; font-family: 'JetBrains Mono', monospace; }
+  .ws-bar-lbl { font-size: 10px; color: var(--text3); font-family: 'Syne', ui-sans-serif, system-ui, sans-serif; }
+  .ws-chart-label { font-size: 11px; color: var(--text3); text-align: center; margin-top: 10px; font-family: 'Syne', ui-sans-serif, system-ui, sans-serif; }
   .ws-metric-row { display: flex; border-top: 1px solid var(--border); margin-top: 4px; }
   .ws-metric { flex: 1; padding: 14px 22px; border-right: 1px solid var(--border); text-align: center; }
   .ws-metric:last-child { border-right: none; }
   .ws-metric-val { font-family: 'DM Serif Display', serif; font-size: 22px; line-height: 1; }
-  .ws-metric-lbl { font-size: 10px; color: var(--text3); margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
+  .ws-metric-lbl { font-size: 10px; color: var(--text3); margin-top: 4px; font-family: 'Syne', ui-sans-serif, system-ui, sans-serif; }
 
   /* Branding panel */
   .ws-branding-preview {
@@ -1330,7 +1330,7 @@ html.dark .marketing-page {
   .ws-brand-field { display: flex; align-items: center; justify-content: space-between; }
   .ws-brand-field-label { font-size: 12px; color: var(--text3); }
   .ws-brand-field-val { font-size: 12px; color: var(--text); font-weight: 600; display: flex; align-items: center; gap: 8px; }
-  .ws-brand-field-val.mono { font-family: 'JetBrains Mono', monospace; font-weight: 400; color: var(--accent2); }
+  .ws-brand-field-val.mono { font-family: 'Syne', ui-sans-serif, system-ui, sans-serif; font-weight: 400; color: var(--accent2); }
   .ws-color-dot { width: 14px; height: 14px; border-radius: 4px; }
 
   /* Billing panel */
@@ -1392,7 +1392,7 @@ html.dark .marketing-page {
     background: rgba(59,130,246,0.08);
     border: 1px solid rgba(59,130,246,0.18);
     color: var(--text3);
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
   }
   .lec-pill {
     background: rgba(240,192,96,0.07);
@@ -1486,7 +1486,7 @@ html.dark .marketing-page {
     display: flex; align-items: center; justify-content: center;
     font-size: 12px;
     color: var(--text3);
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
     flex-shrink: 0;
     margin-top: 2px;
     transition: all 0.2s;
@@ -1513,7 +1513,7 @@ html.dark .marketing-page {
     color: var(--text3);
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
     white-space: nowrap;
   }
   .tech-items {
@@ -1572,7 +1572,7 @@ html.dark .marketing-page {
   .footer-copy {
     font-size: 13px;
     color: var(--text3);
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
   }
   .footer-links {
     display: flex; gap: 32px;
@@ -1874,7 +1874,7 @@ html.dark .marketing-page {
 .marketing-field-error {
   font-size: 12px;
   color: #ff5f57;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
 }
 
 .marketing-form-actions {
@@ -1965,7 +1965,7 @@ html.dark .marketing-page {
 }
 
 .marketing-callout code {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
   font-size: 12px;
   padding: 2px 8px;
   border-radius: 4px;
@@ -2132,7 +2132,7 @@ html.dark .marketing-page {
 }
 
 .marketing-institution-slug {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
   font-size: 12px;
   color: var(--text3);
 }
@@ -2239,12 +2239,12 @@ html.dark .marketing-page {
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.05em;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
 }
 .pricing-tier {
   font-size: 13px;
   color: var(--accent2);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   margin-bottom: 8px;
@@ -2417,7 +2417,7 @@ html.dark .marketing-page {
 }
 
 .how-modal-tag {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.1em;
@@ -2521,7 +2521,7 @@ html.dark .marketing-page {
 }
 
 .how-step-number {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
   font-size: 11px;
   font-weight: 600;
   color: var(--text3);
@@ -2533,7 +2533,7 @@ html.dark .marketing-page {
 }
 
 .how-step-live {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -2633,7 +2633,7 @@ html.dark .marketing-page {
 }
 
 .how-demo-title {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
   font-size: 11px;
   color: var(--text3);
   letter-spacing: 0.05em;
@@ -2643,7 +2643,7 @@ html.dark .marketing-page {
   margin-left: auto;
   padding: 3px 10px;
   border-radius: 100px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
   font-size: 10px;
   color: var(--accent2);
   background: rgba(59, 130, 246, 0.12);
@@ -2698,7 +2698,7 @@ html.dark .marketing-page {
 }
 
 .how-app-meta {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
   font-size: 10px;
   color: var(--text3);
 }
@@ -2718,7 +2718,7 @@ html.dark .marketing-page {
 
 .how-form-field label {
   display: block;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -2752,7 +2752,7 @@ html.dark .marketing-page {
 .how-file-chip {
   padding: 6px 10px;
   border-radius: 6px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
   font-size: 11px;
   background: rgba(59, 130, 246, 0.1);
   border: 1px solid rgba(59, 130, 246, 0.2);
@@ -2864,7 +2864,7 @@ html.dark .marketing-page {
 }
 
 .how-review-chip {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
   font-size: 10px;
   font-weight: 600;
   padding: 3px 8px;
