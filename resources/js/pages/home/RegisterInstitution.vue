@@ -1,18 +1,7 @@
 <script setup lang="ts">
-import InputError from '@/components/InputError.vue';
-import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ArrowRight, Building2 } from 'lucide-vue-next';
+import MarketingLayout from '@/components/marketing/MarketingLayout.vue';
+import { Link, useForm } from '@inertiajs/vue3';
+import { Building2 } from 'lucide-vue-next';
 
 const form = useForm({
     name: '',
@@ -25,191 +14,215 @@ const form = useForm({
 const submit = () => {
     form.post('/register-institution', {
         preserveScroll: true,
-        onSuccess: () => {
-            // Redirect handled by backend
-        },
     });
 };
 </script>
 
 <template>
-    <Head title="Register Your Institution - Viva Suite" />
-
-    <div class="min-h-screen bg-background">
-        <!-- Navigation -->
-        <nav
-            class="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
-        >
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex h-16 items-center justify-between">
-                    <Link href="/" class="flex items-center gap-2">
-                        <img
-                            src="/images/logo.png"
-                            alt="Viva Suite"
-                            class="h-9 w-auto object-contain"
-                        />
-                    </Link>
-                    <div class="flex items-center gap-4">
-                        <Link
-                            href="/"
-                            class="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                        >
-                            Back to Home
-                        </Link>
+    <MarketingLayout title="Register Your Institution - Viva Suite">
+        <section class="marketing-page-section">
+            <div class="marketing-page-inner marketing-page-inner--narrow">
+                <div class="marketing-page-header">
+                    <div class="marketing-page-icon">
+                        <Building2 :size="28" stroke-width="1.5" />
                     </div>
+                    <h1 class="marketing-page-title">
+                        Register Your Institution
+                    </h1>
+                    <p class="marketing-page-sub">
+                        Join Viva Suite and transform how your institution
+                        conducts viva examinations. Our team will review your
+                        application and activate your workspace.
+                    </p>
                 </div>
-            </div>
-        </nav>
 
-        <!-- Registration Form -->
-        <section class="py-20 sm:py-32">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="mx-auto max-w-2xl">
-                    <div class="mb-8 text-center">
-                        <div
-                            class="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary/10"
-                        >
-                            <Building2 class="h-6 w-6 text-primary" />
-                        </div>
-                        <h1
-                            class="mb-2 text-3xl font-bold tracking-tight sm:text-4xl"
-                        >
-                            Register Your Institution
-                        </h1>
-                        <p class="text-lg text-muted-foreground">
-                            Join Viva Suite and transform how your institution
-                            conducts viva examinations.
+                <div class="marketing-form-card">
+                    <div class="marketing-form-card-header">
+                        <h2 class="marketing-form-card-title">
+                            Institution details
+                        </h2>
+                        <p class="marketing-form-card-desc">
+                            Fields marked with * are required. You will receive
+                            email confirmation once submitted.
                         </p>
                     </div>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Institution Details</CardTitle>
-                            <CardDescription>
-                                Fill out the form below. Our admin team will
-                                review your application and activate your
-                                account.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <form @submit.prevent="submit" class="space-y-6">
-                                <div class="space-y-2">
-                                    <Label for="name">Institution Name *</Label>
-                                    <Input
-                                        id="name"
-                                        v-model="form.name"
-                                        type="text"
-                                        placeholder="e.g., University of Technology"
-                                        required
-                                        :class="{
-                                            'border-red-500': form.errors.name,
-                                        }"
-                                    />
-                                    <InputError :message="form.errors.name" />
-                                </div>
+                    <form
+                        class="marketing-form-body"
+                        @submit.prevent="submit"
+                    >
+                        <div class="marketing-form-grid">
+                            <div class="marketing-field">
+                                <label class="marketing-label" for="name">
+                                    Institution name *
+                                </label>
+                                <input
+                                    id="name"
+                                    v-model="form.name"
+                                    type="text"
+                                    class="marketing-input"
+                                    :class="{
+                                        'marketing-input--error':
+                                            form.errors.name,
+                                    }"
+                                    placeholder="e.g. University of Technology"
+                                    required
+                                />
+                                <p
+                                    v-if="form.errors.name"
+                                    class="marketing-field-error"
+                                >
+                                    {{ form.errors.name }}
+                                </p>
+                            </div>
 
-                                <div class="space-y-2">
-                                    <Label for="email">Contact Email *</Label>
-                                    <Input
-                                        id="email"
-                                        v-model="form.email"
-                                        type="email"
-                                        placeholder="contact@university.edu"
-                                        required
-                                        :class="{
-                                            'border-red-500': form.errors.email,
-                                        }"
-                                    />
-                                    <InputError :message="form.errors.email" />
-                                </div>
+                            <div class="marketing-field">
+                                <label class="marketing-label" for="email">
+                                    Contact email *
+                                </label>
+                                <input
+                                    id="email"
+                                    v-model="form.email"
+                                    type="email"
+                                    class="marketing-input"
+                                    :class="{
+                                        'marketing-input--error':
+                                            form.errors.email,
+                                    }"
+                                    placeholder="contact@university.edu"
+                                    required
+                                />
+                                <p
+                                    v-if="form.errors.email"
+                                    class="marketing-field-error"
+                                >
+                                    {{ form.errors.email }}
+                                </p>
+                            </div>
 
-                                <div class="space-y-2">
-                                    <Label for="contact_person"
-                                        >Contact Person Name *</Label
-                                    >
-                                    <Input
-                                        id="contact_person"
-                                        v-model="form.contact_person"
-                                        type="text"
-                                        placeholder="e.g., Dr. John Smith"
-                                        required
-                                        :class="{
-                                            'border-red-500':
-                                                form.errors.contact_person,
-                                        }"
-                                    />
-                                    <InputError
-                                        :message="form.errors.contact_person"
-                                    />
-                                </div>
+                            <div class="marketing-field">
+                                <label
+                                    class="marketing-label"
+                                    for="contact_person"
+                                >
+                                    Contact person *
+                                </label>
+                                <input
+                                    id="contact_person"
+                                    v-model="form.contact_person"
+                                    type="text"
+                                    class="marketing-input"
+                                    :class="{
+                                        'marketing-input--error':
+                                            form.errors.contact_person,
+                                    }"
+                                    placeholder="e.g. Dr. John Smith"
+                                    required
+                                />
+                                <p
+                                    v-if="form.errors.contact_person"
+                                    class="marketing-field-error"
+                                >
+                                    {{ form.errors.contact_person }}
+                                </p>
+                            </div>
 
-                                <div class="space-y-2">
-                                    <Label for="phone">Phone Number</Label>
-                                    <Input
+                            <div
+                                class="marketing-form-grid marketing-form-grid--two"
+                            >
+                                <div class="marketing-field">
+                                    <label class="marketing-label" for="phone">
+                                        Phone
+                                        <span class="marketing-label-hint"
+                                            >(optional)</span
+                                        >
+                                    </label>
+                                    <input
                                         id="phone"
                                         v-model="form.phone"
                                         type="tel"
-                                        placeholder="+1 (555) 123-4567"
+                                        class="marketing-input"
                                         :class="{
-                                            'border-red-500': form.errors.phone,
+                                            'marketing-input--error':
+                                                form.errors.phone,
                                         }"
+                                        placeholder="+1 (555) 123-4567"
                                     />
-                                    <InputError :message="form.errors.phone" />
+                                    <p
+                                        v-if="form.errors.phone"
+                                        class="marketing-field-error"
+                                    >
+                                        {{ form.errors.phone }}
+                                    </p>
                                 </div>
 
-                                <div class="space-y-2">
-                                    <Label for="address"
-                                        >Institution Address</Label
+                                <div class="marketing-field">
+                                    <label
+                                        class="marketing-label"
+                                        for="address"
                                     >
-                                    <Textarea
+                                        Address
+                                        <span class="marketing-label-hint"
+                                            >(optional)</span
+                                        >
+                                    </label>
+                                    <textarea
                                         id="address"
                                         v-model="form.address"
-                                        placeholder="123 University Street, City, State, ZIP"
-                                        rows="3"
+                                        class="marketing-textarea"
                                         :class="{
-                                            'border-red-500':
+                                            'marketing-textarea--error':
                                                 form.errors.address,
                                         }"
+                                        rows="3"
+                                        placeholder="Street, city, state, ZIP"
                                     />
-                                    <InputError
-                                        :message="form.errors.address"
-                                    />
-                                </div>
-
-                                <div class="flex items-center gap-4 pt-4">
-                                    <Button
-                                        type="submit"
-                                        :disabled="form.processing"
-                                        class="flex-1"
+                                    <p
+                                        v-if="form.errors.address"
+                                        class="marketing-field-error"
                                     >
-                                        <span v-if="form.processing"
-                                            >Submitting...</span
-                                        >
-                                        <span
-                                            v-else
-                                            class="flex items-center gap-2"
-                                        >
-                                            Submit Registration
-                                            <ArrowRight class="h-4 w-4" />
-                                        </span>
-                                    </Button>
+                                        {{ form.errors.address }}
+                                    </p>
                                 </div>
-                            </form>
-                        </CardContent>
-                    </Card>
+                            </div>
+                        </div>
 
-                    <div class="mt-6 text-center text-sm text-muted-foreground">
-                        <p>
-                            Already have an account?
-                            <Link
-                                href="/login"
-                                class="text-primary hover:underline"
-                                >Sign in</Link
+                        <div class="marketing-form-actions">
+                            <button
+                                type="submit"
+                                class="btn-primary marketing-btn-full"
+                                :disabled="form.processing"
                             >
-                        </p>
-                    </div>
+                                <span v-if="form.processing"
+                                    >Submitting…</span
+                                >
+                                <span v-else>Submit registration</span>
+                                <svg
+                                    v-if="!form.processing"
+                                    class="btn-arrow"
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 16 16"
+                                    fill="none"
+                                >
+                                    <path
+                                        d="M3 8H13M9 4L13 8L9 12"
+                                        stroke="currentColor"
+                                        stroke-width="1.5"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    />
+                                </svg>
+                            </button>
+                        </div>
+                    </form>
                 </div>
+
+                <p class="marketing-form-footer-text">
+                    Already have an account?
+                    <Link href="/login">Sign in to your workspace</Link>
+                </p>
             </div>
         </section>
-    </div>
+    </MarketingLayout>
 </template>

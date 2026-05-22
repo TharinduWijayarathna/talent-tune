@@ -1715,6 +1715,463 @@ html.dark .marketing-page {
   }
 
 
+/* Inner marketing pages (register, about, features, etc.) */
+.marketing-main {
+  padding-top: 76px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.marketing-page-section {
+  flex: 1;
+  padding: 56px 60px 72px;
+  position: relative;
+  z-index: 1;
+}
+
+.marketing-page-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.marketing-page-inner--narrow {
+  max-width: 640px;
+}
+
+.marketing-page-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.marketing-page-header--left {
+  text-align: left;
+}
+
+.marketing-page-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 20px;
+  border-radius: 14px;
+  border: 1px solid var(--border-bright);
+  background: rgba(59, 130, 246, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent2);
+}
+
+.marketing-page-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(32px, 4vw, 48px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 12px;
+}
+
+.marketing-page-sub {
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--text2);
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.marketing-page-header--left .marketing-page-sub {
+  margin-left: 0;
+}
+
+.marketing-form-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--panel-shadow);
+}
+
+.marketing-form-card-header {
+  padding: 24px 32px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+}
+
+.marketing-form-card-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.marketing-form-card-desc {
+  font-size: 14px;
+  color: var(--text2);
+  line-height: 1.55;
+}
+
+.marketing-form-body {
+  padding: 32px;
+}
+
+.marketing-form-grid {
+  display: grid;
+  gap: 20px;
+}
+
+.marketing-form-grid--two {
+  grid-template-columns: 1fr 1fr;
+}
+
+.marketing-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.marketing-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+
+.marketing-label-hint {
+  font-weight: 400;
+  color: var(--text3);
+  font-size: 12px;
+}
+
+.marketing-input,
+.marketing-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 15px;
+  font-family: 'Syne', sans-serif;
+  font-weight: 400;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.marketing-input::placeholder,
+.marketing-textarea::placeholder {
+  color: var(--text3);
+}
+
+.marketing-input:focus,
+.marketing-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--glow);
+}
+
+.marketing-input--error,
+.marketing-textarea--error {
+  border-color: #ff5f57;
+}
+
+.marketing-field-error {
+  font-size: 12px;
+  color: #ff5f57;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.marketing-form-actions {
+  padding-top: 8px;
+}
+
+.marketing-btn-full {
+  width: 100%;
+  justify-content: center;
+}
+
+.marketing-form-footer-text {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text2);
+}
+
+.marketing-form-footer-text a {
+  color: var(--accent2);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.marketing-form-footer-text a:hover {
+  text-decoration: underline;
+}
+
+/* Success / info panels */
+.marketing-info-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 40px 36px;
+  box-shadow: var(--panel-shadow);
+  text-align: center;
+}
+
+.marketing-success-icon {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 24px;
+  border-radius: 50%;
+  background: rgba(40, 200, 64, 0.12);
+  border: 1px solid rgba(40, 200, 64, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #28c840;
+}
+
+.marketing-callout {
+  text-align: left;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  margin-bottom: 16px;
+}
+
+.marketing-callout:last-child {
+  margin-bottom: 0;
+}
+
+.marketing-callout--accent {
+  border-color: rgba(59, 130, 246, 0.25);
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.marketing-callout-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.marketing-callout p,
+.marketing-callout ul {
+  font-size: 14px;
+  color: var(--text2);
+  line-height: 1.6;
+}
+
+.marketing-callout ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.marketing-callout code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--accent2);
+}
+
+.marketing-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 32px;
+}
+
+/* About / features content blocks */
+.marketing-content-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 48px;
+}
+
+.marketing-content-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 24px;
+  transition: border-color 0.25s, transform 0.25s;
+}
+
+.marketing-content-card:hover {
+  border-color: var(--border-bright);
+  transform: translateY(-4px);
+}
+
+.marketing-content-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(59, 130, 246, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent2);
+  margin-bottom: 16px;
+}
+
+.marketing-content-card h3 {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.marketing-content-card p {
+  font-size: 14px;
+  color: var(--text2);
+  line-height: 1.6;
+}
+
+.marketing-features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-top: 48px;
+}
+
+.marketing-features-grid .feature-card {
+  background: var(--bg);
+}
+
+.marketing-cta-banner {
+  margin-top: 56px;
+  text-align: center;
+  padding: 48px 32px;
+  border-radius: 16px;
+  border: 1px solid var(--border-bright);
+  background: linear-gradient(135deg, var(--glow), transparent);
+}
+
+.marketing-search-wrap {
+  position: relative;
+  max-width: 420px;
+  margin: 0 auto 40px;
+}
+
+.marketing-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text3);
+  pointer-events: none;
+}
+
+.marketing-search-wrap .marketing-input {
+  padding-left: 42px;
+}
+
+.marketing-institution-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-top: 8px;
+}
+
+.marketing-institution-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 20px;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  text-align: left;
+  width: 100%;
+  font-family: inherit;
+  color: inherit;
+}
+
+.marketing-institution-card:hover {
+  border-color: var(--border-bright);
+  transform: translateY(-3px);
+  box-shadow: var(--panel-shadow);
+}
+
+.marketing-institution-card-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.marketing-institution-logo,
+.marketing-institution-logo-fallback {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent2);
+}
+
+.marketing-institution-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.marketing-institution-name {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.marketing-institution-slug {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text3);
+}
+
+.marketing-institution-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--text2);
+}
+
+.marketing-empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--text2);
+}
+
+.marketing-empty-state svg {
+  margin: 0 auto 16px;
+  color: var(--text3);
+}
+
+@media (max-width: 900px) {
+  .marketing-form-grid--two {
+    grid-template-columns: 1fr;
+  }
+
+  .marketing-content-grid,
+  .marketing-features-grid,
+  .marketing-institution-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .marketing-page-section {
+    padding: 40px 20px 56px;
+  }
+}
+
 /* Pricing */
 .marketing-page .pricing-section {
   padding: 120px 60px;

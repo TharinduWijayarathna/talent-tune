@@ -1,38 +1,28 @@
 <script setup lang="ts">
 import { registerInstitution } from '@/routes';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { computed, onUnmounted, ref, watch } from 'vue';
-
-const props = withDefaults(
-    defineProps<{
-        /** Landing page uses in-page anchors; other marketing pages use routes */
-        variant?: 'landing' | 'pages';
-    }>(),
-    {
-        variant: 'landing',
-    },
-);
 
 const registerUrl = registerInstitution.url();
 const menuOpen = ref(false);
+const page = usePage();
 
-const navItems = computed(() =>
-    props.variant === 'landing'
-        ? [
-              { label: 'Home', href: '#' },
-              { label: 'How It Works', href: '#how' },
-              { label: 'Features', href: '#features' },
-              { label: 'Workspace', href: '#workspace' },
-              { label: 'Roles', href: '#roles' },
-              { label: 'Pricing', href: '#pricing' },
-          ]
-        : [
-              { label: 'Home', href: '/' },
-              { label: 'Features', href: '/#features' },
-              { label: 'Pricing', href: '/pricing' },
-              { label: 'About', href: '/about' },
-          ],
-);
+const isHome = computed(() => {
+    const path = page.url.split('?')[0];
+    return path === '/' || path === '';
+});
+
+const navItems = computed(() => {
+    const prefix = isHome.value ? '' : '/';
+    return [
+        { label: 'Home', href: isHome.value ? '#' : '/' },
+        { label: 'How It Works', href: `${prefix}#how` },
+        { label: 'Features', href: `${prefix}#features` },
+        { label: 'Workspace', href: `${prefix}#workspace` },
+        { label: 'Roles', href: `${prefix}#roles` },
+        { label: 'Pricing', href: `${prefix}#pricing` },
+    ];
+});
 
 function closeMenu() {
     menuOpen.value = false;
@@ -74,7 +64,10 @@ onUnmounted(() => {
 
         <ul class="nav-links nav-desktop">
             <li v-for="item in navItems" :key="item.href">
-                <Link v-if="variant === 'pages'" :href="item.href">
+                <Link
+                    v-if="!isHome && item.href.startsWith('/')"
+                    :href="item.href"
+                >
                     {{ item.label }}
                 </Link>
                 <a v-else :href="item.href">{{ item.label }}</a>
@@ -143,7 +136,7 @@ onUnmounted(() => {
             <ul class="nav-drawer-links">
                 <li v-for="item in navItems" :key="`mobile-${item.href}`">
                     <Link
-                        v-if="variant === 'pages'"
+                        v-if="!isHome && item.href.startsWith('/')"
                         :href="item.href"
                         class="nav-drawer-link"
                         @click="closeMenu"

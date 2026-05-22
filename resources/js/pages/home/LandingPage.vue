@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import HeroVivaPanel from '@/components/marketing/HeroVivaPanel.vue';
+import MarketingFooter from '@/components/marketing/MarketingFooter.vue';
 import MarketingNav from '@/components/marketing/MarketingNav.vue';
 import MarketingPricing from '@/components/marketing/MarketingPricing.vue';
 import MarketingWorkspace from '@/components/marketing/MarketingWorkspace.vue';
@@ -33,7 +34,7 @@ const { typingText, progressScale } = useMarketingHome();
         />
         <div class="grid-bg" />
 
-        <MarketingNav variant="landing" />
+        <MarketingNav />
 
         <section class="hero">
             <div class="hero-glow" />
@@ -360,16 +361,6 @@ const { typingText, progressScale } = useMarketingHome();
             </div>
         </section>
 
-        <footer>
-            <div class="footer-copy">
-                © {{ new Date().getFullYear() }} Viva Suite. All rights reserved.
-            </div>
-            <ul class="footer-links">
-                <li><a href="#pricing">Pricing</a></li>
-                <li><Link href="/features">Features</Link></li>
-                <li><Link href="/about">About</Link></li>
-                <li><Link :href="registerUrl">Register</Link></li>
-            </ul>
-        </footer>
+        <MarketingFooter />
     </div>
 </template>

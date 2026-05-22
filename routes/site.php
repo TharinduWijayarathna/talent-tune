@@ -21,9 +21,10 @@ Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
     ->name('logout');
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/features', [HomeController::class, 'features'])->name('features');
-Route::get('/pricing', [HomeController::class, 'pricing'])->name('pricing');
-Route::get('/about', [HomeController::class, 'about'])->name('about');
+
+Route::redirect('/features', '/#features');
+Route::redirect('/pricing', '/#pricing');
+Route::redirect('/about', '/');
 
 Route::prefix('register-institution')->group(function () {
     Route::get('/', [InstitutionController::class, 'create'])->name('register-institution');
