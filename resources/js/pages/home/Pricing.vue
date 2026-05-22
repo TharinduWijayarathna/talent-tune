@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MarketingNav from '@/components/marketing/MarketingNav.vue';
 import MarketingPricing from '@/components/marketing/MarketingPricing.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { registerInstitution } from '@/routes';
@@ -24,28 +25,7 @@ const registerUrl = registerInstitution.url();
     <div class="marketing-page">
         <div class="grid-bg" />
 
-        <nav>
-            <Link href="/" class="nav-logo">
-                <div class="logo-mark">
-                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                        <path
-                            d="M9 2L9 16M2 9H16M4.5 4.5L13.5 13.5M13.5 4.5L4.5 13.5"
-                            stroke="currentColor"
-                            stroke-width="1.5"
-                            stroke-linecap="round"
-                        />
-                    </svg>
-                </div>
-                <span class="logo-text">Viva<span>Suite</span></span>
-            </Link>
-            <ul class="nav-links">
-                <li><Link href="/">Home</Link></li>
-                <li><Link href="/#features">Features</Link></li>
-                <li><Link href="/pricing">Pricing</Link></li>
-                <li><Link href="/about">About</Link></li>
-            </ul>
-            <Link :href="registerUrl" class="nav-cta">Register Institution</Link>
-        </nav>
+        <MarketingNav variant="pages" />
 
         <MarketingPricing />
 

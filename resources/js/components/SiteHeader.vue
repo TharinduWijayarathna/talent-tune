@@ -45,7 +45,7 @@ function closeMobileMenu() {
         class="sticky top-0 z-50 border-b border-border/40 bg-background/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/60"
     >
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="relative flex h-16 items-center justify-between">
+            <div class="relative flex h-14 items-center justify-between sm:h-16">
                 <Link
                     href="/"
                     class="flex shrink-0 items-center gap-2 rounded-md focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:outline-none"
@@ -60,7 +60,7 @@ function closeMobileMenu() {
 
                 <!-- Desktop nav: center + right -->
                 <nav
-                    class="absolute left-1/2 hidden -translate-x-1/2 items-center gap-6 md:flex"
+                    class="absolute left-1/2 hidden -translate-x-1/2 items-center gap-6 lg:flex"
                     aria-label="Main"
                 >
                     <Link href="/" :class="navLinkClass">Home</Link>
@@ -68,7 +68,7 @@ function closeMobileMenu() {
                     <Link href="/pricing" :class="navLinkClass">Pricing</Link>
                     <Link href="/about" :class="navLinkClass">About</Link>
                 </nav>
-                <div class="hidden shrink-0 items-center gap-6 md:flex">
+                <div class="hidden shrink-0 items-center gap-4 lg:flex lg:gap-6">
                     <Link
                         v-if="!isMainDomain"
                         :href="login.url()"
@@ -87,14 +87,14 @@ function closeMobileMenu() {
                 <!-- Mobile: hamburger menu -->
                 <Sheet v-model:open="mobileMenuOpen">
                     <SheetTrigger
-                        class="inline-flex h-10 w-10 items-center justify-center rounded-md hover:bg-muted md:hidden"
+                        class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-border/60 bg-background text-foreground hover:bg-muted lg:hidden"
                         aria-label="Open menu"
                     >
                         <Menu class="h-5 w-5" />
                     </SheetTrigger>
                     <SheetContent
                         side="right"
-                        class="flex w-[300px] flex-col border-l border-border/50 bg-background/98 px-0 sm:w-[340px]"
+                        class="z-[200] flex w-[min(100vw-2rem,340px)] flex-col border-l border-border bg-background px-0"
                     >
                         <SheetHeader
                             class="border-b border-border/40 px-6 pt-6 pr-14 pb-4"

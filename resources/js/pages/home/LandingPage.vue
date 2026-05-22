@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import HeroVivaPanel from '@/components/marketing/HeroVivaPanel.vue';
+import MarketingNav from '@/components/marketing/MarketingNav.vue';
 import MarketingPricing from '@/components/marketing/MarketingPricing.vue';
 import MarketingWorkspace from '@/components/marketing/MarketingWorkspace.vue';
 import { useMarketingHome } from '@/composables/useMarketingHome';
@@ -32,40 +33,7 @@ const { typingText, progressScale } = useMarketingHome();
         />
         <div class="grid-bg" />
 
-        <nav>
-            <Link href="/" class="nav-logo">
-                <div class="logo-mark">
-                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                        <path
-                            d="M9 2L9 16M2 9H16M4.5 4.5L13.5 13.5M13.5 4.5L4.5 13.5"
-                            stroke="currentColor"
-                            stroke-width="1.5"
-                            stroke-linecap="round"
-                        />
-                    </svg>
-                </div>
-                <span class="logo-text">Viva<span>Suite</span></span>
-            </Link>
-            <ul class="nav-links">
-                <li><a href="#how">How It Works</a></li>
-                <li><a href="#features">Features</a></li>
-                <li><a href="#workspace">Workspace</a></li>
-                <li><a href="#roles">Roles</a></li>
-                <li><a href="#pricing">Pricing</a></li>
-            </ul>
-            <Link :href="registerUrl" class="nav-cta">
-                Register Institution
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <path
-                        d="M2 7H12M8 3L12 7L8 11"
-                        stroke="currentColor"
-                        stroke-width="1.5"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                    />
-                </svg>
-            </Link>
-        </nav>
+        <MarketingNav variant="landing" />
 
         <section class="hero">
             <div class="hero-glow" />
