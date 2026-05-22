@@ -2,7 +2,7 @@
 import VivaSuiteLogo from '@/components/VivaSuiteLogo.vue';
 import { registerInstitution } from '@/routes';
 import { Link, usePage } from '@inertiajs/vue3';
-import { computed, onUnmounted, ref, watch } from 'vue';
+import { computed, inject, onUnmounted, ref, watch } from 'vue';
 
 const registerUrl = registerInstitution.url();
 const menuOpen = ref(false);
@@ -33,6 +33,26 @@ function toggleMenu() {
     menuOpen.value = !menuOpen.value;
 }
 
+const openHowItWorksDemo = inject<(() => void) | null>(
+    'openHowItWorksDemo',
+    null,
+);
+
+function onNavItemClick(
+    item: { label: string; href: string },
+    event: MouseEvent,
+) {
+    if (
+        isHome.value &&
+        item.href === '#how' &&
+        openHowItWorksDemo
+    ) {
+        event.preventDefault();
+        openHowItWorksDemo();
+    }
+    closeMenu();
+}
+
 watch(menuOpen, (open) => {
     if (typeof document === 'undefined') {
         return;
@@ -61,7 +81,12 @@ onUnmounted(() => {
                 >
                     {{ item.label }}
                 </Link>
-                <a v-else :href="item.href">{{ item.label }}</a>
+                <a
+                    v-else
+                    :href="item.href"
+                    @click="onNavItemClick(item, $event)"
+                    >{{ item.label }}</a
+                >
             </li>
         </ul>
 
@@ -138,7 +163,7 @@ onUnmounted(() => {
                         v-else
                         :href="item.href"
                         class="nav-drawer-link"
-                        @click="closeMenu"
+                        @click="onNavItemClick(item, $event)"
                     >
                         {{ item.label }}
                     </a>

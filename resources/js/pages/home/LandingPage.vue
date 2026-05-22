@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import HeroVivaPanel from '@/components/marketing/HeroVivaPanel.vue';
 import MarketingFooter from '@/components/marketing/MarketingFooter.vue';
+import MarketingHowItWorks from '@/components/marketing/MarketingHowItWorks.vue';
 import MarketingNav from '@/components/marketing/MarketingNav.vue';
 import MarketingPricing from '@/components/marketing/MarketingPricing.vue';
 import MarketingWorkspace from '@/components/marketing/MarketingWorkspace.vue';
 import { useMarketingHome } from '@/composables/useMarketingHome';
 import { registerInstitution } from '@/routes';
 import { Head, Link } from '@inertiajs/vue3';
+import { provide, ref } from 'vue';
 
 import '../../../css/marketing-home.css';
 
@@ -16,6 +18,15 @@ defineProps<{
 
 const registerUrl = registerInstitution.url();
 const { typingText, progressScale } = useMarketingHome();
+const howItWorksRef = ref<InstanceType<typeof MarketingHowItWorks> | null>(
+    null,
+);
+
+function onSeeHowItWorks() {
+    howItWorksRef.value?.open();
+}
+
+provide('openHowItWorksDemo', onSeeHowItWorks);
 </script>
 
 <template>
@@ -82,7 +93,11 @@ const { typingText, progressScale } = useMarketingHome();
                                 />
                             </svg>
                         </Link>
-                        <a href="#how" class="btn-secondary">
+                        <button
+                            type="button"
+                            class="btn-secondary"
+                            @click="onSeeHowItWorks"
+                        >
                             <svg
                                 width="16"
                                 height="16"
@@ -102,7 +117,7 @@ const { typingText, progressScale } = useMarketingHome();
                                 />
                             </svg>
                             See how it works
-                        </a>
+                        </button>
                     </div>
                 </div>
 
@@ -155,11 +170,45 @@ const { typingText, progressScale } = useMarketingHome();
             </div>
         </div>
 
+        <MarketingHowItWorks ref="howItWorksRef" />
+
         <section id="how">
             <div class="section-tag">Process</div>
             <h2 class="section-heading reveal">
                 From setup to <em>results</em> in minutes.
             </h2>
+            <p class="section-sub reveal">
+                Four steps from viva creation to graded results — watch the
+                interactive demo or read the workflow below.
+            </p>
+            <div class="how-cta reveal reveal-delay-1">
+                <button
+                    type="button"
+                    class="btn-secondary"
+                    @click="onSeeHowItWorks"
+                >
+                    <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        aria-hidden="true"
+                    >
+                        <circle
+                            cx="8"
+                            cy="8"
+                            r="6.5"
+                            stroke="currentColor"
+                            stroke-width="1.2"
+                        />
+                        <path
+                            d="M6.5 5.5L10.5 8L6.5 10.5V5.5Z"
+                            fill="currentColor"
+                        />
+                    </svg>
+                    Watch interactive demo
+                </button>
+            </div>
             <div class="how-grid">
                 <div class="step-card reveal reveal-delay-1">
                     <div class="step-number">01</div>
