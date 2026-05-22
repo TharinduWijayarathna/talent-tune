@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { Badge } from '@/components/ui/badge';
+import VivaSessionPanel from '@/components/viva/VivaSessionPanel.vue';
+import type { VivaSessionStatus } from '@/components/viva/VivaSessionPanel.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, router, usePage } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+
 import {
     CircleCheck,
     FileText,
@@ -115,6 +117,68 @@ let recognitionRestartTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const page = usePage();
 const csrfToken = computed(() => (page.props as any).csrfToken || '');
+
+const authUser = computed(
+    () => page.props.auth?.user as { name?: string } | null | undefined,
+);
+
+const studentDisplayName = computed(
+    () => authUser.value?.name?.trim() || 'Student',
+);
+
+const studentInitials = computed(() => {
+    const name = studentDisplayName.value;
+    const parts = name.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+        return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+    }
+    return name.slice(0, 2).toUpperCase();
+});
+
+const totalQuestions = computed(() => questions.value.length || 5);
+
+const sessionTitle = computed(() => {
+    const slug = vivaSession.value.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_|_$/g, '');
+    return `viva_session_${slug || vivaSession.value.id}`;
+});
+
+const questionProgressLabel = computed(() => {
+    if (!sessionActive.value) {
+        return `Up to ${totalQuestions.value} questions`;
+    }
+    const current = Math.min(questionIndex.value + 1, totalQuestions.value);
+    return `Question ${current} of ${totalQuestions.value}`;
+});
+
+const progressPercent = computed(() => {
+    if (!sessionActive.value || totalQuestions.value === 0) return 0;
+    return ((questionIndex.value + 1) / totalQuestions.value) * 100;
+});
+
+const panelStatus = computed((): VivaSessionStatus => {
+    if (showEvaluation.value && currentEvaluation.value) return 'feedback';
+    if (isProcessingAnswer.value) return 'evaluating';
+    if (isSpeaking.value) return 'speaking';
+    if (isRecording.value) return 'recording';
+    return 'idle';
+});
+
+const panelWaveformActive = computed(
+    () =>
+        sessionActive.value &&
+        isRecording.value &&
+        !isSpeaking.value &&
+        !isProcessingAnswer.value,
+);
+
+const panelTranscript = computed(() => answer.value.trim());
+
+const showPanelCursor = computed(
+    () => panelWaveformActive.value && !!panelTranscript.value,
+);
 
 // Student PDF upload (required so questions use lecturer instructions + student's document)
 const documentFile = ref<File | null>(null);
@@ -1092,62 +1156,29 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <Head title="Attend Viva" />
+    <Head :title="`Attend: ${vivaSession.title}`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="viva-voice-agent flex min-h-[calc(100vh-8rem)] flex-col">
-            <!-- Minimal top bar -->
-            <header
-                class="flex shrink-0 items-center justify-between border-b bg-background/95 px-4 py-3 backdrop-blur"
-            >
-                <div class="flex items-center gap-3">
-                    <h1 class="text-lg font-semibold tracking-tight">
-                        {{ vivaSession.title }}
-                    </h1>
-                    <span
-                        v-if="sessionActive"
-                        class="flex items-center gap-1.5 text-xs text-muted-foreground"
-                    >
-                        <span
-                            class="h-1.5 w-1.5 rounded-full bg-emerald-500"
-                        ></span>
-                        Live
-                    </span>
-                </div>
-                <div class="flex items-center gap-4">
-                    <template v-if="sessionActive">
-                        <span
-                            class="font-mono text-sm text-muted-foreground tabular-nums"
-                        >
-                            {{ formatTime(timeElapsed) }}
-                        </span>
-                        <span class="text-sm text-muted-foreground">
-                            {{ questionIndex + 1 }}/{{ questions.length }}
-                        </span>
-                    </template>
-                </div>
-            </header>
+        <div class="viva-attend-page">
+            <div class="viva-attend-back">
+                <Button variant="ghost" size="sm" as-child>
+                    <Link href="/student/vivas">← Back to sessions</Link>
+                </Button>
+            </div>
 
-            <!-- Document upload gate (PDF required) -->
-            <div
-                v-if="!documentUploaded"
-                class="flex flex-1 flex-col items-center justify-center gap-6 px-4 py-12"
-            >
+            <!-- Document upload -->
+            <div v-if="!documentUploaded" class="viva-setup-card">
                 <div
-                    class="flex h-20 w-20 items-center justify-center rounded-full bg-muted"
+                    class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-xl border border-primary/20 bg-primary/10"
                 >
-                    <FileText class="h-10 w-10 text-muted-foreground" />
+                    <FileText class="h-8 w-8 text-primary" />
                 </div>
-                <div class="max-w-sm text-center">
-                    <h2 class="text-lg font-medium">
-                        Upload your document (PDF)
-                    </h2>
-                    <p class="mt-1 text-sm text-muted-foreground">
-                        Upload your PDF so questions can be based on the
-                        lecturer’s instructions and your document. Max 10MB.
-                    </p>
-                </div>
-                <div class="flex w-full max-w-sm flex-col gap-2">
+                <h2>Upload your document</h2>
+                <p class="mt-2 text-sm text-muted-foreground">
+                    Upload your PDF so questions use the lecturer’s instructions
+                    and your work. Max 10MB.
+                </p>
+                <div class="mt-6 flex flex-col gap-2 text-left">
                     <Input
                         ref="documentInputRef"
                         id="document"
@@ -1162,263 +1193,103 @@ onUnmounted(() => {
                     >
                         <Upload class="mr-2 h-4 w-4" />
                         {{
-                            isUploadingDocument ? 'Uploading...' : 'Upload PDF'
+                            isUploadingDocument ? 'Uploading…' : 'Upload PDF'
                         }}
                     </Button>
                 </div>
             </div>
 
-            <!-- Ready to start (document uploaded, session not started) -->
-            <div
-                v-else-if="!sessionActive"
-                class="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-12"
-            >
-                <div
-                    v-if="documentUploadSuccess"
-                    class="flex w-full max-w-md items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
-                >
-                    <span
-                        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white"
-                    >
-                        <CircleCheck class="h-4 w-4" />
-                    </span>
-                    <p class="text-sm font-medium">
-                        Document uploaded. You can now start the viva.
-                    </p>
-                </div>
-                <div
-                    class="flex max-w-md flex-col items-center gap-6 rounded-2xl border bg-card p-8 text-center shadow-sm"
-                >
+            <!-- Ready to start -->
+            <template v-else-if="!sessionActive">
+                <VivaSessionPanel
+                    :session-title="sessionTitle"
+                    :live="false"
+                    :student-name="studentDisplayName"
+                    :student-initials="studentInitials"
+                    :course-label="vivaSession.title"
+                    :question-label="questionProgressLabel"
+                    :progress-percent="0"
+                    :question="null"
+                    status="idle"
+                    status-text="Waiting to start"
+                    elapsed="00:00"
+                    :answered-count="0"
+                />
+                <div class="viva-setup-card">
                     <div
-                        class="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10"
+                        v-if="documentUploadSuccess"
+                        class="mb-4 flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-left text-sm text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
                     >
-                        <Mic class="h-8 w-8 text-primary" />
+                        <CircleCheck class="h-5 w-5 shrink-0" />
+                        Document uploaded — you can start when ready.
                     </div>
-                    <div class="space-y-2">
-                        <h2 class="text-xl font-semibold">
-                            Ready for your viva
-                        </h2>
-                        <p class="text-sm text-muted-foreground">
-                            Questions will use the lecturer’s instructions and
-                            your uploaded PDF. You’ll get 5 questions and can
-                            answer by voice. Say “I don’t know” or “Skip” to
-                            move on.
-                        </p>
-                    </div>
+                    <p class="text-sm text-muted-foreground">
+                        Five AI questions based on your PDF. Answer by voice;
+                        say “I don’t know” or “Skip” to move on.
+                    </p>
                     <p
                         v-if="submission?.id"
-                        class="text-sm text-muted-foreground"
+                        class="mt-3 text-sm text-muted-foreground"
                     >
                         <a
                             :href="`/student/viva-submissions/${submission.id}/document?download=1`"
                             download
                             class="text-primary underline hover:no-underline"
                         >
-                            Download your uploaded document
+                            Download your document
                         </a>
                     </p>
-                    <ul
-                        class="w-full space-y-2 text-left text-sm text-muted-foreground"
-                    >
-                        <li class="flex items-center gap-2">
-                            <span
-                                class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium"
-                                >1</span
-                            >
-                            Listen to each question (read aloud)
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <span
-                                class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium"
-                                >2</span
-                            >
-                            Speak your answer — we’ll detect when you finish
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <span
-                                class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium"
-                                >3</span
-                            >
-                            Get feedback and move to the next question
-                        </li>
-                    </ul>
                     <Button
                         size="lg"
-                        class="w-full"
+                        class="mt-6 w-full"
                         :disabled="isLoadingQuestions"
                         @click="startSession"
                     >
                         <Mic class="mr-2 h-5 w-5" />
                         <span v-if="isLoadingQuestions"
-                            >Generating questions...</span
+                            >Generating questions…</span
                         >
-                        <span v-else>Start viva</span>
+                        <span v-else>Start viva session</span>
                     </Button>
                 </div>
-            </div>
+            </template>
 
-            <!-- Voice agent main view (session active) -->
-            <template v-else>
-                <!-- Center: orb + status -->
-                <div
-                    class="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-8"
+            <!-- Live session -->
+            <div v-else class="w-full max-w-[720px]">
+                <VivaSessionPanel
+                    :session-title="sessionTitle"
+                    :live="true"
+                    :student-name="studentDisplayName"
+                    :student-initials="studentInitials"
+                    :course-label="vivaSession.title"
+                    :question-label="questionProgressLabel"
+                    :progress-percent="progressPercent"
+                    :question="currentQuestion"
+                    :status="panelStatus"
+                    :transcript="panelTranscript"
+                    :show-transcript-cursor="showPanelCursor"
+                    :waveform-active="panelWaveformActive"
+                    :elapsed="formatTime(timeElapsed)"
+                    :answered-count="answers.length"
+                    :show-feedback="showEvaluation && !!currentEvaluation"
+                    :feedback-text="currentEvaluation?.feedback ?? null"
                 >
-                    <div
-                        class="viva-orb"
-                        :class="{
-                            'viva-orb--speaking': isSpeaking || isListening,
-                            'viva-orb--listening':
-                                isRecording && !isSpeaking && !isListening,
-                            'viva-orb--idle':
-                                !isRecording && !isSpeaking && !isListening,
-                        }"
-                    >
-                        <Volume2
-                            v-if="isSpeaking || isListening"
-                            class="h-10 w-10 text-primary"
-                        />
-                        <Mic
-                            v-else-if="isRecording"
-                            class="h-10 w-10 text-emerald-500"
-                        />
-                        <MicOff
-                            v-else
-                            class="h-10 w-10 text-muted-foreground"
-                        />
-                    </div>
-
-                    <!-- Status line -->
-                    <p
-                        class="max-w-md text-center text-sm text-muted-foreground"
-                    >
-                        <span v-if="isSpeaking">Listening to question...</span>
-                        <span v-else-if="isProcessingAnswer"
-                            >Evaluating your answer...</span
-                        >
-                        <span v-else-if="isRecording"
-                            >Speak now. We’ll move on after you finish.</span
-                        >
-                        <span v-else>Ready for your answer.</span>
-                    </p>
-
-                    <!-- Inline evaluation (compact) -->
-                    <div
-                        v-if="showEvaluation && currentEvaluation"
-                        class="w-full max-w-md rounded-xl border bg-card px-4 py-3 text-left shadow-sm"
-                    >
-                        <div class="flex items-center justify-between gap-2">
-                            <span
-                                class="text-xs font-medium text-muted-foreground"
-                                >Feedback</span
-                            >
-                            <Badge variant="secondary" class="text-xs">
-                                {{ currentEvaluation.score_1_10 }}/10
-                            </Badge>
-                        </div>
-                        <p class="mt-2 text-sm">
-                            {{ currentEvaluation.feedback }}
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Question + your answer (type or speak); always visible when there is a question -->
-                <div
-                    v-if="currentQuestion"
-                    class="shrink-0 border-t bg-muted/30 px-4 py-4"
-                >
-                    <div class="mx-auto flex max-w-2xl flex-col gap-3">
-                        <div v-if="currentQuestion" class="flex gap-3">
-                            <div
-                                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10"
-                            >
-                                <Volume2 class="h-4 w-4 text-primary" />
-                            </div>
-                            <div
-                                class="min-w-0 flex-1 rounded-2xl rounded-tl-sm bg-background px-4 py-2.5 text-sm shadow-sm"
-                            >
-                                {{ currentQuestion }}
-                            </div>
-                        </div>
-                        <div
-                            v-if="answer.trim()"
-                            class="flex justify-end gap-3"
-                        >
-                            <div
-                                class="max-w-[85%] min-w-0 rounded-2xl rounded-tr-sm bg-primary px-4 py-2.5 text-sm text-primary-foreground"
-                            >
-                                {{ answer || '...' }}
-                            </div>
-                            <div
-                                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary"
-                            >
-                                <Mic class="h-4 w-4 text-primary-foreground" />
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Submit answer (if auto-submit after 5s silence didn't run, user can hit this) -->
-                    <div class="mx-auto mt-3 flex max-w-2xl justify-end">
+                    <template #footer>
                         <Button
-                            @click="processAnswer"
+                            size="sm"
                             :disabled="
                                 !answer.trim() ||
                                 showEvaluation ||
                                 isProcessingAnswer ||
                                 isSpeaking
                             "
-                            variant="ghost"
-                            size="sm"
-                            class="text-xs text-muted-foreground"
+                            @click="processAnswer"
                         >
                             Submit answer
                         </Button>
-                    </div>
-                </div>
-            </template>
+                    </template>
+                </VivaSessionPanel>
+            </div>
         </div>
     </AppLayout>
 </template>
-
-<style scoped>
-.viva-orb {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 7rem;
-    width: 7rem;
-    border-radius: 9999px;
-    border-width: 2px;
-    transition: all 0.3s ease-out;
-}
-.viva-orb--idle {
-    border-color: var(--muted);
-    background-color: color-mix(in srgb, var(--muted) 50%, transparent);
-}
-.viva-orb--idle:hover {
-    border-color: color-mix(in srgb, var(--muted-foreground) 30%, transparent);
-    background-color: color-mix(in srgb, var(--muted) 70%, transparent);
-}
-.viva-orb--speaking {
-    border-color: var(--primary);
-    background-color: color-mix(in srgb, var(--primary) 10%, transparent);
-    box-shadow: 0 10px 15px -3px
-        color-mix(in srgb, var(--primary) 20%, transparent);
-    animation: viva-pulse 1.5s ease-in-out infinite;
-}
-.viva-orb--listening {
-    border-color: rgb(16 185 129);
-    background-color: rgb(16 185 129 / 0.1);
-    box-shadow: 0 10px 15px -3px rgb(16 185 129 / 0.2);
-    animation: viva-pulse 1.2s ease-in-out infinite;
-}
-@keyframes viva-pulse {
-    0%,
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 0.85;
-        transform: scale(1.08);
-    }
-}
-</style>

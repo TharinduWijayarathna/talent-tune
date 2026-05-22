@@ -1,0 +1,449 @@
+/* Viva session panel — shared by homepage demo & student attend UI */
+
+.viva-session {
+    --vs-bg: var(--background);
+    --vs-surface: var(--card);
+    --vs-surface2: var(--muted);
+    --vs-border: var(--border);
+    --vs-accent: var(--primary);
+    --vs-accent2: color-mix(in srgb, var(--primary) 75%, white);
+    --vs-text: var(--foreground);
+    --vs-text2: var(--muted-foreground);
+    --vs-text3: color-mix(in srgb, var(--muted-foreground) 85%, transparent);
+    --vs-wave-bg: color-mix(in srgb, var(--muted) 65%, var(--background));
+    --vs-panel-shadow: 0 24px 60px
+            color-mix(in srgb, var(--foreground) 8%, transparent),
+        0 0 0 1px color-mix(in srgb, var(--foreground) 4%, transparent);
+    --vs-gold: hsl(32 95% 44%);
+    color: var(--vs-text);
+    font-family: var(--font-sans);
+}
+
+.viva-session .viva-panel {
+    background: var(--vs-surface);
+    border: 1px solid var(--vs-border);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--vs-panel-shadow);
+    width: 100%;
+}
+
+.viva-session .panel-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--vs-border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--vs-surface2);
+}
+
+.viva-session .panel-dots {
+    display: flex;
+    gap: 6px;
+}
+
+.viva-session .panel-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.viva-session .pd1 {
+    background: #ff5f57;
+}
+.viva-session .pd2 {
+    background: #ffbd2e;
+}
+.viva-session .pd3 {
+    background: #28c840;
+}
+
+.viva-session .panel-title {
+    font-size: 12px;
+    color: var(--vs-text3);
+    font-family: var(--font-mono);
+    margin-left: 8px;
+    letter-spacing: 0.05em;
+}
+
+.viva-session .panel-badge {
+    margin-left: auto;
+    padding: 3px 10px;
+    background: color-mix(in srgb, var(--vs-accent) 15%, transparent);
+    border: 1px solid color-mix(in srgb, var(--vs-accent) 30%, transparent);
+    border-radius: 100px;
+    font-size: 10px;
+    color: var(--vs-accent2);
+    font-family: var(--font-mono);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.viva-session .panel-badge::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    background: #28c840;
+    border-radius: 50%;
+    animation: vs-blink 1.5s ease infinite;
+}
+
+.viva-session .panel-badge--muted {
+    background: var(--vs-surface);
+    border-color: var(--vs-border);
+    color: var(--vs-text3);
+}
+
+.viva-session .panel-badge--muted::before {
+    display: none;
+}
+
+.viva-session .panel-body {
+    padding: 24px 28px 28px;
+}
+
+.viva-session .panel-session-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--vs-border);
+}
+
+.viva-session .panel-student {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.viva-session .panel-student-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--vs-accent) 15%, transparent);
+    border: 1px solid color-mix(in srgb, var(--vs-accent) 25%, transparent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--vs-accent2);
+}
+
+.viva-session .panel-student-name {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.viva-session .panel-student-course {
+    font-size: 12px;
+    color: var(--vs-text3);
+    margin-top: 2px;
+    font-family: var(--font-mono);
+}
+
+.viva-session .panel-progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--vs-text3);
+    font-family: var(--font-mono);
+    margin-bottom: 8px;
+}
+
+.viva-session .panel-progress-track {
+    height: 6px;
+    background: var(--vs-surface2);
+    border-radius: 100px;
+    overflow: hidden;
+    border: 1px solid var(--vs-border);
+}
+
+.viva-session .panel-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--vs-accent), var(--vs-accent2));
+    border-radius: 100px;
+    transition: width 0.4s ease;
+}
+
+.viva-session .viva-question {
+    background: var(--vs-surface2);
+    border: 1px solid var(--vs-border);
+    border-left: 3px solid var(--vs-accent);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 18px;
+}
+
+.viva-session .q-label {
+    font-size: 11px;
+    color: var(--vs-accent2);
+    font-family: var(--font-mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.viva-session .q-text {
+    font-size: 16px;
+    color: var(--vs-text);
+    line-height: 1.65;
+    font-style: italic;
+    font-family: 'DM Serif Display', Georgia, serif;
+}
+
+.viva-session .panel-feedback {
+    background: color-mix(in srgb, var(--vs-accent) 8%, var(--vs-surface2));
+    border: 1px solid color-mix(in srgb, var(--vs-accent) 20%, transparent);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 18px;
+}
+
+.viva-session .panel-feedback-label {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--vs-text3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+}
+
+.viva-session .panel-feedback-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--vs-text);
+}
+
+.viva-session .panel-listening {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    gap: 12px;
+}
+
+.viva-session .panel-listening-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.viva-session .panel-mic-ring {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--vs-accent) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--vs-accent) 30%, transparent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--vs-accent2);
+}
+
+.viva-session .panel-mic-ring--active {
+    animation: vs-pulse 2s ease-in-out infinite;
+}
+
+.viva-session .panel-listening-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--vs-text2);
+}
+
+.viva-session .panel-listening-badge {
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    background: rgba(255, 95, 87, 0.12);
+    border: 1px solid rgba(255, 95, 87, 0.25);
+    color: #ff5f57;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.viva-session .waveform {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    height: 56px;
+    margin: 0 0 16px;
+    padding: 10px 14px;
+    background: var(--vs-wave-bg);
+    border-radius: 6px;
+    border: 1px solid var(--vs-border);
+}
+
+.viva-session .waveform--idle .wave-bar {
+    animation: none;
+    height: 28%;
+    opacity: 0.35;
+}
+
+.viva-session .wave-bar {
+    flex: 1;
+    background: var(--vs-accent);
+    border-radius: 2px;
+    animation: vs-wave 1.2s ease-in-out infinite;
+    opacity: 0.7;
+    height: 30%;
+}
+
+.viva-session .waveform--active .wave-bar {
+    animation: vs-wave 1.2s ease-in-out infinite;
+}
+
+.viva-session .wave-bar:nth-child(odd) {
+    animation-delay: 0.1s;
+}
+.viva-session .wave-bar:nth-child(3n) {
+    animation-delay: 0.25s;
+}
+
+.viva-session .transcript-box {
+    background: var(--vs-wave-bg);
+    border: 1px solid var(--vs-border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    min-height: 72px;
+}
+
+.viva-session .transcript-line {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--vs-text2);
+    line-height: 1.65;
+    word-break: break-word;
+}
+
+.viva-session .transcript-line .tl-speaker {
+    color: var(--vs-accent2);
+    margin-right: 8px;
+}
+
+.viva-session .transcript-placeholder {
+    color: var(--vs-text3);
+    font-style: italic;
+}
+
+.viva-session .typing-cursor {
+    display: inline-block;
+    width: 6px;
+    height: 12px;
+    background: var(--vs-accent);
+    animation: vs-blink 0.8s step-end infinite;
+    vertical-align: text-bottom;
+    margin-left: 2px;
+}
+
+.viva-session .panel-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--vs-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--vs-surface2);
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.viva-session .panel-footer-stats {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.viva-session .panel-footer-chip {
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-size: 11px;
+    color: var(--vs-text2);
+    font-family: var(--font-mono);
+    border: 1px solid var(--vs-border);
+    background: var(--vs-surface);
+}
+
+.viva-session .time-pill {
+    font-size: 11px;
+    color: var(--vs-text3);
+    font-family: var(--font-mono);
+}
+
+.viva-session .panel-footer-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+/* Setup states (upload / ready) */
+.viva-attend-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 10rem);
+    padding: 1.5rem 1rem 2.5rem;
+    gap: 1.5rem;
+}
+
+.viva-attend-back {
+    align-self: flex-start;
+    width: 100%;
+    max-width: 720px;
+}
+
+.viva-setup-card {
+    width: 100%;
+    max-width: 480px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: var(--vs-panel-shadow, 0 24px 60px rgba(0, 0, 0, 0.08));
+    text-align: center;
+}
+
+.viva-setup-card h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+@keyframes vs-wave {
+    0%,
+    100% {
+        height: 28%;
+    }
+    50% {
+        height: 100%;
+    }
+}
+
+@keyframes vs-blink {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.35;
+    }
+}
+
+@keyframes vs-pulse {
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--vs-accent) 25%, transparent);
+    }
+    50% {
+        box-shadow: 0 0 0 8px transparent;
+    }
+}
