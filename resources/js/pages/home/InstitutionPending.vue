@@ -38,7 +38,7 @@ const institutionName = computed(
                     <Link href="/" class="flex items-center gap-2">
                         <img
                             src="/images/logo.png"
-                            alt="TalentTune"
+                            alt="Viva Suite"
                             class="h-9 w-auto object-contain"
                         />
                     </Link>
@@ -70,7 +70,7 @@ const institutionName = computed(
                                 <p class="mb-8 text-lg text-muted-foreground">
                                     Thank you for registering
                                     <strong>{{ institutionName }}</strong> with
-                                    TalentTune.
+                                    Viva Suite.
                                 </p>
 
                                 <div

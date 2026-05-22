@@ -16,7 +16,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/admin/dashboard' },
-    { title: 'TalentTune Admins', href: '/admin/talenttune-admins' },
+    { title: 'Viva Suite Admins', href: '/admin/talenttune-admins' },
     { title: 'Add Admin', href: '/admin/talenttune-admins/add' },
 ];
 
@@ -33,14 +33,14 @@ const submitForm = () => {
 </script>
 
 <template>
-    <Head title="Add TalentTune Admin" />
+    <Head title="Add Viva Suite Admin" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div
             class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4"
         >
             <div>
-                <h1 class="text-2xl font-bold">Add TalentTune Admin</h1>
+                <h1 class="text-2xl font-bold">Add Viva Suite Admin</h1>
                 <p class="text-muted-foreground">
                     Create a new admin account. Credentials will be sent via
                     email.

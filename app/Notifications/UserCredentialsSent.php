@@ -45,16 +45,16 @@ class UserCredentialsSent extends Notification
         return (new MailMessage)
             ->subject("{$this->institution->name} - Your {$roleLabel} Account Credentials")
             ->greeting("Hello {$this->name},")
-            ->line("You have been added as a **{$roleLabel}** to **{$this->institution->name}** on TalentTune.")
+            ->line("You have been added as a **{$roleLabel}** to **{$this->institution->name}** on Viva Suite.")
             ->line('You can log in using the credentials below.')
             ->line('## Your Login Credentials')
             ->line("**Email:** {$this->email}")
             ->line("**Password:** {$this->password}")
             ->line('> **Important:** Please change your password after your first login for security purposes.')
-            ->action('Log in to TalentTune', $loginUrl)
+            ->action('Log in to Viva Suite', $loginUrl)
             ->line("Your institution portal: **{$this->institution->slug}.{$this->baseDomain}**")
             ->line('If you did not expect this email or have any questions, please contact your institution administrator.')
-            ->salutation('Best regards, The TalentTune Team');
+            ->salutation('Best regards, The Viva Suite Team');
     }
 
     /**

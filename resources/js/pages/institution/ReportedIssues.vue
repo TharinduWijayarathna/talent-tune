@@ -104,7 +104,7 @@ const formatDate = (iso: string) =>
                 <CardHeader>
                     <CardTitle>Issues ({{ props.issues.length }})</CardTitle>
                     <CardDescription
-                        >Review and escalate to TalentTune support when
+                        >Review and escalate to Viva Suite support when
                         needed</CardDescription
                     >
                 </CardHeader>

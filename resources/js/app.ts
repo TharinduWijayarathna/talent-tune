@@ -25,5 +25,4 @@ createInertiaApp({
     },
 });
 
-// Theme: light mode only. Dark mode has been removed.
 initializeTheme();

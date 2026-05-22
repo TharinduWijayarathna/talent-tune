@@ -71,7 +71,7 @@ const endSubscription = () => {
 </script>
 
 <template>
-    <Head title="Payment - TalentTune" />
+    <Head title="Payment - Viva Suite" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div

@@ -38,7 +38,7 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="Complete your subscription - TalentTune" />
+    <Head title="Complete your subscription - Viva Suite" />
     <div class="min-h-screen bg-background">
         <nav
             class="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
@@ -48,7 +48,7 @@ const submit = () => {
                     <Link href="/" class="flex items-center gap-2">
                         <img
                             src="/images/logo.png"
-                            alt="TalentTune"
+                            alt="Viva Suite"
                             class="h-9 w-auto object-contain"
                         />
                     </Link>

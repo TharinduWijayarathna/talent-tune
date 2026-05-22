@@ -15,7 +15,7 @@ class AdminAdminController extends Controller
     ) {}
 
     /**
-     * List all TalentTune admins.
+     * List all Viva Suite admins.
      */
     public function index()
     {
@@ -27,7 +27,7 @@ class AdminAdminController extends Controller
     }
 
     /**
-     * Show the form to add a new TalentTune admin.
+     * Show the form to add a new Viva Suite admin.
      */
     public function create()
     {
@@ -35,7 +35,7 @@ class AdminAdminController extends Controller
     }
 
     /**
-     * Store a new TalentTune admin and send credentials.
+     * Store a new Viva Suite admin and send credentials.
      */
     public function store(Request $request)
     {
@@ -49,6 +49,6 @@ class AdminAdminController extends Controller
 
         return redirect()
             ->route('admin.talenttune-admins')
-            ->with('success', 'TalentTune admin added successfully. Credentials have been sent to their email.');
+            ->with('success', 'Viva Suite admin added successfully. Credentials have been sent to their email.');
     }
 }

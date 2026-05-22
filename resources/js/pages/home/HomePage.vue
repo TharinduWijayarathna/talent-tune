@@ -25,7 +25,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const page = usePage();
 const institution = computed(() => props.institution || page.props.institution);
-const institutionName = computed(() => institution.value?.name || 'TalentTune');
+const institutionName = computed(() => institution.value?.name || 'Viva Suite');
 const institutionLogo = computed(() => institution.value?.logo_url);
 </script>
 
@@ -49,7 +49,7 @@ const institutionLogo = computed(() => institution.value?.logo_url);
                         <img
                             v-else
                             src="/images/logo.png"
-                            alt="TalentTune"
+                            alt="Viva Suite"
                             class="h-8 w-8 object-contain"
                         />
                         <span class="text-xl font-bold">{{

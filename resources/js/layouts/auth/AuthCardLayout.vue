@@ -26,7 +26,7 @@ defineProps<{
             >
                 <img
                     src="/images/logo.png"
-                    alt="TalentTune"
+                    alt="Viva Suite"
                     class="h-12 w-auto object-contain"
                 />
             </Link>

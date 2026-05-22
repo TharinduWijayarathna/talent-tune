@@ -18,7 +18,7 @@ withDefaults(
     <img
         v-if="!institutionLogo"
         :src="appLogoUrl"
-        alt="TalentTune"
+        alt="Viva Suite"
         :class="
             sidebar
                 ? 'h-auto max-h-10 w-full max-w-full object-contain'

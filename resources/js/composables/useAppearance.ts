@@ -1,39 +1,78 @@
-import { ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 
-// Theme: application uses light mode only. Dark mode and system preference have been removed.
-type Appearance = 'light';
+export type Appearance = 'light' | 'dark' | 'system';
 
-/**
- * Applies the light theme only. No 'dark' class is ever set.
- */
-export function updateTheme(): void {
+function getStoredAppearance(): Appearance {
     if (typeof document === 'undefined') {
-        return;
+        return 'system';
     }
-    document.documentElement.classList.remove('dark');
+    const match = document.cookie.match(/(?:^|;\s*)appearance=([^;]+)/);
+    const value = match?.[1];
+    if (value === 'light' || value === 'dark' || value === 'system') {
+        return value;
+    }
+    return 'system';
+}
+
+function systemPrefersDark(): boolean {
+    return (
+        typeof window !== 'undefined' &&
+        window.matchMedia('(prefers-color-scheme: dark)').matches
+    );
 }
 
 /**
- * Ensures light mode is set on initial load.
+ * Applies light or dark theme on the document root.
+ */
+export function updateTheme(mode: Appearance = getStoredAppearance()): void {
+    if (typeof document === 'undefined') {
+        return;
+    }
+    const isDark =
+        mode === 'dark' || (mode === 'system' && systemPrefersDark());
+    document.documentElement.classList.toggle('dark', isDark);
+}
+
+/**
+ * Sync theme with stored preference and system changes.
  */
 export function initializeTheme(): void {
     if (typeof window === 'undefined') {
         return;
     }
-    updateTheme();
+    updateTheme(getStoredAppearance());
 }
 
-const appearance = ref<Appearance>('light');
+const appearance = ref<Appearance>(getStoredAppearance());
 
 /**
- * useAppearance composable.
- * The application enforces light mode. The API remains for compatibility.
+ * Theme composable — defaults to system (follows OS light/dark).
  */
 export function useAppearance() {
-    function updateAppearance(): void {
-        appearance.value = 'light';
-        updateTheme();
+    let mediaQuery: MediaQueryList | null = null;
+
+    function onSystemChange() {
+        if (appearance.value === 'system') {
+            updateTheme('system');
+        }
     }
+
+    function updateAppearance(value: Appearance): void {
+        appearance.value = value;
+        document.cookie = `appearance=${value};path=/;max-age=31536000;SameSite=Lax`;
+        updateTheme(value);
+    }
+
+    onMounted(() => {
+        appearance.value = getStoredAppearance();
+        updateTheme(appearance.value);
+        mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        mediaQuery.addEventListener('change', onSystemChange);
+    });
+
+    onUnmounted(() => {
+        mediaQuery?.removeEventListener('change', onSystemChange);
+    });
 
     return {
         appearance,

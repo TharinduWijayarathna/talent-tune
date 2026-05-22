@@ -1,6 +1,6 @@
-# TalentTune
+# Viva Suite
 
-TalentTune is a multi-tenant web app for institutions to run **viva** (oral exam) sessions. Lecturers create vivas with instructions and materials; students attend, upload documents and voice responses, and submit. Includes AI-assisted generation (Gemini, TTS), PDF reports, Stripe subscriptions, and support ticketing.
+Viva Suite is a multi-tenant web app for institutions to run **viva** (oral exam) sessions. Lecturers create vivas with instructions and materials; students attend, upload documents and voice responses, and submit. Includes AI-assisted generation (Gemini, TTS), PDF reports, Stripe subscriptions, and support ticketing.
 
 **Roles**
 

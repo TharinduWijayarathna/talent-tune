@@ -36,7 +36,7 @@ class InstitutionActivated extends Notification
         $loginUrl = "https://{$this->institution->slug}.{$this->baseDomain}/login";
 
         $mail = (new MailMessage)
-            ->subject("{$this->institution->name} - Your TalentTune Account Has Been Activated")
+            ->subject("{$this->institution->name} - Your Viva Suite Account Has Been Activated")
             ->greeting("Hello {$this->institution->contact_person},")
             ->line("Great news! Your institution **{$this->institution->name}** has been reviewed and activated by our admin team.")
             ->line('## Your Login Credentials')
@@ -55,7 +55,7 @@ class InstitutionActivated extends Notification
 
         $mail->action('Log in', $loginUrl)
             ->line('If you have any questions, please contact our support team.')
-            ->salutation('Best regards, The TalentTune Team');
+            ->salutation('Best regards, The Viva Suite Team');
 
         return $mail;
     }

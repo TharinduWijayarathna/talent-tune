@@ -106,7 +106,7 @@ const rightNavItems: NavItem[] = [
                             <SheetHeader class="flex justify-start text-left">
                                 <img
                                     src="/images/logo.png"
-                                    alt="TalentTune"
+                                    alt="Viva Suite"
                                     class="h-10 w-auto object-contain"
                                 />
                             </SheetHeader>

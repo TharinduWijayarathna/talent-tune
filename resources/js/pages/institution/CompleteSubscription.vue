@@ -46,7 +46,7 @@ const handleLogout = () => {
 </script>
 
 <template>
-    <Head title="Complete payment - TalentTune" />
+    <Head title="Complete payment - Viva Suite" />
 
     <div class="min-h-svh bg-gradient-to-b from-background to-muted/30">
         <!-- Header -->
@@ -59,7 +59,7 @@ const handleLogout = () => {
                 <Link href="/" class="flex items-center gap-3">
                     <img
                         src="/images/logo.png"
-                        alt="TalentTune"
+                        alt="Viva Suite"
                         class="h-9 w-auto object-contain"
                     />
                     <span

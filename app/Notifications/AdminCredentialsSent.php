@@ -37,17 +37,17 @@ class AdminCredentialsSent extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('TalentTune - Your Admin Account Credentials')
+            ->subject('Viva Suite - Your Admin Account Credentials')
             ->greeting("Hello {$this->name},")
-            ->line('You have been added as a **TalentTune Admin** and can manage institutions, users, payments, and support.')
+            ->line('You have been added as a **Viva Suite Admin** and can manage institutions, users, payments, and support.')
             ->line('You can log in using the credentials below.')
             ->line('## Your Login Credentials')
             ->line("**Email:** {$this->email}")
             ->line("**Password:** {$this->password}")
             ->line('> **Important:** Please change your password after your first login for security purposes.')
-            ->action('Log in to TalentTune Admin', $this->loginUrl)
-            ->line('If you did not expect this email or have any questions, please contact the TalentTune team.')
-            ->salutation('Best regards, The TalentTune Team');
+            ->action('Log in to Viva Suite Admin', $this->loginUrl)
+            ->line('If you did not expect this email or have any questions, please contact the Viva Suite team.')
+            ->salutation('Best regards, The Viva Suite Team');
     }
 
     /**

@@ -71,7 +71,7 @@ const features = [
 </script>
 
 <template>
-    <Head title="Features - TalentTune" />
+    <Head title="Features - Viva Suite" />
     <div class="min-h-screen bg-background">
         <SiteHeader :is-main-domain="isMainDomain" />
         <main class="py-16 sm:py-24">
@@ -118,7 +118,7 @@ const features = [
                 <div class="mt-16 flex justify-center">
                     <Link :href="registerInstitution.url()">
                         <Button size="lg" class="gap-2">
-                            Get Started with TalentTune
+                            Get Started with Viva Suite
                             <Building2 class="h-4 w-4" />
                         </Button>
                     </Link>

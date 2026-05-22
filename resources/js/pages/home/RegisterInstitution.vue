@@ -33,7 +33,7 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="Register Your Institution - TalentTune" />
+    <Head title="Register Your Institution - Viva Suite" />
 
     <div class="min-h-screen bg-background">
         <!-- Navigation -->
@@ -45,7 +45,7 @@ const submit = () => {
                     <Link href="/" class="flex items-center gap-2">
                         <img
                             src="/images/logo.png"
-                            alt="TalentTune"
+                            alt="Viva Suite"
                             class="h-9 w-auto object-contain"
                         />
                     </Link>
@@ -77,7 +77,7 @@ const submit = () => {
                             Register Your Institution
                         </h1>
                         <p class="text-lg text-muted-foreground">
-                            Join TalentTune and transform how your institution
+                            Join Viva Suite and transform how your institution
                             conducts viva examinations.
                         </p>
                     </div>

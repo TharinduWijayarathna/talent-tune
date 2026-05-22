@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Notification;
 class AdminAdminService
 {
     /**
-     * Get all TalentTune admins (role = admin).
+     * Get all Viva Suite admins (role = admin).
      */
     public function getAdmins(): array
     {
@@ -28,7 +28,7 @@ class AdminAdminService
     }
 
     /**
-     * Create a TalentTune admin and send credentials email.
+     * Create a Viva Suite admin and send credentials email.
      */
     public function createAdmin(array $validated): User
     {

@@ -1,807 +1,407 @@
 <script setup lang="ts">
-import SiteHeader from '@/components/SiteHeader.vue';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
-import { useDomain } from '@/composables/useDomain';
-import { login } from '@/routes';
-import { Head, Link, usePage } from '@inertiajs/vue3';
-import {
-    ArrowRight,
-    Award,
-    BarChart3,
-    Brain,
-    Building2,
-    ChevronDown,
-    Clock,
-    Globe,
-    MessageSquare,
-    Mic,
-    Shield,
-    Sparkles,
-    TrendingUp,
-    Users,
-    Zap,
-} from 'lucide-vue-next';
-import { computed, onMounted, ref } from 'vue';
+import HeroVivaPanel from '@/components/marketing/HeroVivaPanel.vue';
+import MarketingPricing from '@/components/marketing/MarketingPricing.vue';
+import MarketingWorkspace from '@/components/marketing/MarketingWorkspace.vue';
+import { useMarketingHome } from '@/composables/useMarketingHome';
+import { registerInstitution } from '@/routes';
+import { Head, Link } from '@inertiajs/vue3';
 
-interface Props {
-    canRegister: boolean;
-}
+import '../../../css/marketing-home.css';
 
-withDefaults(defineProps<Props>(), {
-    canRegister: true,
-});
+defineProps<{
+    canRegister?: boolean;
+}>();
 
-const page = usePage();
-const { baseDomain } = useDomain();
-
-// Check if we're on main domain (no institution = main domain)
-const isMainDomain = computed(() => !page.props.institution);
-
-const howItWorksSteps = computed(() => [
-    {
-        number: '1',
-        title: 'Register Your Institution',
-        description:
-            'Fill out the registration form with your institution details. Our admin team will review and activate your account within 24 hours.',
-        icon: Building2,
-        gradient: 'from-violet-500 to-purple-600',
-    },
-    {
-        number: '2',
-        title: 'Get Your Subdomain',
-        description: `Once activated, access your institution portal via your custom subdomain (e.g., your-university.${baseDomain.value}).`,
-        icon: Globe,
-        gradient: 'from-blue-500 to-cyan-500',
-    },
-    {
-        number: '3',
-        title: 'Start Managing Vivas',
-        description:
-            'Add lecturers and students, create viva sessions, and leverage AI-powered question generation and evaluation.',
-        icon: Zap,
-        gradient: 'from-amber-500 to-orange-500',
-    },
-]);
-
-const isVisible = ref(false);
-const statsVisible = ref(false);
-
-onMounted(() => {
-    // Trigger animations on mount
-    setTimeout(() => {
-        isVisible.value = true;
-    }, 100);
-
-    // Stats animation on scroll
-    const observer = new IntersectionObserver(
-        (entries) => {
-            entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                    statsVisible.value = true;
-                }
-            });
-        },
-        { threshold: 0.3 },
-    );
-
-    const statsElement = document.getElementById('stats-section');
-    if (statsElement) {
-        observer.observe(statsElement);
-    }
-
-    return () => {
-        if (statsElement) {
-            observer.unobserve(statsElement);
-        }
-    };
-});
+const registerUrl = registerInstitution.url();
+const { typingText, progressScale } = useMarketingHome();
 </script>
 
 <template>
-    <Head
-        title="TalentTune - AI-Powered Viva Management Platform for Educational Institutions"
-    />
+    <Head title="Viva Suite — Intelligent Oral Examination Platform">
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap"
+        />
+    </Head>
 
-    <div class="min-h-screen bg-background">
-        <SiteHeader :is-main-domain="isMainDomain" />
+    <div class="marketing-page">
+        <div
+            class="progress-bar"
+            :style="{ transform: `scaleX(${progressScale})` }"
+        />
+        <div class="grid-bg" />
 
-        <!-- Hero Section with Animations -->
-        <section
-            class="relative flex min-h-[90vh] items-center justify-center overflow-hidden py-20 sm:py-32"
-        >
-            <!-- Animated Background -->
-            <div class="absolute inset-0 -z-10">
-                <div
-                    class="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-background"
-                />
-                <div
-                    class="absolute top-0 left-1/4 h-96 w-96 animate-pulse rounded-full bg-primary/5 blur-3xl"
-                />
-                <div
-                    class="absolute right-1/4 bottom-0 h-96 w-96 animate-pulse rounded-full bg-primary/5 blur-3xl delay-1000"
-                />
-            </div>
-
-            <!-- Floating Elements -->
-            <div
-                class="absolute top-20 left-10 hidden h-2 w-2 animate-bounce rounded-full bg-primary delay-300 lg:block"
-            />
-            <div
-                class="absolute top-40 right-20 hidden h-3 w-3 animate-bounce rounded-full bg-primary/50 delay-700 lg:block"
-            />
-            <div
-                class="absolute bottom-40 left-20 hidden h-2 w-2 animate-bounce rounded-full bg-primary/30 delay-1000 lg:block"
-            />
-
-            <div
-                class="relative z-10 container mx-auto w-full px-4 sm:px-6 lg:px-8"
-            >
-                <div class="mx-auto max-w-5xl text-center">
-                    <!-- Badge -->
-                    <div
-                        class="animate-fade-in mb-8 inline-flex items-center justify-center gap-2 rounded-full border bg-muted/50 px-4 py-1.5 text-sm backdrop-blur"
-                        :class="{
-                            'translate-y-4 opacity-0': !isVisible,
-                            'translate-y-0 opacity-100': isVisible,
-                        }"
-                        style="transition: all 0.6s ease-out"
-                    >
-                        <Sparkles
-                            class="animate-spin-slow h-4 w-4 text-primary"
+        <nav>
+            <Link href="/" class="nav-logo">
+                <div class="logo-mark">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                        <path
+                            d="M9 2L9 16M2 9H16M4.5 4.5L13.5 13.5M13.5 4.5L4.5 13.5"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            stroke-linecap="round"
                         />
-                        <span class="font-medium"
-                            >AI-Powered Viva Management SaaS Platform</span
-                        >
-                        <Badge variant="secondary" class="ml-2">New</Badge>
+                    </svg>
+                </div>
+                <span class="logo-text">Viva<span>Suite</span></span>
+            </Link>
+            <ul class="nav-links">
+                <li><a href="#how">How It Works</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#workspace">Workspace</a></li>
+                <li><a href="#roles">Roles</a></li>
+                <li><a href="#pricing">Pricing</a></li>
+            </ul>
+            <Link :href="registerUrl" class="nav-cta">
+                Register Institution
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path
+                        d="M2 7H12M8 3L12 7L8 11"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    />
+                </svg>
+            </Link>
+        </nav>
+
+        <section class="hero">
+            <div class="hero-glow" />
+            <div class="hero-glow2" />
+            <div class="orb orb1" />
+            <div class="orb orb2" />
+            <div class="orb orb3" />
+
+            <div class="hero-layout">
+                <div class="hero-content">
+                    <div class="hero-tag">
+                        <span class="hero-tag-dot" />
+                        AI-Powered Oral Examination
                     </div>
 
-                    <!-- Main Heading -->
-                    <h1
-                        class="mb-6 text-center text-4xl leading-tight font-bold tracking-tight sm:text-6xl lg:text-7xl"
-                        :class="{
-                            'translate-y-8 opacity-0': !isVisible,
-                            'translate-y-0 opacity-100': isVisible,
-                        }"
-                        style="transition: all 0.8s ease-out 0.2s"
-                    >
-                        Transform Your Institution's
-                        <span
-                            class="animate-gradient mt-2 block bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent"
-                        >
-                            Viva Sessions with AI
-                        </span>
+                    <h1 class="hero-heading">
+                        Viva exams,<br />
+                        <em>reimagined</em>
+                        <span class="outlined">for the AI era.</span>
                     </h1>
 
-                    <!-- Description -->
-                    <p
-                        class="mx-auto mb-10 max-w-3xl text-center text-lg leading-relaxed text-muted-foreground sm:text-xl lg:text-2xl"
-                        :class="{
-                            'translate-y-8 opacity-0': !isVisible,
-                            'translate-y-0 opacity-100': isVisible,
-                        }"
-                        style="transition: all 0.8s ease-out 0.4s"
-                    >
-                        A comprehensive SaaS platform designed for educational
-                        institutions. Streamline viva examinations with
-                        intelligent question generation, automated evaluation,
-                        and seamless multi-tenant management.
+                    <p class="hero-sub">
+                        Viva Suite lets institutions conduct intelligent,
+                        voice-driven oral examinations online — powered by
+                        document analysis, adaptive questioning, and real-time
+                        transcription.
                     </p>
 
-                    <!-- CTA Buttons -->
-                    <div
-                        class="mb-12 flex flex-col items-center justify-center gap-4 sm:flex-row"
-                        :class="{
-                            'translate-y-8 opacity-0': !isVisible,
-                            'translate-y-0 opacity-100': isVisible,
-                        }"
-                        style="transition: all 0.8s ease-out 0.6s"
-                    >
-                        <Link :href="'/register-institution'">
-                            <Button
-                                size="lg"
-                                class="group w-full shadow-lg transition-all hover:scale-105 hover:shadow-xl sm:w-auto"
+                    <div class="hero-actions">
+                        <Link :href="registerUrl" class="btn-primary">
+                            Register Your Institution
+                            <svg
+                                class="btn-arrow"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 16 16"
+                                fill="none"
                             >
-                                Register Your University
-                                <Building2
-                                    class="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1"
+                                <path
+                                    d="M3 8H13M9 4L13 8L9 12"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
                                 />
-                            </Button>
+                            </svg>
                         </Link>
-                        <!-- Hide login button on main domain -->
-                        <Link v-if="!isMainDomain" :href="login()">
-                            <Button
-                                size="lg"
-                                variant="outline"
-                                class="w-full border-2 hover:bg-muted/50 sm:w-auto"
+                        <a href="#how" class="btn-secondary">
+                            <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 16 16"
+                                fill="none"
                             >
-                                Sign In
-                            </Button>
-                        </Link>
-                    </div>
-
-                    <!-- Stats Preview -->
-                    <div
-                        class="mx-auto grid max-w-2xl grid-cols-2 gap-4 sm:grid-cols-4"
-                        :class="{
-                            'translate-y-8 opacity-0': !isVisible,
-                            'translate-y-0 opacity-100': isVisible,
-                        }"
-                        style="transition: all 0.8s ease-out 0.8s"
-                    >
-                        <div
-                            class="rounded-lg border bg-muted/30 p-4 text-center backdrop-blur"
-                        >
-                            <div class="text-2xl font-bold text-primary">
-                                500+
-                            </div>
-                            <div class="mt-1 text-xs text-muted-foreground">
-                                Institutions
-                            </div>
-                        </div>
-                        <div
-                            class="rounded-lg border bg-muted/30 p-4 text-center backdrop-blur"
-                        >
-                            <div class="text-2xl font-bold text-primary">
-                                50K+
-                            </div>
-                            <div class="mt-1 text-xs text-muted-foreground">
-                                Students
-                            </div>
-                        </div>
-                        <div
-                            class="rounded-lg border bg-muted/30 p-4 text-center backdrop-blur"
-                        >
-                            <div class="text-2xl font-bold text-primary">
-                                10K+
-                            </div>
-                            <div class="mt-1 text-xs text-muted-foreground">
-                                Vivas Conducted
-                            </div>
-                        </div>
-                        <div
-                            class="rounded-lg border bg-muted/30 p-4 text-center backdrop-blur"
-                        >
-                            <div class="text-2xl font-bold text-primary">
-                                98%
-                            </div>
-                            <div class="mt-1 text-xs text-muted-foreground">
-                                Satisfaction
-                            </div>
-                        </div>
+                                <circle
+                                    cx="8"
+                                    cy="8"
+                                    r="6.5"
+                                    stroke="currentColor"
+                                    stroke-width="1.2"
+                                />
+                                <path
+                                    d="M6.5 5.5L10.5 8L6.5 10.5V5.5Z"
+                                    fill="currentColor"
+                                />
+                            </svg>
+                            See how it works
+                        </a>
                     </div>
                 </div>
+
+                <HeroVivaPanel :typing-text="typingText" />
             </div>
 
-            <!-- Scroll Indicator -->
-            <div
-                class="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 transform animate-bounce"
-            >
-                <ChevronDown class="h-6 w-6 text-muted-foreground" />
-            </div>
-        </section>
-
-        <!-- Features Section -->
-        <section class="py-10 sm:py-32">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="mx-auto mb-16 max-w-2xl text-center">
-                    <Badge variant="outline" class="mb-4">Features</Badge>
-                    <h2
-                        class="mb-4 text-3xl font-bold tracking-tight sm:text-4xl"
-                    >
-                        Everything Your Institution Needs
-                    </h2>
-                    <p class="text-lg text-muted-foreground">
-                        Powerful features designed to make viva examinations
-                        efficient, fair, and insightful.
-                    </p>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <div class="stat-number">98<span>%</span></div>
+                    <div class="stat-label">Transcription Accuracy</div>
                 </div>
-                <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                    <Card
-                        v-for="(feature, index) in [
-                            {
-                                icon: Brain,
-                                title: 'AI Question Generation',
-                                description:
-                                    'Generate intelligent, context-aware questions using advanced AI models tailored to your subject matter. Supports multiple difficulty levels and topics.',
-                                color: 'from-blue-500 to-cyan-500',
-                            },
-                            {
-                                icon: Mic,
-                                title: 'Voice-Based Interaction',
-                                description:
-                                    'Natural voice interaction with high-quality text-to-speech and speech recognition for seamless viva sessions. Real-time transcription available.',
-                                color: 'from-purple-500 to-pink-500',
-                            },
-                            {
-                                icon: BarChart3,
-                                title: 'Automated Evaluation',
-                                description:
-                                    'Get instant, detailed feedback and scoring powered by AI, ensuring consistent and objective assessments with comprehensive analytics.',
-                                color: 'from-green-500 to-emerald-500',
-                            },
-                            {
-                                icon: Users,
-                                title: 'Multi-Tenant Architecture',
-                                description:
-                                    'Each institution gets its own isolated environment with custom branding, dedicated subdomain, and complete data separation.',
-                                color: 'from-orange-500 to-red-500',
-                            },
-                            {
-                                icon: Clock,
-                                title: 'Session Scheduling',
-                                description:
-                                    'Easy scheduling and management of viva sessions with calendar integration, automated reminders, and batch management.',
-                                color: 'from-indigo-500 to-blue-500',
-                            },
-                            {
-                                icon: Shield,
-                                title: 'Secure & Reliable',
-                                description:
-                                    'Enterprise-grade security with data encryption, secure authentication, two-factor auth, and compliance with educational standards.',
-                                color: 'from-teal-500 to-green-500',
-                            },
-                        ]"
-                        :key="index"
-                        class="group border-2 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-xl"
-                    >
-                        <CardHeader>
-                            <div
-                                class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br transition-transform group-hover:scale-110"
-                                :class="feature.color"
-                            >
-                                <component
-                                    :is="feature.icon"
-                                    class="h-6 w-6 text-white"
-                                />
-                            </div>
-                            <CardTitle
-                                class="transition-colors group-hover:text-primary"
-                                >{{ feature.title }}
-                            </CardTitle>
-                            <CardDescription class="text-base leading-relaxed">
-                                {{ feature.description }}
-                            </CardDescription>
-                        </CardHeader>
-                    </Card>
+                <div class="stat-item">
+                    <div class="stat-number">3<span>x</span></div>
+                    <div class="stat-label">Faster than manual vivas</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">500<span>+</span></div>
+                    <div class="stat-label">Institutions onboarded</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">24<span>/7</span></div>
+                    <div class="stat-label">Always available</div>
                 </div>
             </div>
         </section>
 
-        <!-- How It Works Section -->
-        <section class="relative overflow-hidden py-20 sm:py-32">
-            <!-- Background -->
-            <div
-                class="absolute inset-0 bg-gradient-to-b from-muted/40 via-background to-muted/30"
-            />
-            <div class="bg-grid-pattern absolute inset-0 opacity-[0.07]" />
-            <div class="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="mx-auto mb-20 max-w-2xl text-center">
-                    <Badge
-                        variant="outline"
-                        class="mb-4 border-primary/30 bg-primary/5 px-3 py-1"
-                        >Process</Badge
-                    >
-                    <h2
-                        class="mb-4 text-3xl font-bold tracking-tight sm:text-4xl"
-                    >
-                        How It Works
-                    </h2>
-                    <p class="text-lg text-muted-foreground">
-                        Get your institution started in minutes with our
-                        streamlined process.
-                    </p>
+        <div class="tech-strip">
+            <div class="tech-label">Powered by</div>
+            <div class="tech-items">
+                <div class="tech-item">
+                    <div class="tech-dot" style="background: #3b82f6" />
+                    Large Language Models
                 </div>
+                <div class="tech-item">
+                    <div class="tech-dot" style="background: #60a5fa" />
+                    Speech-to-Text AI
+                </div>
+                <div class="tech-item">
+                    <div class="tech-dot" style="background: #f0c060" />
+                    Document Intelligence
+                </div>
+                <div class="tech-item">
+                    <div class="tech-dot" style="background: #a78bfa" />
+                    Adaptive Questioning
+                </div>
+                <div class="tech-item">
+                    <div class="tech-dot" style="background: #34d399" />
+                    Real-time Transcription
+                </div>
+            </div>
+        </div>
+
+        <section id="how">
+            <div class="section-tag">Process</div>
+            <h2 class="section-heading reveal">
+                From setup to <em>results</em> in minutes.
+            </h2>
+            <div class="how-grid">
+                <div class="step-card reveal reveal-delay-1">
+                    <div class="step-number">01</div>
+                    <div class="step-title">Lecturer Creates the Viva</div>
+                    <div class="step-desc">
+                        Define exam parameters, upload reference materials, and
+                        set grading rubrics. The platform ingests your
+                        instructions and generates a structured exam framework.
+                    </div>
+                </div>
+                <div class="step-card reveal reveal-delay-2">
+                    <div class="step-number">02</div>
+                    <div class="step-title">Student Uploads Their Work</div>
+                    <div class="step-desc">
+                        Students submit their project files, reports, or
+                        dissertations. Our AI reads and deeply understands the
+                        document, mapping it against the exam criteria.
+                    </div>
+                </div>
+                <div class="step-card reveal reveal-delay-3">
+                    <div class="step-number">03</div>
+                    <div class="step-title">
+                        AI Voice Assistant Conducts the Exam
+                    </div>
+                    <div class="step-desc">
+                        The intelligent voice assistant asks tailored,
+                        document-specific questions. It listens, understands, and
+                        dynamically follows up based on student responses.
+                    </div>
+                </div>
+                <div class="step-card reveal reveal-delay-4">
+                    <div class="step-number">04</div>
+                    <div class="step-title">Review &amp; Grade</div>
+                    <div class="step-desc">
+                        All responses are transcribed and stored alongside voice
+                        recordings. Lecturers receive a full review dashboard with
+                        AI-suggested scores for manual validation.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" style="padding-top: 0">
+            <div class="section-tag">Capabilities</div>
+            <h2 class="section-heading reveal">
+                Everything you need for <em>serious</em> assessment.
+            </h2>
+            <div class="features-layout">
                 <div
-                    class="mx-auto flex max-w-5xl flex-col gap-8 md:flex-row md:items-center md:gap-4"
+                    v-for="(f, i) in [
+                        {
+                            title: 'Document-Aware Questioning',
+                            desc: 'AI reads the student\'s uploaded document and generates targeted, relevant questions that probe actual understanding — not generic topics.',
+                        },
+                        {
+                            title: 'Live Voice Interaction',
+                            desc: 'Natural, conversational voice assistant speaks and listens in real-time. Students answer verbally — just like a real viva, but scalable.',
+                        },
+                        {
+                            title: 'Full Transcription Archive',
+                            desc: 'Every answer captured as both text and audio file. Reviewers get a timestamped, searchable transcript alongside the raw recording.',
+                        },
+                        {
+                            title: 'Custom Rubric Builder',
+                            desc: 'Lecturers define marking criteria in natural language. The AI scores responses against your rubric and explains the reasoning.',
+                        },
+                        {
+                            title: 'Adaptive Follow-up Logic',
+                            desc: 'If a student\'s answer is vague or incorrect, the AI probes deeper with intelligent follow-up questions — like a real examiner.',
+                        },
+                        {
+                            title: 'Anti-Cheating Safeguards',
+                            desc: 'Voice biometric session locking, randomised question order, and AI detection of rehearsed responses keeps integrity intact.',
+                        },
+                    ]"
+                    :key="i"
+                    class="feature-card reveal"
+                    :class="`reveal-delay-${(i % 3) + 1}`"
                 >
-                    <template
-                        v-for="(step, index) in howItWorksSteps"
-                        :key="index"
-                    >
-                        <Card
-                            class="group relative flex flex-1 flex-col overflow-hidden border-2 border-border/80 bg-card/80 shadow-lg backdrop-blur-sm transition-all duration-300 hover:-translate-y-2 hover:border-primary/30 hover:shadow-2xl"
-                        >
-                            <!-- Accent bar top -->
-                            <div
-                                class="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r opacity-90 transition-opacity group-hover:opacity-100"
-                                :class="step.gradient"
-                            />
-                            <CardHeader
-                                class="flex flex-1 flex-col items-center pt-8 pb-6 text-center"
-                            >
-                                <div
-                                    class="relative mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br text-white shadow-lg ring-4 ring-background transition-all duration-300 group-hover:scale-110 group-hover:shadow-xl"
-                                    :class="[step.gradient]"
-                                >
-                                    <span
-                                        class="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-background text-xs font-bold text-foreground shadow ring-2 ring-background"
-                                    >
-                                        {{ step.number }}
-                                    </span>
-                                    <component
-                                        :is="step.icon"
-                                        class="h-7 w-7 opacity-95"
-                                    />
-                                </div>
-                                <span
-                                    class="mb-1 text-xs font-medium tracking-wider text-muted-foreground uppercase"
-                                >
-                                    Step {{ step.number }}
-                                </span>
-                                <CardTitle
-                                    class="text-xl transition-colors group-hover:text-foreground"
-                                >
-                                    {{ step.title }}
-                                </CardTitle>
-                                <CardDescription
-                                    class="mt-2 text-base leading-relaxed"
-                                >
-                                    {{ step.description }}
-                                </CardDescription>
-                            </CardHeader>
-                        </Card>
-                        <div
-                            v-if="index < howItWorksSteps.length - 1"
-                            class="hidden shrink-0 md:flex"
-                            aria-hidden="true"
-                        >
-                            <div
-                                class="flex h-10 w-10 items-center justify-center rounded-full bg-muted/80"
-                            >
-                                <ArrowRight
-                                    class="h-5 w-5 text-muted-foreground"
-                                />
-                            </div>
-                        </div>
-                    </template>
+                    <div class="feature-title">{{ f.title }}</div>
+                    <div class="feature-desc">{{ f.desc }}</div>
                 </div>
             </div>
         </section>
 
-        <!-- Benefits Section -->
-        <section class="py-20 sm:py-32">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="grid items-center gap-12 lg:grid-cols-2">
-                    <div>
-                        <Badge variant="outline" class="mb-4">Benefits</Badge>
-                        <h2
-                            class="mb-6 text-3xl font-bold tracking-tight sm:text-4xl"
-                        >
-                            Why Educational Institutions Choose TalentTune
-                        </h2>
-                        <div class="space-y-6">
-                            <div
-                                v-for="(benefit, index) in [
-                                    {
-                                        icon: TrendingUp,
-                                        title: 'Save Up to 80% Time',
-                                        description:
-                                            'Automate question generation and evaluation, reducing manual workload significantly. Lecturers can focus on teaching instead of paperwork.',
-                                    },
-                                    {
-                                        icon: Award,
-                                        title: 'Consistent Evaluation',
-                                        description:
-                                            'AI-powered evaluation ensures fair and consistent assessment across all students, eliminating human bias and subjectivity.',
-                                    },
-                                    {
-                                        icon: MessageSquare,
-                                        title: 'Enhanced Learning',
-                                        description:
-                                            'Detailed feedback helps students understand their strengths and areas for improvement, promoting better learning outcomes.',
-                                    },
-                                    {
-                                        icon: Zap,
-                                        title: 'Scalable Solution',
-                                        description:
-                                            'Handle multiple sessions simultaneously, perfect for institutions of any size. From small colleges to large universities.',
-                                    },
-                                ]"
-                                :key="index"
-                                class="group flex gap-4"
-                            >
-                                <div class="flex-shrink-0">
-                                    <div
-                                        class="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-primary/20"
-                                    >
-                                        <component
-                                            :is="benefit.icon"
-                                            class="h-6 w-6 text-primary"
-                                        />
-                                    </div>
+        <MarketingWorkspace />
+
+        <section id="roles" class="roles-section">
+            <div class="section-tag">For Everyone</div>
+            <h2 class="section-heading reveal">
+                Three roles. One <em>seamless</em> platform.
+            </h2>
+            <div class="roles-grid-three">
+                <div class="role-card institution reveal reveal-delay-1">
+                    <div class="role-header">
+                        <div class="role-avatar inst-av">🏛️</div>
+                        <div>
+                            <div class="role-name">Institution Admin</div>
+                            <div class="role-subtitle">
+                                Owns and governs the workspace
+                            </div>
+                        </div>
+                    </div>
+                    <div class="role-steps">
+                        <div class="role-step">
+                            <div class="rs-num">1</div>
+                            <div class="rs-content">
+                                <div class="rs-title">
+                                    Register &amp; Set Up the Workspace
                                 </div>
-                                <div>
-                                    <h3 class="mb-1 text-lg font-semibold">
-                                        {{ benefit.title }}
-                                    </h3>
-                                    <p class="text-muted-foreground">
-                                        {{ benefit.description }}
-                                    </p>
+                                <div class="rs-desc">
+                                    Create your isolated environment, configure
+                                    branding, and set a custom subdomain.
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="relative">
-                        <div
-                            class="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/10 to-transparent blur-3xl"
-                        />
-                        <Card class="relative border-2">
-                            <CardHeader>
-                                <CardTitle class="flex items-center gap-2">
-                                    <Zap class="h-5 w-5 text-primary" />
-                                    Real-Time Performance
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent class="space-y-6">
-                                <div
-                                    v-for="metric in [
-                                        {
-                                            label: 'Question Generation',
-                                            value: 98,
-                                            color: 'bg-primary',
-                                        },
-                                        {
-                                            label: 'Evaluation Accuracy',
-                                            value: 95,
-                                            color: 'bg-green-500',
-                                        },
-                                        {
-                                            label: 'User Satisfaction',
-                                            value: 92,
-                                            color: 'bg-blue-500',
-                                        },
-                                        {
-                                            label: 'System Uptime',
-                                            value: 99.9,
-                                            color: 'bg-purple-500',
-                                        },
-                                    ]"
-                                    :key="metric.label"
-                                >
-                                    <div
-                                        class="mb-2 flex justify-between text-sm"
-                                    >
-                                        <span>{{ metric.label }}</span>
-                                        <span class="font-medium"
-                                            >{{ metric.value }}%</span
-                                        >
-                                    </div>
-                                    <div
-                                        class="h-2 overflow-hidden rounded-full bg-muted"
-                                    >
-                                        <div
-                                            class="h-full rounded-full transition-all duration-1000 ease-out"
-                                            :class="metric.color"
-                                            :style="`width: ${metric.value}%`"
-                                        />
-                                    </div>
+                </div>
+                <div class="role-card lecturer reveal reveal-delay-2">
+                    <div class="role-header">
+                        <div class="role-avatar lect-av">🎓</div>
+                        <div>
+                            <div class="role-name">Lecturer</div>
+                            <div class="role-subtitle">
+                                Designs and reviews viva exams
+                            </div>
+                        </div>
+                    </div>
+                    <div class="role-steps">
+                        <div class="role-step">
+                            <div class="rs-num">1</div>
+                            <div class="rs-content">
+                                <div class="rs-title">
+                                    Create &amp; Configure the Viva
                                 </div>
-                            </CardContent>
-                        </Card>
+                                <div class="rs-desc">
+                                    Set topic, difficulty, duration, and grading
+                                    rubric with reference materials for the AI.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="role-card student reveal reveal-delay-3">
+                    <div class="role-header">
+                        <div class="role-avatar stu-av">📄</div>
+                        <div>
+                            <div class="role-name">Student</div>
+                            <div class="role-subtitle">
+                                Takes the AI-conducted viva exam
+                            </div>
+                        </div>
+                    </div>
+                    <div class="role-steps">
+                        <div class="role-step">
+                            <div class="rs-num">1</div>
+                            <div class="rs-content">
+                                <div class="rs-title">Answer by Voice</div>
+                                <div class="rs-desc">
+                                    Respond naturally to the AI examiner. Answers
+                                    are captured as audio and auto-transcribed.
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- CTA Section -->
-        <section
-            class="relative overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-primary/80 py-20 sm:py-32"
-        >
-            <div class="bg-grid-pattern absolute inset-0 opacity-10" />
-            <div class="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="mx-auto max-w-3xl text-center">
-                    <Sparkles
-                        class="mx-auto mb-6 h-12 w-12 animate-pulse text-primary-foreground/80"
-                    />
-                    <h2
-                        class="mb-4 text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl"
-                    >
-                        Ready to Transform Your Institution's Viva Sessions?
-                    </h2>
-                    <p class="mb-8 text-lg text-xl text-primary-foreground/90">
-                        Join 500+ educational institutions worldwide using
-                        TalentTune to streamline their examination process.
-                    </p>
-                    <div
-                        class="flex flex-col items-center justify-center gap-4 sm:flex-row"
-                    >
-                        <Link :href="'/register-institution'">
-                            <Button
-                                size="lg"
-                                variant="secondary"
-                                class="w-full shadow-xl transition-all hover:scale-105 hover:shadow-2xl sm:w-auto"
-                            >
-                                Register Your University
-                                <ArrowRight class="ml-2 h-4 w-4" />
-                            </Button>
-                        </Link>
-                        <!-- Hide login button on main domain -->
-                        <Link v-if="!isMainDomain" :href="login()">
-                            <Button
-                                size="lg"
-                                variant="outline"
-                                class="w-full border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 sm:w-auto"
-                            >
-                                Sign In
-                            </Button>
-                        </Link>
-                    </div>
-                    <p class="mt-6 text-sm text-primary-foreground/70">
-                        Free trial available • No credit card required • Setup
-                        in minutes
-                    </p>
-                </div>
-            </div>
-        </section>
+        <MarketingPricing />
 
-        <!-- Footer -->
-        <footer class="border-t bg-background py-12">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="grid gap-8 md:grid-cols-4">
-                    <div class="md:col-span-2">
-                        <div class="mb-4 flex items-center gap-2">
-                            <img
-                                src="/images/logo.png"
-                                alt="TalentTune"
-                                class="h-8 w-auto object-contain"
-                            />
-                        </div>
-                        <p class="mb-4 max-w-md text-sm text-muted-foreground">
-                            AI-powered viva management SaaS platform designed to
-                            revolutionize how educational institutions conduct
-                            examinations.
-                        </p>
-                        <div class="flex gap-4">
-                            <Badge variant="outline" class="text-xs"
-                                >Trusted by 500+ Institutions</Badge
-                            >
-                            <Badge variant="outline" class="text-xs"
-                                >99.9% Uptime</Badge
-                            >
-                        </div>
-                    </div>
-                    <div>
-                        <h3 class="mb-4 font-semibold">Product</h3>
-                        <ul class="space-y-2 text-sm text-muted-foreground">
-                            <li>
-                                <Link
-                                    href="/register-institution"
-                                    class="transition-colors hover:text-foreground"
-                                >
-                                    Register Institution</Link
-                                >
-                            </li>
-                            <li>
-                                <a
-                                    href="#"
-                                    class="transition-colors hover:text-foreground"
-                                    >Features</a
-                                >
-                            </li>
-                            <li>
-                                <a
-                                    href="#"
-                                    class="transition-colors hover:text-foreground"
-                                    >Pricing</a
-                                >
-                            </li>
-                            <li>
-                                <a
-                                    href="#"
-                                    class="transition-colors hover:text-foreground"
-                                    >Documentation</a
-                                >
-                            </li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3 class="mb-4 font-semibold">Company</h3>
-                        <ul class="space-y-2 text-sm text-muted-foreground">
-                            <li>
-                                <a
-                                    href="#"
-                                    class="transition-colors hover:text-foreground"
-                                    >About</a
-                                >
-                            </li>
-                            <li>
-                                <a
-                                    href="#"
-                                    class="transition-colors hover:text-foreground"
-                                    >Contact</a
-                                >
-                            </li>
-                            <li>
-                                <a
-                                    href="#"
-                                    class="transition-colors hover:text-foreground"
-                                    >Privacy</a
-                                >
-                            </li>
-                            <li>
-                                <a
-                                    href="#"
-                                    class="transition-colors hover:text-foreground"
-                                    >Terms</a
-                                >
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div
-                    class="mt-8 border-t pt-8 text-center text-sm text-muted-foreground"
+        <section class="cta-section">
+            <div class="cta-glow" />
+            <div class="section-tag reveal" style="justify-content: center">
+                Ready to begin
+            </div>
+            <h2 class="section-heading reveal">
+                The future of <em>oral assessment</em> is already here.
+            </h2>
+            <p class="cta-sub reveal">
+                Join institutions running scalable, intelligent viva examinations
+                with Viva Suite.
+            </p>
+            <div class="cta-actions reveal">
+                <Link
+                    :href="registerUrl"
+                    class="btn-primary"
+                    style="font-size: 15px; padding: 18px 44px"
                 >
-                    <p>
-                        &copy; {{ new Date().getFullYear() }} TalentTune. All
-                        rights reserved.
-                    </p>
-                </div>
+                    Register Your Institution
+                </Link>
+                <a
+                    href="#pricing"
+                    class="btn-secondary"
+                    style="font-size: 15px; padding: 18px 44px"
+                >
+                    View pricing
+                </a>
             </div>
+        </section>
+
+        <footer>
+            <div class="footer-copy">
+                © {{ new Date().getFullYear() }} Viva Suite. All rights reserved.
+            </div>
+            <ul class="footer-links">
+                <li><a href="#pricing">Pricing</a></li>
+                <li><Link href="/features">Features</Link></li>
+                <li><Link href="/about">About</Link></li>
+                <li><Link :href="registerUrl">Register</Link></li>
+            </ul>
         </footer>
     </div>
 </template>
-
-<style scoped>
-@keyframes gradient {
-    0%,
-    100% {
-        background-position: 0% 50%;
-    }
-
-    50% {
-        background-position: 100% 50%;
-    }
-}
-
-.animate-gradient {
-    background-size: 200% 200%;
-    animation: gradient 3s ease infinite;
-}
-
-.animate-spin-slow {
-    animation: spin 3s linear infinite;
-}
-
-.animate-fade-in {
-    animation: fadeIn 0.6s ease-out;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.bg-grid-pattern {
-    background-image:
-        linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
-    background-size: 20px 20px;
-}
-
-.delay-300 {
-    animation-delay: 0.3s;
-}
-
-.delay-700 {
-    animation-delay: 0.7s;
-}
-
-.delay-1000 {
-    animation-delay: 1s;
-}
-</style>

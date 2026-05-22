@@ -12,7 +12,7 @@ export function useInstitution() {
     const hasInstitution = computed(() => institution.value !== null);
 
     const institutionName = computed(
-        () => institution.value?.name || 'TalentTune',
+        () => institution.value?.name || 'Viva Suite',
     );
 
     const institutionLogo = computed(() => institution.value?.logo_url);

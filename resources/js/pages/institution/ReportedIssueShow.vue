@@ -190,10 +190,10 @@ const formatDateTime = (iso: string) =>
                         class="rounded-lg border bg-muted/20 p-4"
                     >
                         <h3 class="mb-3 text-sm font-medium">
-                            Escalate to TalentTune support
+                            Escalate to Viva Suite support
                         </h3>
                         <p class="mb-3 text-sm text-muted-foreground">
-                            Report this issue to TalentTune admin. A support
+                            Report this issue to Viva Suite admin. A support
                             ticket will be created with the issue details.
                         </p>
                         <form
@@ -207,7 +207,7 @@ const formatDateTime = (iso: string) =>
                                 <Textarea
                                     id="message"
                                     v-model="escalateForm.message"
-                                    placeholder="Add any context for TalentTune support..."
+                                    placeholder="Add any context for Viva Suite support..."
                                     rows="3"
                                 />
                                 <InputError

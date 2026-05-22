@@ -28,7 +28,7 @@ const workspaceLoginUrl = computed(() => {
 </script>
 
 <template>
-    <Head title="Registration Submitted - TalentTune" />
+    <Head title="Registration Submitted - Viva Suite" />
 
     <div class="min-h-screen bg-background">
         <!-- Navigation -->
@@ -40,7 +40,7 @@ const workspaceLoginUrl = computed(() => {
                     <Link href="/" class="flex items-center gap-2">
                         <img
                             src="/images/logo.png"
-                            alt="TalentTune"
+                            alt="Viva Suite"
                             class="h-9 w-auto object-contain"
                         />
                     </Link>
@@ -72,7 +72,7 @@ const workspaceLoginUrl = computed(() => {
                                 <p class="mb-8 text-lg text-muted-foreground">
                                     Thank you for registering
                                     <strong>{{ institution.name }}</strong> with
-                                    TalentTune.
+                                    Viva Suite.
                                 </p>
 
                                 <div

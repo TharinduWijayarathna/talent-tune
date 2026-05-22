@@ -53,7 +53,7 @@ const selectInstitution = (institution: Institution) => {
 </script>
 
 <template>
-    <Head title="Select Your Institution - TalentTune" />
+    <Head title="Select Your Institution - Viva Suite" />
 
     <div class="min-h-screen bg-background">
         <!-- Navigation -->
@@ -65,7 +65,7 @@ const selectInstitution = (institution: Institution) => {
                     <Link href="/" class="flex items-center gap-2">
                         <img
                             src="/images/logo.png"
-                            alt="TalentTune"
+                            alt="Viva Suite"
                             class="h-9 w-auto object-contain"
                         />
                     </Link>
@@ -101,7 +101,7 @@ const selectInstitution = (institution: Institution) => {
                     <p
                         class="mb-10 text-lg text-muted-foreground sm:text-xl lg:text-2xl"
                     >
-                        Choose your institution to access TalentTune's
+                        Choose your institution to access Viva Suite's
                         AI-powered viva management platform.
                     </p>
 
@@ -193,7 +193,7 @@ const selectInstitution = (institution: Institution) => {
             <div class="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center text-sm text-muted-foreground">
                     <p>
-                        &copy; {{ new Date().getFullYear() }} TalentTune. All
+                        &copy; {{ new Date().getFullYear() }} Viva Suite. All
                         rights reserved.
                     </p>
                 </div>

@@ -12,7 +12,7 @@ const isMainDomain = computed(() => !page.props.institution);
 </script>
 
 <template>
-    <Head title="About - TalentTune" />
+    <Head title="About - Viva Suite" />
     <div class="min-h-screen bg-background">
         <SiteHeader :is-main-domain="isMainDomain" />
         <main class="py-16 sm:py-24">
@@ -27,7 +27,7 @@ const isMainDomain = computed(() => !page.props.institution);
                     <p
                         class="mb-8 text-lg leading-relaxed text-muted-foreground"
                     >
-                        TalentTune is an AI-powered viva management platform
+                        Viva Suite is an AI-powered viva management platform
                         designed for universities and colleges. We help
                         institutions run fairer, faster, and more consistent
                         oral examinations while giving students clearer feedback
@@ -80,7 +80,7 @@ const isMainDomain = computed(() => !page.props.institution);
                                 </h2>
                                 <p class="text-muted-foreground">
                                     Whether you're a single department or a
-                                    large university, TalentTune adapts.
+                                    large university, Viva Suite adapts.
                                     Register your institution, get verified, and
                                     start running vivas with AI support in days.
                                 </p>

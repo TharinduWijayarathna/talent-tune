@@ -26,7 +26,7 @@ defineProps<{
             >
                 <img
                     src="/images/logo.png"
-                    alt="TalentTune"
+                    alt="Viva Suite"
                     class="h-10 w-auto object-contain"
                 />
                 <span v-if="name">{{ name }}</span>

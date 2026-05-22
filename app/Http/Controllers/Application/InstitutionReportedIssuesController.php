@@ -113,7 +113,7 @@ class InstitutionReportedIssuesController extends Controller
     }
 
     /**
-     * Escalate issue to TalentTune admin (create support ticket).
+     * Escalate issue to Viva Suite admin (create support ticket).
      */
     public function escalate(Request $request, int $id)
     {
@@ -148,6 +148,6 @@ class InstitutionReportedIssuesController extends Controller
 
         return redirect()
             ->route('institution.support.show', $ticket->id)
-            ->with('success', 'Issue escalated to TalentTune support. You can track it in Support.');
+            ->with('success', 'Issue escalated to Viva Suite support. You can track it in Support.');
     }
 }

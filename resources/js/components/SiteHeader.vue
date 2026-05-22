@@ -49,11 +49,11 @@ function closeMobileMenu() {
                 <Link
                     href="/"
                     class="flex shrink-0 items-center gap-2 rounded-md focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:outline-none"
-                    aria-label="TalentTune home"
+                    aria-label="Viva Suite home"
                 >
                     <img
                         src="/images/logo.png"
-                        alt="TalentTune"
+                        alt="Viva Suite"
                         class="h-9 w-auto object-contain"
                     />
                 </Link>
@@ -102,7 +102,7 @@ function closeMobileMenu() {
                             <div class="flex items-center gap-2">
                                 <img
                                     src="/images/logo.png"
-                                    alt="TalentTune"
+                                    alt="Viva Suite"
                                     class="h-8 w-auto"
                                 />
                                 <SheetTitle class="text-base font-semibold">

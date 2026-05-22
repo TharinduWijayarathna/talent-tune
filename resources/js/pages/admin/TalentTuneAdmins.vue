@@ -27,7 +27,7 @@ const props = defineProps<{
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/admin/dashboard' },
-    { title: 'TalentTune Admins', href: '/admin/talenttune-admins' },
+    { title: 'Viva Suite Admins', href: '/admin/talenttune-admins' },
 ];
 
 const formatDate = (iso: string) =>
@@ -37,7 +37,7 @@ const formatDate = (iso: string) =>
 </script>
 
 <template>
-    <Head title="TalentTune Admins - Admin" />
+    <Head title="Viva Suite Admins - Admin" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div
@@ -109,7 +109,7 @@ const formatDate = (iso: string) =>
                                 class="mx-auto mb-4 h-12 w-12 text-muted-foreground"
                             />
                             <p class="text-muted-foreground">
-                                No TalentTune admins yet
+                                No Viva Suite admins yet
                             </p>
                             <p class="mt-2 text-sm text-muted-foreground">
                                 Add administrators to manage the platform

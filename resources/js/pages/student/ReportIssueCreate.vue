@@ -42,7 +42,7 @@ const submitForm = () => {
                 <h1 class="text-2xl font-bold">Report an issue</h1>
                 <p class="text-muted-foreground">
                     Your institution admin will review and may escalate to
-                    TalentTune support
+                    Viva Suite support
                 </p>
             </div>
 
