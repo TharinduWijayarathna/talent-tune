@@ -212,7 +212,7 @@ const mainNavItems = computed<NavItem[]>(() => {
                     <SidebarMenuButton size="lg" as-child>
                         <Link
                             :href="mainNavItems[0]?.href || dashboard()"
-                            class="flex w-full items-center justify-center"
+                            class="flex w-full min-w-0 items-center gap-2 overflow-hidden"
                         >
                             <AppLogo sidebar />
                         </Link>

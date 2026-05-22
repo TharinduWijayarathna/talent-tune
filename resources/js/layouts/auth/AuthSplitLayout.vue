@@ -1,9 +1,9 @@
 <script setup lang="ts">
+import VivaSuiteLogo from '@/components/VivaSuiteLogo.vue';
 import { home } from '@/routes';
 import { Link, usePage } from '@inertiajs/vue3';
 
 const page = usePage();
-const name = page.props.name;
 const quote = page.props.quote;
 
 defineProps<{
@@ -17,24 +17,21 @@ defineProps<{
         class="relative grid h-dvh flex-col items-center justify-center px-8 sm:px-0 lg:max-w-none lg:grid-cols-2 lg:px-0"
     >
         <div
-            class="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r"
+            class="relative hidden h-full flex-col border-r border-border bg-[#080b10] p-10 text-[#e8edf8] lg:flex"
         >
-            <div class="absolute inset-0 bg-zinc-900" />
+            <div
+                class="absolute inset-0 bg-gradient-to-br from-[#080b10] via-[#0e1420] to-[#141c2e]"
+            />
             <Link
                 :href="home()"
-                class="relative z-20 flex items-center gap-2 text-lg font-medium"
+                class="viva-logo-on-dark relative z-20"
             >
-                <img
-                    src="/images/logo.png"
-                    alt="Viva Suite"
-                    class="h-10 w-auto object-contain"
-                />
-                <span v-if="name">{{ name }}</span>
+                <VivaSuiteLogo size="md" />
             </Link>
             <div v-if="quote" class="relative z-20 mt-auto">
                 <blockquote class="space-y-2">
                     <p class="text-lg">&ldquo;{{ quote.message }}&rdquo;</p>
-                    <footer class="text-sm text-neutral-300">
+                    <footer class="text-sm text-[#8a9bbf]">
                         {{ quote.author }}
                     </footer>
                 </blockquote>

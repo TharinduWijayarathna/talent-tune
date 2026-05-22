@@ -6,6 +6,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import VivaSuiteLogo from '@/components/VivaSuiteLogo.vue';
 import { home } from '@/routes';
 import { Link } from '@inertiajs/vue3';
 
@@ -24,11 +25,7 @@ defineProps<{
                 :href="home()"
                 class="flex items-center gap-2 self-center font-medium"
             >
-                <img
-                    src="/images/logo.png"
-                    alt="Viva Suite"
-                    class="h-12 w-auto object-contain"
-                />
+                <VivaSuiteLogo size="lg" />
             </Link>
 
             <div class="flex flex-col gap-6">

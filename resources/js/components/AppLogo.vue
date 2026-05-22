@@ -1,13 +1,12 @@
 <script setup lang="ts">
+import VivaSuiteLogo from '@/components/VivaSuiteLogo.vue';
 import { useInstitution } from '@/composables/useInstitution';
 
 const { institutionLogo, institutionName } = useInstitution();
 
-const appLogoUrl = '/images/logo.png';
-
 withDefaults(
     defineProps<{
-        /** When true, show only the logo at full width (no text). Used in sidebar. */
+        /** Sidebar: wordmark when expanded (icon when collapsed). */
         sidebar?: boolean;
     }>(),
     { sidebar: false },
@@ -16,26 +15,31 @@ withDefaults(
 
 <template>
     <img
-        v-if="!institutionLogo"
-        :src="appLogoUrl"
-        alt="Viva Suite"
-        :class="
-            sidebar
-                ? 'h-auto max-h-10 w-full max-w-full object-contain'
-                : 'h-8 w-8 object-contain'
-        "
-    />
-    <img
-        v-else
+        v-if="institutionLogo"
         :src="institutionLogo"
-        :alt="institutionName"
+        :alt="institutionName ?? 'Institution'"
         :class="
             sidebar
                 ? 'h-auto max-h-10 w-full max-w-full rounded object-contain'
                 : 'h-8 w-8 rounded object-contain'
         "
     />
-    <div v-if="!sidebar" class="ml-1 grid flex-1 text-left text-sm">
+    <VivaSuiteLogo
+        v-else
+        :show-text="!institutionName"
+        :size="sidebar ? 'md' : 'sm'"
+        :class="sidebar ? 'min-w-0 shrink' : undefined"
+    />
+    <span
+        v-if="sidebar && institutionName"
+        class="viva-logo-text truncate text-sm font-extrabold tracking-tight group-data-[collapsible=icon]:hidden"
+    >
+        {{ institutionName }}
+    </span>
+    <div
+        v-if="!sidebar && institutionName"
+        class="ml-1 grid flex-1 text-left text-sm"
+    >
         <span class="mb-0.5 truncate leading-tight font-semibold">{{
             institutionName
         }}</span>

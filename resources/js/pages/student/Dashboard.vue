@@ -8,6 +8,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { chartPalette, chartTheme } from '@/lib/chartTheme';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import {
@@ -67,15 +68,10 @@ const stats = computed(
 
 const upcomingVivas = computed(() => props.upcomingVivas ?? []);
 
-const chartTheme = {
-    colors: ['#10b981', '#0ea5e9'],
-    fontFamily: 'inherit',
-};
-
 const sessionsBreakdownOptions = computed(() => ({
     chart: { type: 'donut' },
     labels: props.charts.sessionsBreakdown.labels,
-    colors: ['#10b981', '#0ea5e9'],
+    colors: [chartPalette[4], chartPalette[0]],
     legend: { position: 'bottom' },
     theme: chartTheme,
 }));
@@ -90,7 +86,7 @@ const completionsOverTimeOptions = computed(() => ({
     stroke: { curve: 'smooth', width: 2 },
     fill: { type: 'gradient', gradient: { opacityFrom: 0.4, opacityTo: 0.1 } },
     xaxis: { categories: props.charts.completionsOverTime.labels },
-    colors: ['#10b981'],
+    colors: [chartPalette[4]],
     theme: chartTheme,
 }));
 

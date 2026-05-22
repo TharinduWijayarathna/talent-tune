@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import VivaSuiteLogo from '@/components/VivaSuiteLogo.vue';
 import { home } from '@/routes';
 import { Link } from '@inertiajs/vue3';
 
@@ -19,11 +20,7 @@ defineProps<{
                         :href="home()"
                         class="flex flex-col items-center gap-2 font-medium"
                     >
-                        <img
-                            src="/images/logo.png"
-                            alt="Viva Suite"
-                            class="h-12 w-auto object-contain"
-                        />
+                        <VivaSuiteLogo size="lg" />
                         <span class="sr-only">{{ title }}</span>
                     </Link>
                     <div class="w-full space-y-2 text-center">

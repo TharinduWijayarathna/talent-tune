@@ -9,6 +9,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { chartPalette, chartTheme } from '@/lib/chartTheme';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import {
@@ -76,11 +77,6 @@ const props = withDefaults(
     },
 );
 
-const chartTheme = {
-    colors: ['#0ea5e9', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'],
-    fontFamily: 'inherit',
-};
-
 const revenueChartOptions = computed(() => ({
     chart: { type: 'area', zoom: { enabled: false }, toolbar: { show: false } },
     dataLabels: { enabled: false },
@@ -88,7 +84,7 @@ const revenueChartOptions = computed(() => ({
     fill: { type: 'gradient', gradient: { opacityFrom: 0.4, opacityTo: 0.1 } },
     xaxis: { categories: props.charts.revenueByDay.labels },
     yaxis: { labels: { formatter: (v: number) => `$${v}` } },
-    colors: ['#10b981'],
+    colors: [chartPalette[4]],
     tooltip: { y: { formatter: (v: number) => `$${v}` } },
     theme: chartTheme,
 }));
@@ -100,7 +96,7 @@ const revenueChartSeries = computed(() => [
 const usersByRoleOptions = computed(() => ({
     chart: { type: 'donut' },
     labels: props.charts.usersByRole.labels,
-    colors: ['#0ea5e9', '#8b5cf6'],
+    colors: [chartPalette[0], chartPalette[1]],
     legend: { position: 'bottom' },
     theme: chartTheme,
 }));
@@ -112,7 +108,7 @@ const vivasByStatusOptions = computed(() => ({
     plotOptions: { bar: { horizontal: false, columnWidth: '60%' } },
     dataLabels: { enabled: true },
     xaxis: { categories: props.charts.vivasByStatus.labels },
-    colors: ['#0ea5e9', '#8b5cf6', '#10b981'],
+    colors: [chartPalette[0], chartPalette[1], chartPalette[4]],
     theme: chartTheme,
 }));
 
@@ -123,7 +119,12 @@ const vivasByStatusSeries = computed(() => [
 const paymentsByStatusOptions = computed(() => ({
     chart: { type: 'donut' },
     labels: props.charts.paymentsByStatus.labels,
-    colors: ['#10b981', '#f59e0b', '#ef4444', '#6b7280'],
+    colors: [
+        chartPalette[4],
+        chartPalette[3],
+        chartPalette[5],
+        '#64748b',
+    ],
     legend: { position: 'bottom' },
     theme: chartTheme,
 }));

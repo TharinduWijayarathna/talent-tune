@@ -7,6 +7,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import VivaSuiteLogo from '@/components/VivaSuiteLogo.vue';
 import { dashboard, login } from '@/routes';
 import type { Institution } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/vue3';
@@ -46,15 +47,13 @@ const institutionLogo = computed(() => institution.value?.logo_url);
                             :alt="institutionName"
                             class="h-8 w-8 rounded object-contain"
                         />
-                        <img
-                            v-else
-                            src="/images/logo.png"
-                            alt="Viva Suite"
-                            class="h-8 w-8 object-contain"
-                        />
-                        <span class="text-xl font-bold">{{
-                            institutionName
-                        }}</span>
+                        <template v-else-if="institution">
+                            <VivaSuiteLogo :show-text="false" size="sm" />
+                            <span class="text-xl font-bold">{{
+                                institutionName
+                            }}</span>
+                        </template>
+                        <VivaSuiteLogo v-else size="md" />
                     </div>
                     <div class="flex items-center gap-4">
                         <Link

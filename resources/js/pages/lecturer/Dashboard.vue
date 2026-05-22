@@ -8,6 +8,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { chartPalette, chartTheme } from '@/lib/chartTheme';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import {
@@ -71,17 +72,12 @@ const stats = computed(
 
 const recentSessions = computed(() => props.recentSessions || []);
 
-const chartTheme = {
-    colors: ['#0ea5e9', '#8b5cf6', '#10b981'],
-    fontFamily: 'inherit',
-};
-
 const sessionsByStatusOptions = computed(() => ({
     chart: { type: 'bar', toolbar: { show: false } },
     plotOptions: { bar: { horizontal: false, columnWidth: '60%' } },
     dataLabels: { enabled: true },
     xaxis: { categories: props.charts.sessionsByStatus.labels },
-    colors: ['#0ea5e9', '#8b5cf6', '#10b981'],
+    colors: [chartPalette[0], chartPalette[1], chartPalette[4]],
     theme: chartTheme,
 }));
 
@@ -95,7 +91,7 @@ const sessionsOverTimeOptions = computed(() => ({
     stroke: { curve: 'smooth', width: 2 },
     fill: { type: 'gradient', gradient: { opacityFrom: 0.4, opacityTo: 0.1 } },
     xaxis: { categories: props.charts.sessionsOverTime.labels },
-    colors: ['#8b5cf6'],
+    colors: [chartPalette[1]],
     theme: chartTheme,
 }));
 

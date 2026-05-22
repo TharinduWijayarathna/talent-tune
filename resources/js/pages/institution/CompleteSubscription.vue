@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import VivaSuiteLogo from '@/components/VivaSuiteLogo.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { logout } from '@/routes';
@@ -57,11 +58,7 @@ const handleLogout = () => {
                 class="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8"
             >
                 <Link href="/" class="flex items-center gap-3">
-                    <img
-                        src="/images/logo.png"
-                        alt="Viva Suite"
-                        class="h-9 w-auto object-contain"
-                    />
+                    <VivaSuiteLogo :show-text="false" size="md" />
                     <span
                         class="hidden text-sm font-medium text-muted-foreground sm:inline"
                     >

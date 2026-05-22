@@ -7,6 +7,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { chartPalette, chartTheme } from '@/lib/chartTheme';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import {
@@ -59,17 +60,12 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const chartTheme = {
-    colors: ['#0ea5e9', '#8b5cf6', '#10b981'],
-    fontFamily: 'inherit',
-};
-
 const vivasByStatusOptions = computed(() => ({
     chart: { type: 'bar', toolbar: { show: false } },
     plotOptions: { bar: { horizontal: false, columnWidth: '60%' } },
     dataLabels: { enabled: true },
     xaxis: { categories: props.charts.vivasByStatus.labels },
-    colors: ['#0ea5e9', '#8b5cf6', '#10b981'],
+    colors: [chartPalette[0], chartPalette[1], chartPalette[4]],
     theme: chartTheme,
 }));
 
@@ -80,7 +76,7 @@ const vivasByStatusSeries = computed(() => [
 const usersByRoleOptions = computed(() => ({
     chart: { type: 'donut' },
     labels: props.charts.usersByRole.labels,
-    colors: ['#0ea5e9', '#8b5cf6'],
+    colors: [chartPalette[0], chartPalette[1]],
     legend: { position: 'bottom' },
     theme: chartTheme,
 }));
@@ -93,7 +89,7 @@ const vivasOverTimeOptions = computed(() => ({
     stroke: { curve: 'smooth', width: 2 },
     fill: { type: 'gradient', gradient: { opacityFrom: 0.4, opacityTo: 0.1 } },
     xaxis: { categories: props.charts.vivasOverTime.labels },
-    colors: ['#10b981'],
+    colors: [chartPalette[4]],
     theme: chartTheme,
 }));
 

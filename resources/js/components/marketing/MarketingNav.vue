@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import VivaSuiteLogo from '@/components/VivaSuiteLogo.vue';
 import { registerInstitution } from '@/routes';
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed, onUnmounted, ref, watch } from 'vue';
@@ -49,17 +50,7 @@ onUnmounted(() => {
 <template>
     <nav class="marketing-nav" aria-label="Main">
         <Link href="/" class="nav-logo" @click="closeMenu">
-            <div class="logo-mark">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                    <path
-                        d="M9 2L9 16M2 9H16M4.5 4.5L13.5 13.5M13.5 4.5L4.5 13.5"
-                        stroke="currentColor"
-                        stroke-width="1.5"
-                        stroke-linecap="round"
-                    />
-                </svg>
-            </div>
-            <span class="logo-text">Viva<span>Suite</span></span>
+            <VivaSuiteLogo />
         </Link>
 
         <ul class="nav-links nav-desktop">
@@ -115,7 +106,7 @@ onUnmounted(() => {
             :aria-hidden="!menuOpen"
         >
             <div class="nav-drawer-header">
-                <span class="logo-text">Viva<span>Suite</span></span>
+                <VivaSuiteLogo :show-text="true" size="md" />
                 <button
                     type="button"
                     class="nav-drawer-close"
