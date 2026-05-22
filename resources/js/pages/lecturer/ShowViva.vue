@@ -226,7 +226,7 @@ const addLateStudent = () => {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div
-            class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4"
+            class="viva-app-content"
         >
             <div class="flex items-center justify-between">
                 <Button variant="ghost" size="sm" as-child>

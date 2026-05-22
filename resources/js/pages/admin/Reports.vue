@@ -48,7 +48,7 @@ const today = new Date().toISOString().slice(0, 10);
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Reports" />
         <div
-            class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4"
+            class="viva-app-content"
         >
             <div class="flex items-center justify-between">
                 <div>

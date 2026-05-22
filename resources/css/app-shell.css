@@ -1,0 +1,377 @@
+/*
+ * Viva Suite application shell — admin, institution, lecturer, student
+ * Overrides shadcn surfaces to match marketing / viva-session panel UI
+ */
+
+.viva-app {
+    --vs-bg: var(--background);
+    --vs-surface: var(--card);
+    --vs-surface2: var(--muted);
+    --vs-border: var(--border);
+    --vs-accent: var(--primary);
+    --vs-accent2: color-mix(in srgb, var(--primary) 75%, white);
+    --vs-text: var(--foreground);
+    --vs-text2: var(--muted-foreground);
+    --vs-text3: color-mix(in srgb, var(--muted-foreground) 85%, transparent);
+    --vs-glow: color-mix(in srgb, var(--primary) 8%, transparent);
+    --vs-panel-shadow:
+        0 24px 60px color-mix(in srgb, var(--foreground) 6%, transparent),
+        0 0 0 1px color-mix(in srgb, var(--foreground) 4%, transparent);
+    --vs-grid-line: color-mix(in srgb, var(--primary) 6%, transparent);
+    position: relative;
+    min-height: 100svh;
+    font-family: var(--font-sans);
+}
+
+.dark .viva-app {
+    --vs-grid-line: color-mix(in srgb, var(--primary) 4%, transparent);
+}
+
+.viva-app-grid {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+        linear-gradient(var(--vs-grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--vs-grid-line) 1px, transparent 1px);
+    background-size: 60px 60px;
+    opacity: 0.65;
+}
+
+/* Main content area */
+.viva-app [data-slot='sidebar-inset'],
+.viva-app-main {
+    position: relative;
+    z-index: 1;
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+.viva-app-header {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    height: 4rem;
+    shrink: 0;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0 1.5rem;
+    border-bottom: 1px solid var(--vs-border);
+    background: color-mix(in srgb, var(--vs-surface) 88%, transparent);
+    backdrop-filter: blur(16px);
+}
+
+.viva-app-page {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    overflow-x: auto;
+}
+
+.viva-app-content {
+    display: flex;
+    min-height: 100%;
+    flex: 1;
+    flex-direction: column;
+    gap: 1.5rem;
+    overflow-x: auto;
+    padding: 1.5rem 1.75rem 2rem;
+}
+
+/* Page titles */
+.viva-app-content h1 {
+    font-size: 1.65rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    color: var(--vs-text);
+}
+
+.viva-app-content > .flex.items-center.justify-between > div > p,
+.viva-app-content h1 + p {
+    margin-top: 0.35rem;
+    font-size: 0.9375rem;
+    color: var(--vs-text2);
+}
+
+/* Sidebar */
+.viva-app [data-sidebar='sidebar'] {
+    border-right: 1px solid var(--vs-border) !important;
+    background: var(--vs-surface) !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
+
+.viva-app [data-variant='inset'] + [data-slot='sidebar-inset'] {
+    margin: 0 !important;
+    border-radius: 0 !important;
+}
+
+.viva-app [data-sidebar='group-label'] {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--vs-text3);
+    padding-top: 0.5rem;
+}
+
+.viva-app [data-sidebar='menu-button'] {
+    font-weight: 600;
+    font-size: 0.875rem;
+    border-radius: 10px;
+    transition:
+        background 0.2s,
+        color 0.2s,
+        border-color 0.2s;
+}
+
+.viva-app [data-sidebar='menu-button'][data-active='true'] {
+    background: color-mix(in srgb, var(--vs-accent) 14%, transparent) !important;
+    color: var(--vs-accent) !important;
+    border: 1px solid color-mix(in srgb, var(--vs-accent) 28%, transparent);
+}
+
+.viva-app [data-sidebar='menu-button']:hover:not([data-active='true']) {
+    background: var(--vs-surface2) !important;
+}
+
+.viva-app [data-sidebar='menu-sub-button'][data-active='true'] {
+    color: var(--vs-accent) !important;
+    font-weight: 600;
+}
+
+.viva-app [data-sidebar='header'],
+.viva-app [data-sidebar='footer'] {
+    border-color: var(--vs-border);
+}
+
+/* Cards → Viva panels */
+.viva-app {
+    --viva-card-pad-x: 1.25rem;
+    --viva-card-pad-y: 1rem;
+}
+
+.viva-app [data-slot='card'],
+.viva-app .bg-card.rounded-xl,
+.viva-app .bg-card.rounded-lg {
+    border: 1px solid var(--vs-border) !important;
+    border-radius: 16px !important;
+    background: var(--vs-surface) !important;
+    box-shadow: var(--vs-panel-shadow) !important;
+    color: var(--vs-text);
+    gap: 0 !important;
+    padding: 0 !important;
+    overflow: hidden;
+}
+
+/* Section cards (charts, forms, detail panels) */
+.viva-app [data-slot='card-header']:not([class*='flex-row']) {
+    border-bottom: 1px solid var(--vs-border);
+    background: color-mix(in srgb, var(--vs-surface2) 55%, var(--vs-surface));
+    padding: var(--viva-card-pad-y) var(--viva-card-pad-x) !important;
+    gap: 0.375rem;
+}
+
+.viva-app [data-slot='card-title'] {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.viva-app [data-slot='card-description'] {
+    color: var(--vs-text2);
+    font-size: 0.875rem;
+    margin-top: 0.125rem;
+}
+
+.viva-app [data-slot='card-content'] {
+    padding: var(--viva-card-pad-y) var(--viva-card-pad-x) !important;
+}
+
+.viva-app [data-slot='card-header']:not([class*='flex-row'])
+    + [data-slot='card-content'] {
+    padding-top: var(--viva-card-pad-y) !important;
+}
+
+.viva-app [data-slot='card-footer'] {
+    border-top: 1px solid var(--vs-border);
+    background: color-mix(in srgb, var(--vs-surface2) 40%, var(--vs-surface));
+    padding: 0.875rem var(--viva-card-pad-x) !important;
+}
+
+/* KPI / metric stat cards (header row + value) */
+.viva-app [data-slot='card-header'][class*='flex-row'],
+.viva-app .viva-stat-card__header {
+    display: flex !important;
+    flex-flow: row nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    grid-auto-rows: unset !important;
+    grid-template-rows: unset !important;
+    grid-template-columns: unset !important;
+    gap: 0.5rem !important;
+    border-bottom: none !important;
+    background: transparent !important;
+    padding: 0.875rem var(--viva-card-pad-x) 0.25rem !important;
+}
+
+.viva-app [data-slot='card-header'][class*='flex-row']
+    + [data-slot='card-content'],
+.viva-app .viva-stat-card__content {
+    padding: 0 var(--viva-card-pad-x) 0.875rem !important;
+}
+
+.viva-app [data-slot='card-header'][class*='flex-row'] [data-slot='card-title'],
+.viva-app .viva-stat-card__title {
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    letter-spacing: 0;
+    line-height: 1.25;
+}
+
+.viva-app [data-slot='card-header'][class*='flex-row'] svg,
+.viva-app .viva-stat-card__icon {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    color: var(--vs-text3);
+}
+
+/* Buttons */
+.viva-app button[data-slot='button']:not(:disabled) {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+.viva-app button.bg-primary,
+.viva-app [data-slot='button'].bg-primary {
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--vs-accent) 35%, transparent);
+}
+
+.viva-app button.border,
+.viva-app [variant='outline'] {
+    border-color: var(--vs-border) !important;
+}
+
+/* Inputs */
+.viva-app input[data-slot='input'],
+.viva-app textarea[data-slot='textarea'],
+.viva-app select {
+    border-radius: 10px !important;
+    border-color: var(--vs-border) !important;
+    background: var(--vs-bg) !important;
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+}
+
+.viva-app input[data-slot='input']:focus-visible,
+.viva-app textarea[data-slot='textarea']:focus-visible {
+    border-color: var(--vs-accent) !important;
+    box-shadow: 0 0 0 3px var(--vs-glow) !important;
+    outline: none !important;
+}
+
+/* Badges */
+.viva-app [data-slot='badge'] {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    border-radius: 100px;
+}
+
+/* Tables */
+.viva-app table {
+    font-size: 0.875rem;
+}
+
+.viva-app thead th {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--vs-text3);
+    background: var(--vs-surface2);
+    border-bottom: 1px solid var(--vs-border);
+}
+
+.viva-app tbody tr {
+    border-bottom: 1px solid var(--vs-border);
+    transition: background 0.15s;
+}
+
+.viva-app tbody tr:hover {
+    background: color-mix(in srgb, var(--vs-accent) 5%, transparent);
+}
+
+/* Dropdowns / popovers */
+.viva-app [data-slot='dropdown-menu-content'],
+.viva-app [data-slot='popover-content'] {
+    border: 1px solid var(--vs-border) !important;
+    border-radius: 12px !important;
+    background: var(--vs-surface) !important;
+    box-shadow: var(--vs-panel-shadow) !important;
+}
+
+/* Breadcrumbs */
+.viva-app-header nav ol li a,
+.viva-app-header nav ol li span {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--vs-text2);
+}
+
+.viva-app-header nav ol li:last-child span {
+    color: var(--vs-text);
+    font-weight: 600;
+}
+
+/* Sidebar trigger */
+.viva-app-header button[data-sidebar='trigger'] {
+    border: 1px solid var(--vs-border);
+    border-radius: 8px;
+    background: var(--vs-surface);
+}
+
+/* Stat value typography */
+.viva-app [data-slot='card-content'] .text-2xl {
+    font-family: var(--font-sans);
+    font-size: 1.75rem;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: var(--vs-text);
+}
+
+.viva-app [data-slot='card-content'] .text-2xl + p,
+.viva-app [data-slot='card-content'] .text-2xl + .text-xs {
+    margin-top: 0.25rem;
+}
+
+/* Page title row */
+.viva-app-content > .flex.items-center.justify-between {
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+@media (min-width: 640px) {
+    .viva-app-content > .flex.items-center.justify-between {
+        align-items: center;
+    }
+}
+
+.viva-app-content > .flex.items-center.justify-between [data-slot='badge'] {
+    flex-shrink: 0;
+}
+
+/* Sheet mobile sidebar */
+.viva-app [data-mobile='true'][data-sidebar='sidebar'] {
+    background: var(--vs-surface) !important;
+}

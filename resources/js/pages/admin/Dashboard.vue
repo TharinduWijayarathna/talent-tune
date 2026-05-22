@@ -8,6 +8,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import VivaStatCard from '@/components/VivaStatCard.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { chartPalette, chartTheme } from '@/lib/chartTheme';
 import { type BreadcrumbItem } from '@/types';
@@ -139,7 +140,7 @@ const paymentsByStatusSeries = computed(
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div
-            class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4"
+            class="viva-app-content"
         >
             <div class="flex items-center justify-between">
                 <div>
@@ -156,115 +157,55 @@ const paymentsByStatusSeries = computed(
 
             <!-- Stats Cards -->
             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <Card>
-                    <CardHeader
-                        class="flex flex-row items-center justify-between space-y-0 pb-2"
-                    >
-                        <CardTitle class="text-sm font-medium"
-                            >Institutions</CardTitle
-                        >
-                        <Building2 class="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div class="text-2xl font-bold">
-                            {{ stats.totalInstitutions }}
-                        </div>
-                        <p class="text-xs text-muted-foreground">
-                            Registered institutions
-                        </p>
-                    </CardContent>
-                </Card>
+                <VivaStatCard title="Institutions" :icon="Building2">
+                    <div class="text-2xl font-bold">
+                        {{ stats.totalInstitutions }}
+                    </div>
+                    <p class="text-xs text-muted-foreground">
+                        Registered institutions
+                    </p>
+                </VivaStatCard>
 
-                <Card>
-                    <CardHeader
-                        class="flex flex-row items-center justify-between space-y-0 pb-2"
-                    >
-                        <CardTitle class="text-sm font-medium"
-                            >Total Lecturers</CardTitle
-                        >
-                        <Users class="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div class="text-2xl font-bold">
-                            {{ stats.totalLecturers }}
-                        </div>
-                        <p class="text-xs text-muted-foreground">
-                            Across all institutions
-                        </p>
-                    </CardContent>
-                </Card>
+                <VivaStatCard title="Total Lecturers" :icon="Users">
+                    <div class="text-2xl font-bold">
+                        {{ stats.totalLecturers }}
+                    </div>
+                    <p class="text-xs text-muted-foreground">
+                        Across all institutions
+                    </p>
+                </VivaStatCard>
 
-                <Card>
-                    <CardHeader
-                        class="flex flex-row items-center justify-between space-y-0 pb-2"
-                    >
-                        <CardTitle class="text-sm font-medium"
-                            >Total Students</CardTitle
-                        >
-                        <GraduationCap class="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div class="text-2xl font-bold">
-                            {{ stats.totalStudents }}
-                        </div>
-                        <p class="text-xs text-muted-foreground">
-                            Enrolled students
-                        </p>
-                    </CardContent>
-                </Card>
+                <VivaStatCard title="Total Students" :icon="GraduationCap">
+                    <div class="text-2xl font-bold">
+                        {{ stats.totalStudents }}
+                    </div>
+                    <p class="text-xs text-muted-foreground">
+                        Enrolled students
+                    </p>
+                </VivaStatCard>
 
-                <Card>
-                    <CardHeader
-                        class="flex flex-row items-center justify-between space-y-0 pb-2"
-                    >
-                        <CardTitle class="text-sm font-medium"
-                            >Active Vivas</CardTitle
-                        >
-                        <Activity class="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div class="text-2xl font-bold">
-                            {{ stats.activeVivas }}
-                        </div>
-                        <p class="text-xs text-muted-foreground">
-                            Currently active
-                        </p>
-                    </CardContent>
-                </Card>
+                <VivaStatCard title="Active Vivas" :icon="Activity">
+                    <div class="text-2xl font-bold">
+                        {{ stats.activeVivas }}
+                    </div>
+                    <p class="text-xs text-muted-foreground">
+                        Currently active
+                    </p>
+                </VivaStatCard>
 
-                <Card>
-                    <CardHeader
-                        class="flex flex-row items-center justify-between space-y-0 pb-2"
-                    >
-                        <CardTitle class="text-sm font-medium"
-                            >Completed Vivas</CardTitle
-                        >
-                        <TrendingUp class="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div class="text-2xl font-bold">
-                            {{ stats.completedVivas }}
-                        </div>
-                        <p class="text-xs text-muted-foreground">All time</p>
-                    </CardContent>
-                </Card>
+                <VivaStatCard title="Completed Vivas" :icon="TrendingUp">
+                    <div class="text-2xl font-bold">
+                        {{ stats.completedVivas }}
+                    </div>
+                    <p class="text-xs text-muted-foreground">All time</p>
+                </VivaStatCard>
 
-                <Card>
-                    <CardHeader
-                        class="flex flex-row items-center justify-between space-y-0 pb-2"
-                    >
-                        <CardTitle class="text-sm font-medium"
-                            >Total Users</CardTitle
-                        >
-                        <Users class="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div class="text-2xl font-bold">
-                            {{ stats.totalUsers }}
-                        </div>
-                        <p class="text-xs text-muted-foreground">All users</p>
-                    </CardContent>
-                </Card>
+                <VivaStatCard title="Total Users" :icon="Users">
+                    <div class="text-2xl font-bold">
+                        {{ stats.totalUsers }}
+                    </div>
+                    <p class="text-xs text-muted-foreground">All users</p>
+                </VivaStatCard>
             </div>
 
             <!-- Analytics Charts -->

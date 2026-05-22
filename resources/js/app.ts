@@ -1,4 +1,5 @@
 import '../css/app.css';
+import '../css/app-shell.css';
 import '../css/viva-session-panel.css';
 
 import { createInertiaApp } from '@inertiajs/vue3';

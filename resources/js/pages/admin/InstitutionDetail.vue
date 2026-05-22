@@ -99,7 +99,7 @@ const deleteInstitution = () => {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div
-            class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4"
+            class="viva-app-content"
         >
             <div
                 class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"

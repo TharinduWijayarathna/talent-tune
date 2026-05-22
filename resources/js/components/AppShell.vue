@@ -16,7 +16,12 @@ const isOpen = page.props.sidebarOpen !== false;
     <div v-if="variant === 'header'" class="flex min-h-screen w-full flex-col">
         <slot />
     </div>
-    <SidebarProvider v-else :default-open="isOpen">
+    <SidebarProvider
+        v-else
+        class="viva-app"
+        :default-open="isOpen"
+    >
+        <div class="viva-app-grid" aria-hidden="true" />
         <slot />
     </SidebarProvider>
 </template>

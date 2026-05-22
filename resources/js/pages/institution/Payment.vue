@@ -75,7 +75,7 @@ const endSubscription = () => {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div
-            class="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4"
+            class="viva-app-content"
         >
             <div>
                 <h1 class="text-2xl font-bold">Payment</h1>
